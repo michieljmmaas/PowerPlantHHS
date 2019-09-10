@@ -8,6 +8,9 @@ N_WIND_FEATURES = 0  # for now
 N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 
+# We willen velden, die allemaal een andere kant op staan om te kijken wat ze er mee doen. Nog gegevens invullen van
+# de andere vier velden om mee te geven
+
 def train(n_generations, group_size, simulink_user, cost_calculator, genetic_algorithm,
           surface_min, surface_max, angle_min, angle_max, orientation_min, orientation_max):
     """train genetic algorithm"""
@@ -42,9 +45,13 @@ def train(n_generations, group_size, simulink_user, cost_calculator, genetic_alg
 
         # get values from simulink
 
+        # interpret values from simulink
+
         # run cost calculator
 
         # store intermediate results?
+
+        # Graphic Display of progress
 
         if generation == last_generation:
             # get result with lowest cost
