@@ -5,7 +5,13 @@ from copy import copy
 
 
 class CostCalculator():
-    """class to calculaten the cost of a configuration"""
+    """
+        class to calculaten the cost of a configuration
+        sp_cost_per_sm = Solar panel cost per Square Meter
+        wm_cost_per_m = Windmill cost per Meter
+        st__cost_per_kwh = Storage Cost per KWH
+    """
+
     def __init__(self, sp_cost_per_sm, wm_cost_per_m, st_cost_per_kwh, target_kwh, deficit_cost):
         self.sp_cost_per_sm = sp_cost_per_sm
         self.wm_cost_per_m = wm_cost_per_m
