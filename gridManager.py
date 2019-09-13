@@ -13,6 +13,9 @@ class Application(Frame):
         Frame1.grid(row = 0, column = 0, rowspan = 3, columnspan = 2, sticky = W+E+N+S)
         ItemFrame = Frame(master, bg="green")
         ItemFrame.grid(row = 0, column = 2, rowspan = 6, columnspan = 3, sticky = W+E+N+S)
+        FrameBottom = Frame(master, bg="blue")
+        FrameBottom.grid(row=3, column=0, columnspan=5, rowspan=2, sticky= W+E+N+S)
+
 
         f = Figure(figsize=(5, 5), dpi=100)
         a = f.add_subplot(111)
@@ -68,15 +71,52 @@ class Application(Frame):
         WTHeightCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         WTHeightTuple = (WTHeightLabel, WTHeightEntry, WTHeightCost)
 
-        TupleList = [PWDeficitTuple, SPSurfaceAreaTuple, SPAngleTuple, SPOrientationTuple, WTHeightTuple]
+        LabelTupleList = [PWDeficitTuple, SPSurfaceAreaTuple, SPAngleTuple, SPOrientationTuple, WTHeightTuple]
 
         RowCounter = 2
-        for Tuple in TupleList:
+        for Tuple in LabelTupleList:
             ColumnCounter = 0
             for Item in Tuple:
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady)
                 ColumnCounter = ColumnCounter +1
             RowCounter = RowCounter + 1
+
+        totalwidth = LabelWidth + LabelWidth + (padx/2)
+
+        TotalLabel = Label(ItemFrame, text="Total Cost", height=5)
+        TotalLabel.grid(row=RowCounter+2, column=0, padx=padx, pady=pady, columnspan=2, sticky=W+E)
+
+        TotalCost = Label(ItemFrame, text="", width=20, height=5)
+        TotalCost.grid(row=RowCounter + 2, column=2, padx=padx, pady=pady, sticky=E)
+
+        #Bottom info
+
+        InfoGenerationLabel = Label(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight)
+        InfoGenerationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
+        InfoGenerationTuple = (InfoGenerationLabel, InfoGenerationEntry)
+
+        InfoPoolLabel = Label(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight)
+        InfoPoolEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
+        InfoPoolTuple = (InfoPoolLabel, InfoPoolEntry)
+
+        InfoMutationLabel = Label(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight)
+        InfoMutationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
+        InfoMutationTuple = (InfoMutationLabel, InfoMutationEntry)
+
+        InfoPowerPlantLabel = Label(FrameBottom, text="PowerPlant Energy", width=LabelWidth, height=LabelHeight)
+        InfoPowerPlantEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
+        InfoPowerPlantTuple = (InfoPowerPlantLabel, InfoPowerPlantEntry)
+
+        InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
+
+        ColumnCounter = 0
+        for Tuple in InfoTupleList:
+            RowCounter = 0
+            for Item in Tuple:
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady)
+                RowCounter = RowCounter + 1
+            ColumnCounter = ColumnCounter + 1
+
 
 root = Tk()
 app = Application(master=root)
