@@ -35,15 +35,9 @@ class Simulink():
         wind_velocity = '[0,1,2,4,6,8,10,20,30]'
         rotor_height =  str(turbine_height)  # '10'
         terrain_rating = '1'
-        turbines = '0'
+        turbines = '0'  # add turbine later
 
         self.engine.load_system(self.model_name)
-
-        print(self.solar_model_name)
-        print(azimuth)
-        print(inclanation)
-        print(surface)
-        print(efficiency)
 
         self.engine.set_param(
             self.solar_model_name,
