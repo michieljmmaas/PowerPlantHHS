@@ -43,8 +43,8 @@ class PopulationSaver():
     
     def save(self, array):
         """save an array with population"""
-        self.generation += 1
         np.savetxt(self.path + 'generation_' + str(self.generation) + '.csv', array, delimiter=',')
+        self.generation += 1
     
     def save_best(self, array):
         """save an array with best picks"""
