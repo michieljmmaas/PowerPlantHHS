@@ -30,13 +30,13 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
-        RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight+LabelHeight)
-        NextButton  = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight+LabelHeight)
-        ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight+LabelHeight)
+        RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight)
+        NextButton  = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
+        ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
 
-        RunButton.grid(row=0, column=0, padx=padx, pady=pady+pady)
-        NextButton.grid(row=0, column=1, padx=padx, pady=pady+pady)
-        ExportButton.grid(row=0, column=2, padx=padx, pady=pady+pady)
+        RunButton.grid(row=0, column=0, padx=padx, pady=pady)
+        NextButton.grid(row=0, column=1, padx=padx, pady=pady)
+        ExportButton.grid(row=0, column=2, padx=padx, pady=pady)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight)
         NumberLabel = Label(ItemFrame, text="Number", width=LabelWidth, height=LabelHeight)
@@ -46,7 +46,7 @@ class Application(Frame):
         NumberLabel.grid(row=1, column=1, padx=padx, pady=pady)
         CostLabel.grid(row=1, column=2, padx=padx, pady=pady)
 
-        PWSurplusLabel = Label(ItemFrame, text="Energy Ssurplus", width=LabelWidth, height=LabelHeight, anchor=W)
+        PWSurplusLabel = Label(ItemFrame, text="Energy Surplus", width=LabelWidth, height=LabelHeight, anchor=W)
         PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWDSurplusCost)
@@ -56,27 +56,74 @@ class Application(Frame):
         PWDeficitCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitCost)
 
-        SPSurfaceAreaLabel = Label(ItemFrame, text="Solar Panel - Surface Area", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPSurfaceAreaEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPSurfaceAreaCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPSurfaceAreaTuple = (SPSurfaceAreaLabel, SPSurfaceAreaEntry, SPSurfaceAreaCost)
-
-        SPAngleLabel = Label(ItemFrame, text="Solar Panel - Angle", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPAngleEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPAngleLCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPAngleTuple = (SPAngleLabel, SPAngleEntry, SPAngleLCost)
-
-        SPOrientationLabel = Label(ItemFrame, text="Solar Panel - Orientation", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPOrientationEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPOrientationCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPOrientationTuple = (SPOrientationLabel, SPOrientationEntry, SPOrientationCost)
-
         WTHeightLabel = Label(ItemFrame, text="Wind Turbine - Heigth", width=LabelWidth, height=LabelHeight, anchor=W)
         WTHeightEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         WTHeightCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         WTHeightTuple = (WTHeightLabel, WTHeightEntry, WTHeightCost)
 
-        LabelTupleList = [PWDSurplusTuple, PWDeficitTuple, SPSurfaceAreaTuple, SPAngleTuple, SPOrientationTuple, WTHeightTuple]
+        ###Solar Panels
+        #Solar Panel 1
+        SP1SurfaceAreaLabel = Label(ItemFrame, text="Solar Panel - Surface Area", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1SurfaceAreaEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1SurfaceAreaCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1SurfaceAreaTuple = (SP1SurfaceAreaLabel, SP1SurfaceAreaEntry, SP1SurfaceAreaCost)
+
+        SP1AngleLabel = Label(ItemFrame, text="Solar Panel - Angle", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1AngleEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1AngleTuple = (SP1AngleLabel, SP1AngleEntry)
+
+        SP1OrientationLabel = Label(ItemFrame, text="Solar Panel - Orientation", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1OrientationEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1OrientationTuple = (SP1OrientationLabel, SP1OrientationEntry)
+
+        #Solar Panel 2
+        SP2SurfaceAreaLabel = Label(ItemFrame, text="Solar Panel - Surface Area", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2SurfaceAreaEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2SurfaceAreaCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2SurfaceAreaTuple = (SP2SurfaceAreaLabel, SP2SurfaceAreaEntry, SP2SurfaceAreaCost)
+
+        SP2AngleLabel = Label(ItemFrame, text="Solar Panel - Angle", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2AngleEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2AngleTuple = (SP2AngleLabel, SP2AngleEntry)
+
+        SP2OrientationLabel = Label(ItemFrame, text="Solar Panel - Orientation", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2OrientationEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2OrientationTuple = (SP2OrientationLabel, SP2OrientationEntry)
+
+        #Solar Panel 3
+        SP3SurfaceAreaLabel = Label(ItemFrame, text="Solar Panel - Surface Area", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3SurfaceAreaEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3SurfaceAreaCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3SurfaceAreaTuple = (SP3SurfaceAreaLabel, SP3SurfaceAreaEntry, SP3SurfaceAreaCost)
+
+        SP3AngleLabel = Label(ItemFrame, text="Solar Panel - Angle", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3AngleEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3AngleTuple = (SP3AngleLabel, SP3AngleEntry)
+
+        SP3OrientationLabel = Label(ItemFrame, text="Solar Panel - Orientation", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3OrientationEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3OrientationTuple = (SP3OrientationLabel, SP3OrientationEntry)
+
+        #Solar Panel 4
+        SP4SurfaceAreaLabel = Label(ItemFrame, text="Solar Panel - Surface Area", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4SurfaceAreaEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4SurfaceAreaCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4SurfaceAreaTuple = (SP4SurfaceAreaLabel, SP4SurfaceAreaEntry, SP4SurfaceAreaCost)
+
+        SP4AngleLabel = Label(ItemFrame, text="Solar Panel - Angle", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4AngleEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4AngleTuple = (SP4AngleLabel, SP4AngleEntry)
+
+        SP4OrientationLabel = Label(ItemFrame, text="Solar Panel - Orientation", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4OrientationEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4OrientationTuple = (SP4OrientationLabel, SP4OrientationEntry)
+
+        LabelTupleList = [PWDSurplusTuple, PWDeficitTuple, WTHeightTuple,
+                          SP1SurfaceAreaTuple, SP1AngleTuple, SP1OrientationTuple,
+                          SP2SurfaceAreaTuple, SP2AngleTuple, SP2OrientationTuple,
+                          SP3SurfaceAreaTuple, SP3AngleTuple, SP3OrientationTuple,
+                          SP4SurfaceAreaTuple, SP4AngleTuple, SP4OrientationTuple
+                          ]
 
         RowCounter = 2
         for Tuple in LabelTupleList:
@@ -123,6 +170,21 @@ class Application(Frame):
             ColumnCounter = ColumnCounter + 1
 
 
+def doNothing():
+    print("doNothing")
+
+
 root = Tk()
+
+scrollbar = Scrollbar(root)
+scrollbar.pack(side=RIGHT, fill=Y)
+
+ToolBar = Menu(root)
+root.config(menu=ToolBar)
+subMenu = Menu(ToolBar)
+ToolBar.add_cascade(label="Options", menu=subMenu)
+subMenu.add_command(label="Load", command=doNothing)
+
+
 app = Application(master=root)
 app.mainloop()
