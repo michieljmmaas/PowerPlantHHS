@@ -10,11 +10,11 @@ class Application(Frame):
         self.master.title("Grid Manager")
 
         Frame1 = Frame(master, bg="red")
-        Frame1.grid(row = 0, column = 0, rowspan = 3, columnspan = 2, sticky = W+E+N+S)
+        Frame1.grid(row = 0, column = 0, rowspan = 4, columnspan = 4, sticky = W+E+N+S)
         ItemFrame = Frame(master, bg="green")
-        ItemFrame.grid(row = 0, column = 2, rowspan = 6, columnspan = 3, sticky = W+E+N+S)
+        ItemFrame.grid(row = 0, column = 4, rowspan = 6, columnspan = 2, sticky = W+E+N+S)
         FrameBottom = Frame(master, bg="blue")
-        FrameBottom.grid(row=3, column=0, columnspan=5, rowspan=2, sticky= W+E+N+S)
+        FrameBottom.grid(row=4, column=0, columnspan=4, rowspan=2, sticky= W+E+N+S)
 
 
         f = Figure(figsize=(5, 5), dpi=100)
@@ -113,7 +113,7 @@ class Application(Frame):
         for Tuple in InfoTupleList:
             RowCounter = 0
             for Item in Tuple:
-                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady)
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=W+E+N+S)
                 RowCounter = RowCounter + 1
             ColumnCounter = ColumnCounter + 1
 
