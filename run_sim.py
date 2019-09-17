@@ -36,12 +36,6 @@ class Simulink():
 
         self.engine.load_system(self.model_name)
 
-        print(self.solar_model_name)
-        print(azimuth)
-        print(inclanation)
-        print(surface)
-        print(efficiency)
-
         self.engine.set_param(
             self.solar_model_name,
             'Az', azimuth,
