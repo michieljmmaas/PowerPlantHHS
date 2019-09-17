@@ -30,13 +30,13 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
-        RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight)
-        NextButton  = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
-        ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
+        RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight+LabelHeight)
+        NextButton  = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight+LabelHeight)
+        ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight+LabelHeight)
 
-        RunButton.grid(row=0, column=0, padx=padx, pady=pady)
-        NextButton.grid(row=0, column=1, padx=padx, pady=pady)
-        ExportButton.grid(row=0, column=2, padx=padx, pady=pady)
+        RunButton.grid(row=0, column=0, padx=padx, pady=pady+pady)
+        NextButton.grid(row=0, column=1, padx=padx, pady=pady+pady)
+        ExportButton.grid(row=0, column=2, padx=padx, pady=pady+pady)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight)
         NumberLabel = Label(ItemFrame, text="Number", width=LabelWidth, height=LabelHeight)
@@ -45,6 +45,11 @@ class Application(Frame):
         ItemLabel.grid(row=1, column=0, padx=padx, pady=pady)
         NumberLabel.grid(row=1, column=1, padx=padx, pady=pady)
         CostLabel.grid(row=1, column=2, padx=padx, pady=pady)
+
+        PWSurplusLabel = Label(ItemFrame, text="Energy Ssurplus", width=LabelWidth, height=LabelHeight, anchor=W)
+        PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWDSurplusCost)
 
         PWDeficitLabel = Label(ItemFrame, text="Energy Deficit", width=LabelWidth, height=LabelHeight, anchor=W)
         PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
@@ -71,13 +76,13 @@ class Application(Frame):
         WTHeightCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         WTHeightTuple = (WTHeightLabel, WTHeightEntry, WTHeightCost)
 
-        LabelTupleList = [PWDeficitTuple, SPSurfaceAreaTuple, SPAngleTuple, SPOrientationTuple, WTHeightTuple]
+        LabelTupleList = [PWDSurplusTuple, PWDeficitTuple, SPSurfaceAreaTuple, SPAngleTuple, SPOrientationTuple, WTHeightTuple]
 
         RowCounter = 2
         for Tuple in LabelTupleList:
             ColumnCounter = 0
             for Item in Tuple:
-                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady)
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N+S)
                 ColumnCounter = ColumnCounter +1
             RowCounter = RowCounter + 1
 
