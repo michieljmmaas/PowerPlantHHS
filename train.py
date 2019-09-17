@@ -9,7 +9,7 @@ from save_and_load import PopulationSaver
 
 N_PANELS = 4
 N_SOLAR_FEATURES = N_PANELS * 3
-N_WIND_FEATURES = 0  # add turbine later
+N_WIND_FEATURES = 1
 N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 
@@ -17,7 +17,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
           orientation_min, orientation_max, model_name=None, load=False):
     """train genetic algorithm"""
 
-    cost_calculator = CostCalculator(400, 1, 0.2, 6000, 1000000)  # add turbine later
+    cost_calculator = CostCalculator(400, 0.2, 6000, 1000000)
     genetic_algorithm = GeneticAlgorith(50, 100, 10, 2)
     simulink = Simulink('WT_SP_model_vs1total')
     saver = PopulationSaver(model_name, load)
@@ -33,9 +33,10 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         solar_values[:, 1::3] += angle_min
         solar_values[:, 2::3] *= (orientation_max - orientation_min)
         solar_values[:, 2::3] += orientation_min
-        # wind_values = np.random.rand([group_size, N_WIND_FEATURES], dtype=np.float)
-        # group_values = np.concatenate((solar_values, wind_values), axis=1)  # concatenate on features
-        group_values = solar_values  # add turbine later
+        wind_values = np.random.rand(group_size, N_WIND_FEATURES)
+        wind_values *= 3
+        group_values = np.concatenate((solar_values, wind_values), axis=1)  # concatenate on features
+        
 
         # prepare min and max arrays to truncate values later
         highest_allowed = np.zeros_like(group_values)
@@ -46,6 +47,9 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         lowest_allowed[:, 1:N_SOLAR_FEATURES:3] = angle_min
         highest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_max
         lowest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_min
+        highest_allowed[:, -1] = 3
+        lowest_allowed[:, -1] = 0
+        
 
     last_generation = n_generations - 1
     for generation in range(saver.generation, n_generations):
@@ -53,12 +57,14 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         print('finished simulation 0 of {}'.format(group_size), end='\r')
         for i in range(group_size):
             current_row = group_values[i]
+            # selecting windturbine type
+            wm_type = int(current_row[-1])
             # run simulink
-            energy_production = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], 10)  # add turbine later
+            energy_production = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], wm_type)  # add turbine later
             #energy_production = np.array([np.sum(current_row[:N_SOLAR_FEATURES:3])] * (365*24))  # simple fake simulation
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
-            cost_array[i] = cost_calculator.calculate_cost(energy_production, sp_sm, 0)  # add turbine later
+            cost_array[i] = cost_calculator.calculate_cost(energy_production, sp_sm, wm_type)  # add turbine later
             # print progress
             print('finished simulation {} of {}'.format(i+1, group_size), end='\r')
         # log and print progress

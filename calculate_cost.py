@@ -2,7 +2,7 @@
 
 import numpy as np
 from copy import copy
-from numba import njit
+#from numba import njit
 
 """
 @njit
@@ -72,9 +72,9 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
         deficit * deficit_cost
     return cost
 """
-@njit
-def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
-        target_kw, sp_cost_per_sm, wm_cost_per_m, st_cost_per_kwh, deficit_cost):
+#@njit
+def _calculate_cost_njit(kwh_array, sp_sm, wm_type,
+        target_kw, sp_cost_per_sm, st_cost_per_kwh, deficit_cost):
     surplus_array = kwh_array - target_kw
     cumulative_array = np.cumsum(surplus_array)
     storage = 0
@@ -93,9 +93,19 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
             storage = max(storage, np.max(cumulative_array[:new_start]))
             cumulative_array = cumulative_array[new_start:]
             declining = declining[new_start:]
+
+    #windturbine shit
+    if (wm_type == 2):
+        wm_cost = 2
+    elif (wm_type == 3):
+        wm_cost = 3
+    elif (wm_type == 1):
+        wm_cost = 1
+    else:
+        wm_cost = 0
     # calculate the final cost
     cost = sp_sm * sp_cost_per_sm + \
-        wm_m * wm_cost_per_m + \
+        wm_cost + \
         storage * st_cost_per_kwh +\
         deficit * deficit_cost
     return cost
@@ -108,20 +118,19 @@ class CostCalculator():
         st_cost_per_kwh = Storage Cost per KWH
     """
 
-    def __init__(self, sp_cost_per_sm, wm_cost_per_m, st_cost_per_kwh, target_kw, deficit_cost):
+    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost):
         self.sp_cost_per_sm = sp_cost_per_sm
-        self.wm_cost_per_m = wm_cost_per_m
         self.st_cost_per_kwh = st_cost_per_kwh
         self.target_kw = target_kw
         self.deficit_cost = deficit_cost
 
-    def calculate_cost(self, kwh_array, sp_sm, wm_m):
+    def calculate_cost(self, kwh_array, sp_sm, wm_type):
         # make a copy of the input array so we don't alter the original one
         kwh_array = copy(kwh_array)
-        return _calculate_cost_njit(kwh_array, sp_sm, wm_m,
-            self.target_kw, self.sp_cost_per_sm, self.wm_cost_per_m, self.st_cost_per_kwh, self.deficit_cost)
+        return _calculate_cost_njit(kwh_array, sp_sm, wm_type,
+            self.target_kw, self.sp_cost_per_sm, self.st_cost_per_kwh, self.deficit_cost)
     
-    def get_stats(self, kwh_array, sp_sm, wm_m):
+    def get_stats(self, kwh_array, sp_sm, wm_type):
         surplus_array = kwh_array - self.target_kw
         cumulative_array = np.cumsum(surplus_array)
         total_surplus = cumulative_array[-1]
@@ -141,9 +150,19 @@ class CostCalculator():
                 storage = max(storage, np.max(cumulative_array[:new_start]))
                 cumulative_array = cumulative_array[new_start:]
                 declining = declining[new_start:]
+        #windturbine shit
+        if (wm_type == 2):
+            wm_cost = 2
+        elif (wm_type == 3):
+            wm_cost = 3
+        elif (wm_type == 1):
+            wm_cost = 1
+        else:
+            wm_cost = 0
+        
         # calculate the final cost
         solar_cost = sp_sm * self.sp_cost_per_sm
-        wind_cost = wm_m * self.wm_cost_per_m
+        wind_cost = wm_cost
         storage_cost = storage * self.st_cost_per_kwh
         deficit_cost = deficit * self.deficit_cost
         cost = solar_cost + \
@@ -164,7 +183,7 @@ class CostCalculator():
 
 # code example to test if storage and deficit calculations are working
 if __name__ == '__main__':
-    cost_calculator = CostCalculator(0, 0, 1, 10, 100)
+    cost_calculator = CostCalculator(0, 1, 10, 100)
     print(0 == cost_calculator.calculate_cost(np.array([11, 11, 11, 10]), 0, 0))
     print(1 == cost_calculator.calculate_cost(np.array([11, 11, 11, 9]), 0, 0))
     print(2 == cost_calculator.calculate_cost(np.array([11, 11, 11, 8]), 0, 0))
