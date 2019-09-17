@@ -17,8 +17,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
           orientation_min, orientation_max, model_name=None, load=False):
     """train genetic algorithm"""
 
-    cost_calculator = CostCalculator(400, 1, 200000, 6000, 1000000)  # add turbine later
-    genetic_algorithm = GeneticAlgorith(10, 50, 5, 5)
+    cost_calculator = CostCalculator(400, 1, 0.2, 6000, 1000000)  # add turbine later
+    genetic_algorithm = GeneticAlgorith(50, 100, 10, 2)
     simulink = Simulink('WT_SP_model_vs1total')
     saver = PopulationSaver(model_name, load)
 
@@ -64,8 +64,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         # log and print progress
         saver.log(
             'generation:', saver.generation,
-            'mean_cost: ', np.mean(cost_array),
-            'min_cost: ', np.min(cost_array),
+            'mean_cost:', np.mean(cost_array),
+            'min_cost:', np.min(cost_array),
             to_screen=True)
         # store intermediate result
         best = genetic_algorithm.get_best(group_values, cost_array)
@@ -83,4 +83,4 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-    train(10000, 100, 0, 10**10, 0, 90, -90, 90)
+    train(10000, 100, 0, 10000000, 0, 90, -90, 90)

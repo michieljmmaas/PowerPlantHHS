@@ -4,7 +4,7 @@ import numpy as np
 from copy import copy
 from numba import njit
 
-
+"""
 @njit
 def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
         target_kw, sp_cost_per_sm, wm_cost_per_m, st_cost_per_kwh, deficit_cost):
@@ -71,7 +71,34 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
         storage * st_cost_per_kwh +\
         deficit * deficit_cost
     return cost
-
+"""
+@njit
+def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
+        target_kw, sp_cost_per_sm, wm_cost_per_m, st_cost_per_kwh, deficit_cost):
+    surplus_array = kwh_array - target_kw
+    cumulative_array = np.cumsum(surplus_array)
+    storage = 0
+    deficit = min(0, cumulative_array[-1]) * -1
+    if deficit == 0:
+        smaller_than_zero = np.where(cumulative_array < 0)[0]
+        if smaller_than_zero.shape[0] > 0:
+            new_start = smaller_than_zero[-1] + 1
+            surplus_array = np.concatenate((surplus_array[new_start:], surplus_array[:new_start]), axis=0)
+            cumulative_array = np.cumsum(surplus_array)
+        declining = surplus_array < 0
+        while np.any(declining) and storage < np.max(cumulative_array):
+            lowest = np.min(cumulative_array[declining])
+            cumulative_array -= lowest
+            new_start = np.where(np.logical_and(np.equal(cumulative_array, 0), declining))[0][-1] + 1
+            storage = max(storage, np.max(cumulative_array[:new_start]))
+            cumulative_array = cumulative_array[new_start:]
+            declining = declining[new_start:]
+    # calculate the final cost
+    cost = sp_sm * sp_cost_per_sm + \
+        wm_m * wm_cost_per_m + \
+        storage * st_cost_per_kwh +\
+        deficit * deficit_cost
+    return cost
 
 class CostCalculator():
     """
@@ -93,6 +120,46 @@ class CostCalculator():
         kwh_array = copy(kwh_array)
         return _calculate_cost_njit(kwh_array, sp_sm, wm_m,
             self.target_kw, self.sp_cost_per_sm, self.wm_cost_per_m, self.st_cost_per_kwh, self.deficit_cost)
+    
+    def get_stats(self, kwh_array, sp_sm, wm_m):
+        surplus_array = kwh_array - self.target_kw
+        cumulative_array = np.cumsum(surplus_array)
+        total_surplus = cumulative_array[-1]
+        storage = 0
+        deficit = min(0, total_surplus) * -1
+        if deficit == 0:
+            smaller_than_zero = np.where(cumulative_array < 0)[0]
+            if smaller_than_zero.shape[0] > 0:
+                new_start = smaller_than_zero[-1] + 1
+                surplus_array = np.concatenate((surplus_array[new_start:], surplus_array[:new_start]), axis=0)
+                cumulative_array = np.cumsum(surplus_array)
+            declining = surplus_array < 0
+            while np.any(declining) and storage < np.max(cumulative_array):
+                lowest = np.min(cumulative_array[declining])
+                cumulative_array -= lowest
+                new_start = np.where(np.logical_and(np.equal(cumulative_array, 0), declining))[0][-1] + 1
+                storage = max(storage, np.max(cumulative_array[:new_start]))
+                cumulative_array = cumulative_array[new_start:]
+                declining = declining[new_start:]
+        # calculate the final cost
+        solar_cost = sp_sm * self.sp_cost_per_sm
+        wind_cost = wm_m * self.wm_cost_per_m
+        storage_cost = storage * self.st_cost_per_kwh
+        deficit_cost = deficit * self.deficit_cost
+        cost = solar_cost + \
+            wind_cost + \
+            storage_cost +\
+            deficit_cost
+        stat_dict = {
+            'cost': cost,
+            'solar_cost': solar_cost,
+            'wind_cost': wind_cost,
+            'storage_cost': storage_cost,
+            'deficit_cost': deficit_cost,
+            'total_surplus': total_surplus,
+            'total_storage': storage,
+        }
+        return stat_dict
 
 
 # code example to test if storage and deficit calculations are working
@@ -102,12 +169,12 @@ if __name__ == '__main__':
     print(1 == cost_calculator.calculate_cost(np.array([11, 11, 11, 9]), 0, 0))
     print(2 == cost_calculator.calculate_cost(np.array([11, 11, 11, 8]), 0, 0))
     print(3 == cost_calculator.calculate_cost(np.array([11, 11, 11, 7]), 0, 0))
-    print(104 == cost_calculator.calculate_cost(np.array([11, 11, 11, 6]), 0, 0))
+    print(100 == cost_calculator.calculate_cost(np.array([11, 11, 11, 6]), 0, 0))
     print(0 == cost_calculator.calculate_cost(np.array([10, 11, 11, 11]), 0, 0))
     print(1 == cost_calculator.calculate_cost(np.array([9, 11, 11, 11]), 0, 0))
     print(2 == cost_calculator.calculate_cost(np.array([8, 11, 11, 11]), 0, 0))
     print(3 == cost_calculator.calculate_cost(np.array([7, 11, 11, 11]), 0, 0))
-    print(104 == cost_calculator.calculate_cost(np.array([6, 11, 11, 11]), 0, 0))
+    print(100 == cost_calculator.calculate_cost(np.array([6, 11, 11, 11]), 0, 0))
     print(2 == cost_calculator.calculate_cost(np.array([12, 8, 12, 8]), 0, 0))
     print(2 == cost_calculator.calculate_cost(np.array([8, 12, 8, 12]), 0, 0))
     print(6 == cost_calculator.calculate_cost(np.array([8, 16, 8, 8]), 0, 0))
