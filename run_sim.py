@@ -18,9 +18,6 @@ class Simulink():
     def run_simulation(self, solar_features, turbine_height):
         """run new simulation"""
         self.engine.Setup_parameters(nargout=0)
-        self.engine.Setup_Toutdoor(nargout=0)
-        self.engine.Setup_qsolar2(nargout=0)
-        self.engine.Setup_wind(nargout=0)
 
         surface_features = solar_features[0::3]
         angle_features = solar_features[1::3]
@@ -55,6 +52,10 @@ class Simulink():
             'a', terrain_rating,
             'nwt', turbines,
             nargout=0)
+
+        self.engine.Setup_Toutdoor(nargout=0)
+        self.engine.Setup_qsolar2(nargout=0)
+        self.engine.Setup_wind(nargout=0)        
         
         output = self.engine.sim(self.model_name, 'ReturnWorkspaceOutputs', 'on')
         self.engine.workspace['Output'] = output
