@@ -2,6 +2,7 @@ import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from tkinter import *
+import csv
 
 class Application(Frame):
     def __init__(self, master=None):
@@ -30,25 +31,17 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
-        LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight)
+        LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight, command= lambda: fileReader(SolarTupleList))
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight)
         NextButton  = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
         ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
-
-        # RunButton.grid(row=0, column=0, padx=padx, pady=pady)
-        # NextButton.grid(row=0, column=1, padx=padx, pady=pady)
-        # ExportButton.grid(row=0, column=2, padx=padx, pady=pady)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight)
         NumberLabel = Label(ItemFrame, text="Number", width=LabelWidth, height=LabelHeight)
         FactorLabel = Label(ItemFrame, text="Factor", width=LabelWidth, height=LabelHeight)
         CostLabel = Label(ItemFrame, text="Cost", width=LabelWidth, height=LabelHeight)
         headerTuple = (ItemLabel, NumberLabel, FactorLabel, CostLabel)
-
-        # ItemLabel.grid(row=1, column=0, padx=padx, pady=pady)
-        # NumberLabel.grid(row=1, column=1, padx=padx, pady=pady)
-        # CostLabel.grid(row=1, column=2, padx=padx, pady=pady)
 
         PWSurplusLabel = Label(ItemFrame, text="Energy Surplus", width=LabelWidth, height=LabelHeight, anchor=W)
         PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
@@ -132,7 +125,6 @@ class Application(Frame):
         TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
         #Bottom info
-
         InfoGenerationLabel = Label(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight)
         InfoGenerationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
         InfoGenerationTuple = (InfoGenerationLabel, InfoGenerationEntry)
@@ -160,18 +152,28 @@ class Application(Frame):
             ColumnCounter = ColumnCounter + 1
 
 
-def doNothing():
-    print("doNothing")
+def fileReader(SolarTupleList):
+    with open('logging/log.csv', newline='') as csvfile:
+        dataList = list(csv.reader(csvfile))
+        data = dataList[0]
+        counter = 0;
 
+        iterSolar = iter(SolarTupleList)
+        next(iterSolar)
+        for tuple in iterSolar:
+            iterTuple = iter(tuple)
+            next(iterTuple)
+            for item in iterTuple:
+                info = round(float(data[counter]), 2)
+                item.config(text=info)
+                counter += 1
 
 root = Tk()
-
-ToolBar = Menu(root)
-root.config(menu=ToolBar)
-subMenu = Menu(ToolBar)
-ToolBar.add_cascade(label="Options", menu=subMenu)
-subMenu.add_command(label="Load", command=doNothing)
-
+# ToolBar = Menu(root)
+# root.config(menu=ToolBar)
+# subMenu = Menu(ToolBar)
+# ToolBar.add_cascade(label="Options", menu=subMenu)
+# subMenu.add_command(label="Load", command=fileReader())
 
 app = Application(master=root)
 app.mainloop()
