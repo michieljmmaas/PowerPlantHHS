@@ -15,7 +15,7 @@ class Simulink():
     def __del__(self):
         self.engine.quit()
     
-    def run_simulation(self, solar_features, turbine_height):
+    def run_simulation(self, solar_features, wm_type):
         """run new simulation"""
         self.engine.Setup_parameters(nargout=0)
 
@@ -27,12 +27,28 @@ class Simulink():
         inclanation = str(list(angle_features)).replace(' ', '')
         surface = str(list(surface_features)).replace(' ', '')
         efficiency = '[15]'
+        
+        if (wm_type == 2):
+            turbines = '1'
+            curve = '[0,0,80,400,800,1200,1300,1500,1500,0,0]'
+            rotor_height = '85'
+        elif (wm_type == 3):
+            turbines = '1'
+            curve = '[0,0,27,1300,2700,4000,4300,5000,5000,0,0]'
+            rotor_height = '124'
+        elif (wm_type == 1):
+            turbines = '1'
+            curve = '[0,0,3,130,270,400,430,500,500,0,0]'
+            rotor_height = '25'
+        else:
+            turbines = '0'
+            curve = '[0,0,0,0,0,0,0,0,0,0,0]'
+            rotor_height = '0'
 
-        power = '[0,0,10,80,160,300,400,400,400]'
-        wind_velocity = '[0,1,2,4,6,8,10,20,30]'
-        rotor_height =  str(turbine_height)  # '10'
+        power = curve
+        wind_velocity = '[0,3,5,7,8,9,10,12,25,25.01,40]'
         terrain_rating = '1'
-        turbines = '0'  # add turbine later
+        
 
         self.engine.load_system(self.model_name)
 
