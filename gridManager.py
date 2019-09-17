@@ -30,39 +30,46 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
+        LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight)
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight)
         NextButton  = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
         ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
+        ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
-        RunButton.grid(row=0, column=0, padx=padx, pady=pady)
-        NextButton.grid(row=0, column=1, padx=padx, pady=pady)
-        ExportButton.grid(row=0, column=2, padx=padx, pady=pady)
+        # RunButton.grid(row=0, column=0, padx=padx, pady=pady)
+        # NextButton.grid(row=0, column=1, padx=padx, pady=pady)
+        # ExportButton.grid(row=0, column=2, padx=padx, pady=pady)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight)
         NumberLabel = Label(ItemFrame, text="Number", width=LabelWidth, height=LabelHeight)
+        FactorLabel = Label(ItemFrame, text="Factor", width=LabelWidth, height=LabelHeight)
         CostLabel = Label(ItemFrame, text="Cost", width=LabelWidth, height=LabelHeight)
+        headerTuple = (ItemLabel, NumberLabel, FactorLabel, CostLabel)
 
-        ItemLabel.grid(row=1, column=0, padx=padx, pady=pady)
-        NumberLabel.grid(row=1, column=1, padx=padx, pady=pady)
-        CostLabel.grid(row=1, column=2, padx=padx, pady=pady)
+        # ItemLabel.grid(row=1, column=0, padx=padx, pady=pady)
+        # NumberLabel.grid(row=1, column=1, padx=padx, pady=pady)
+        # CostLabel.grid(row=1, column=2, padx=padx, pady=pady)
 
         PWSurplusLabel = Label(ItemFrame, text="Energy Surplus", width=LabelWidth, height=LabelHeight, anchor=W)
         PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        PWSurplusFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWDSurplusCost)
+        PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWSurplusFactor, PWDSurplusCost)
 
         PWDeficitLabel = Label(ItemFrame, text="Energy Deficit", width=LabelWidth, height=LabelHeight, anchor=W)
         PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        PWDeficitFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         PWDeficitCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitCost)
+        PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitFactor,PWDeficitCost)
 
         WTHeightLabel = Label(ItemFrame, text="Wind Turbine - Heigth", width=LabelWidth, height=LabelHeight, anchor=W)
         WTHeightEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        WTHeightFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
         WTHeightCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        WTHeightTuple = (WTHeightLabel, WTHeightEntry, WTHeightCost)
+        WTHeightTuple = (WTHeightLabel, WTHeightEntry, WTHeightFactor, WTHeightCost)
 
-        LabelTupleList = [PWDSurplusTuple, PWDeficitTuple, WTHeightTuple]
-        RowCounter = 2
+        LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, WTHeightTuple]
+        RowCounter = 0
         for Tuple in LabelTupleList:
             ColumnCounter = 0
             for Item in Tuple:
@@ -73,38 +80,38 @@ class Application(Frame):
         ###Solar Panels
         #Solar Panels info
         SPNameLabel = Label(ItemFrame, text="Solar Panel Number", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPAngleLabel = Label(ItemFrame, text="Agnle in Graden", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPOrientationLabel = Label(ItemFrame, text="Orentatie in Graden", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPCostLabel = Label(ItemFrame, text="Cost", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPHeaderTuple = (SPNameLabel, SPAngleLabel, SPOrientationLabel, SPCostLabel)
+        SPSurfaceLabel = Label(ItemFrame, text="Surface", width=LabelWidth, height=LabelHeight, anchor=W)
+        SPAngleLabel = Label(ItemFrame, text="Hoek in graden", width=LabelWidth, height=LabelHeight, anchor=W)
+        SPOrientationLabel = Label(ItemFrame, text="Orientatie in graden", width=LabelWidth, height=LabelHeight, anchor=W)
+        SPHeaderTuple = (SPNameLabel, SPSurfaceLabel, SPAngleLabel, SPOrientationLabel)
 
         #Solar Panel 1
         SP1NameLabel = Label(ItemFrame, text="Solar Panel 1", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP1AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP1OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP1CostLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP1HeaderTuple = (SP1NameLabel, SP1AngleLabel, SP1OrientationLabel, SP1CostLabel)
+        SP1HeaderTuple = (SP1NameLabel, SP1SurfaceLabel, SP1AngleLabel, SP1OrientationLabel)
 
         #Solar Panel 2
         SP2NameLabel = Label(ItemFrame, text="Solar Panel 2", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP2AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP2OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP2CostLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP2HeaderTuple = (SP2NameLabel, SP2AngleLabel, SP2OrientationLabel, SP2CostLabel)
+        SP2HeaderTuple = (SP2NameLabel, SP2SurfaceLabel, SP2AngleLabel, SP2OrientationLabel)
 
         #Solar Panel 3
         SP3NameLabel = Label(ItemFrame, text="Solar Panel 3", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP3AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP3OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP3CostLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP3HeaderTuple = (SP3NameLabel, SP3AngleLabel, SP3OrientationLabel, SP3CostLabel)
+        SP3HeaderTuple = (SP3NameLabel, SP3SurfaceLabel, SP3AngleLabel, SP3OrientationLabel)
 
         #Solar Panel 4
         SP4NameLabel = Label(ItemFrame, text="Solar Panel 4", width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP4AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
         SP4OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP4CostLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP4HeaderTuple = (SP4NameLabel, SP4AngleLabel, SP4OrientationLabel, SP4CostLabel)
+        SP4HeaderTuple = (SP4NameLabel, SP4SurfaceLabel, SP4AngleLabel, SP4OrientationLabel)
 
         SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -119,10 +126,10 @@ class Application(Frame):
         totalwidth = LabelWidth + LabelWidth + (padx/2)
 
         TotalLabel = Label(ItemFrame, text="Total Cost", height=5)
-        TotalLabel.grid(row=RowCounter+2, column=0, padx=padx, pady=pady, columnspan=2, sticky=W+E)
+        TotalLabel.grid(row=RowCounter+2, column=0, padx=padx, pady=pady, columnspan=3, sticky=W+E)
 
         TotalCost = Label(ItemFrame, text="", width=20, height=5)
-        TotalCost.grid(row=RowCounter + 2, column=2, padx=padx, pady=pady, sticky=E)
+        TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
         #Bottom info
 
