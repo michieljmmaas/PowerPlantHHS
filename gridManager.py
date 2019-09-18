@@ -125,7 +125,7 @@ class Application(Frame):
         TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
         # Bottom info
-        InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight, relief=SOLID, command=lambda: fillBox(InfoGenerationEntry, self))
+        InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight, relief=SOLID, command=lambda: fillBox(InfoGenerationEntry))
         InfoGenerationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         InfoGenerationTuple = (InfoGenerationLabel, InfoGenerationEntry)
 
@@ -173,27 +173,34 @@ def loadCsvFile(SolarTupleList):
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
-def fillBox(box, self):
-    popupWindow(self)
-    
+
+def fillBox(box):
+    d = MyDialog(root)
+    root.wait_window(d.top)
+    box.config(text=d.value)
+
 
 def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
 
-class popupWindow(object):
-    def __init__(self, master):
-        top = self.top = Toplevel(master)
-        self.l = Label(top, text="Pas op! U gaat een van de hyper parameters aanpassen")
-        self.l.pack()
-        self.e = Entry(top)
-        self.e.pack()
-        self.b = Button(top, text='Ok', command=self.cleanup)
-        self.b.pack()
-    def cleanup(self):
-        # print(self.e.get())
-        return self.e.get()
-        self.top.destroy()
 
+class MyDialog:
+    def __init__(self, parent):
+        top = self.top = Toplevel(parent)
+        Label(top, text="Value").pack()
+        self.e = Entry(top)
+        self.e.pack(padx=5)
+        b = Button(top, text="OK", command=self.ok)
+        b.pack(pady=5)
+
+    def ok(self):
+        try:
+            self.value = int(self.e.get())
+            self.top.destroy()
+        except ValueError:
+                ShowErrorBox("Foute Invoer", "Dit veld verwacht een geheel getal")
+                self.value = int(0)
+                self.top.destroy()
 
 
 root = Tk()
