@@ -2,7 +2,10 @@ import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from tkinter import *
+from tkinter.filedialog import askopenfilename
+from tkinter import messagebox
 import csv
+
 
 class Application(Frame):
     def __init__(self, master=None):
@@ -11,12 +14,11 @@ class Application(Frame):
         self.master.title("Grid Manager")
 
         Frame1 = Frame(master, bg="red")
-        Frame1.grid(row = 0, column = 0, rowspan = 4, columnspan = 4, sticky = W+E+N+S)
+        Frame1.grid(row=0, column=0, rowspan=4, columnspan=4, sticky=W + E + N + S)
         ItemFrame = Frame(master, bg="green")
-        ItemFrame.grid(row = 0, column = 4, rowspan = 6, columnspan = 2, sticky = W+E+N+S)
+        ItemFrame.grid(row=0, column=4, rowspan=6, columnspan=2, sticky=W + E + N + S)
         FrameBottom = Frame(master, bg="blue")
-        FrameBottom.grid(row=4, column=0, columnspan=4, rowspan=2, sticky= W+E+N+S)
-
+        FrameBottom.grid(row=4, column=0, columnspan=4, rowspan=2, sticky=W + E + N + S)
 
         f = Figure(figsize=(5, 5), dpi=100)
         a = f.add_subplot(111)
@@ -31,9 +33,10 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
-        LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight, command= lambda: fileReader(SolarTupleList))
+        LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight,
+                            command=lambda: loadCsvFile(SolarTupleList))
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight)
-        NextButton  = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
+        NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
         ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
@@ -44,21 +47,21 @@ class Application(Frame):
         headerTuple = (ItemLabel, NumberLabel, FactorLabel, CostLabel)
 
         PWSurplusLabel = Label(ItemFrame, text="Energy Surplus", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWSurplusFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        PWSurplusFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWSurplusFactor, PWDSurplusCost)
 
         PWDeficitLabel = Label(ItemFrame, text="Energy Deficit", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWDeficitFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWDeficitCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitFactor,PWDeficitCost)
+        PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        PWDeficitFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        PWDeficitCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitFactor, PWDeficitCost)
 
         WTHeightLabel = Label(ItemFrame, text="Wind Turbine - Heigth", width=LabelWidth, height=LabelHeight, anchor=W)
-        WTHeightEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        WTHeightFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
-        WTHeightCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W)
+        WTHeightEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        WTHeightFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        WTHeightCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         WTHeightTuple = (WTHeightLabel, WTHeightEntry, WTHeightFactor, WTHeightCost)
 
         LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, WTHeightTuple]
@@ -66,44 +69,44 @@ class Application(Frame):
         for Tuple in LabelTupleList:
             ColumnCounter = 0
             for Item in Tuple:
-                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N+S)
-                ColumnCounter = ColumnCounter +1
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+                ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
 
-        ###Solar Panels
-        #Solar Panels info
+        # Solar Panels info
         SPNameLabel = Label(ItemFrame, text="Solar Panel Number", width=LabelWidth, height=LabelHeight, anchor=W)
         SPSurfaceLabel = Label(ItemFrame, text="Surface", width=LabelWidth, height=LabelHeight, anchor=W)
         SPAngleLabel = Label(ItemFrame, text="Hoek in graden", width=LabelWidth, height=LabelHeight, anchor=W)
-        SPOrientationLabel = Label(ItemFrame, text="Orientatie in graden", width=LabelWidth, height=LabelHeight, anchor=W)
+        SPOrientationLabel = Label(ItemFrame, text="Orientatie in graden", width=LabelWidth, height=LabelHeight,
+                                   anchor=W)
         SPHeaderTuple = (SPNameLabel, SPSurfaceLabel, SPAngleLabel, SPOrientationLabel)
 
-        #Solar Panel 1
+        # Solar Panel 1
         SP1NameLabel = Label(ItemFrame, text="Solar Panel 1", width=LabelWidth, height=LabelHeight, anchor=W)
-        SP1SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP1AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP1OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
+        SP1SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP1AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP1OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP1HeaderTuple = (SP1NameLabel, SP1SurfaceLabel, SP1AngleLabel, SP1OrientationLabel)
 
-        #Solar Panel 2
+        # Solar Panel 2
         SP2NameLabel = Label(ItemFrame, text="Solar Panel 2", width=LabelWidth, height=LabelHeight, anchor=W)
-        SP2SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP2AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP2OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
+        SP2SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP2AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP2OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP2HeaderTuple = (SP2NameLabel, SP2SurfaceLabel, SP2AngleLabel, SP2OrientationLabel)
 
-        #Solar Panel 3
+        # Solar Panel 3
         SP3NameLabel = Label(ItemFrame, text="Solar Panel 3", width=LabelWidth, height=LabelHeight, anchor=W)
-        SP3SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP3AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP3OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
+        SP3SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP3AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP3OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP3HeaderTuple = (SP3NameLabel, SP3SurfaceLabel, SP3AngleLabel, SP3OrientationLabel)
 
-        #Solar Panel 4
+        # Solar Panel 4
         SP4NameLabel = Label(ItemFrame, text="Solar Panel 4", width=LabelWidth, height=LabelHeight, anchor=W)
-        SP4SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP4AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
-        SP4OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W)
+        SP4SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP4AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        SP4OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP4HeaderTuple = (SP4NameLabel, SP4SurfaceLabel, SP4AngleLabel, SP4OrientationLabel)
 
         SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
@@ -111,20 +114,17 @@ class Application(Frame):
         for Tuple in SolarTupleList:
             ColumnCounter = 0
             for Item in Tuple:
-                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N+S)
-                ColumnCounter = ColumnCounter +1
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+                ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
 
-
-        totalwidth = LabelWidth + LabelWidth + (padx/2)
-
         TotalLabel = Label(ItemFrame, text="Total Cost", height=5)
-        TotalLabel.grid(row=RowCounter+2, column=0, padx=padx, pady=pady, columnspan=3, sticky=W+E)
+        TotalLabel.grid(row=RowCounter + 2, column=0, padx=padx, pady=pady, columnspan=3, sticky=W + E)
 
         TotalCost = Label(ItemFrame, text="", width=20, height=5)
         TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
-        #Bottom info
+        # Bottom info
         InfoGenerationLabel = Label(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight)
         InfoGenerationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
         InfoGenerationTuple = (InfoGenerationLabel, InfoGenerationEntry)
@@ -147,33 +147,35 @@ class Application(Frame):
         for Tuple in InfoTupleList:
             RowCounter = 0
             for Item in Tuple:
-                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=W+E+N+S)
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
                 RowCounter = RowCounter + 1
             ColumnCounter = ColumnCounter + 1
 
 
-def fileReader(SolarTupleList):
-    with open('logging/log.csv', newline='') as csvfile:
-        dataList = list(csv.reader(csvfile))
-        data = dataList[0]
-        counter = 0;
+def loadCsvFile(SolarTupleList):
+    try:
+        filename = askopenfilename()
+        with open(filename, newline='') as csvfile:
+            dataList = list(csv.reader(csvfile))
+            data = dataList[0]
+            counter = 0
 
-        iterSolar = iter(SolarTupleList)
-        next(iterSolar)
-        for tuple in iterSolar:
-            iterTuple = iter(tuple)
-            next(iterTuple)
-            for item in iterTuple:
-                info = round(float(data[counter]), 2)
-                item.config(text=info)
-                counter += 1
+            iterSolar = iter(SolarTupleList)
+            next(iterSolar)
+            for tupleItem in iterSolar:
+                iterTuple = iter(tupleItem)
+                next(iterTuple)
+                for item in iterTuple:
+                    info = round(float(data[counter]), 2)
+                    item.config(text=info)
+                    counter += 1
+    except:
+        ShowErrorBox("Foutmelding verkeerd bestand", "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
+def ShowErrorBox(title, message):
+    messagebox.showerror(title, message)
 
 root = Tk()
-# ToolBar = Menu(root)
-# root.config(menu=ToolBar)
-# subMenu = Menu(ToolBar)
-# ToolBar.add_cascade(label="Options", menu=subMenu)
-# subMenu.add_command(label="Load", command=fileReader())
-
 app = Application(master=root)
 app.mainloop()
