@@ -11,6 +11,7 @@ class Simulink():
         self.wind_model_name = model_name + '/Wind turbine'
         self.solar_model_name = model_name + '/Solar panels'
         self.engine = matlab.engine.start_matlab()
+        self.engine.warning('off',nargout=0)
     
     def __del__(self):
         self.engine.quit()
