@@ -125,20 +125,20 @@ class Application(Frame):
         TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
         # Bottom info
-        InfoGenerationLabel = Label(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        InfoGenerationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, command=lambda: loadCsvFile(SolarTupleList))
+        InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight, relief=SOLID, command=lambda: fillBox(InfoGenerationEntry, self))
+        InfoGenerationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         InfoGenerationTuple = (InfoGenerationLabel, InfoGenerationEntry)
 
-        InfoPoolLabel = Label(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        InfoPoolEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
+        InfoPoolLabel = Button(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID, command=lambda: fillBox(InfoPoolEntry))
+        InfoPoolEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         InfoPoolTuple = (InfoPoolLabel, InfoPoolEntry)
 
-        InfoMutationLabel = Label(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        InfoMutationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
+        InfoMutationLabel = Button(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight, relief=SOLID, command=lambda: fillBox(InfoMutationEntry))
+        InfoMutationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         InfoMutationTuple = (InfoMutationLabel, InfoMutationEntry)
 
-        InfoPowerPlantLabel = Label(FrameBottom, text="PowerPlant Energy", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        InfoPowerPlantEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight)
+        InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energy", width=LabelWidth, height=LabelHeight, relief=SOLID, command=lambda: fillBox(InfoPowerPlantEntry))
+        InfoPowerPlantEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         InfoPowerPlantTuple = (InfoPowerPlantLabel, InfoPowerPlantEntry)
 
         InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
@@ -151,15 +151,6 @@ class Application(Frame):
                 RowCounter = RowCounter + 1
             ColumnCounter = ColumnCounter + 1
 
-
-def EditHyperParameters(box):
-    if messagebox.askyesno("Bewerken Hyper Parameter", "Pas op! Wilt u deze hyper paramter aanpassen?"):
-        print(box)
-    else:
-        return
-
-def ShowErrorBox(title, message):
-    messagebox.showerror(title, message)
 
 def loadCsvFile(SolarTupleList):
     try:
@@ -181,6 +172,29 @@ def loadCsvFile(SolarTupleList):
     except:
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+def fillBox(box, self):
+    popupWindow(self)
+    
+
+def ShowErrorBox(title, message):
+    messagebox.showerror(title, message)
+
+class popupWindow(object):
+    def __init__(self, master):
+        top = self.top = Toplevel(master)
+        self.l = Label(top, text="Pas op! U gaat een van de hyper parameters aanpassen")
+        self.l.pack()
+        self.e = Entry(top)
+        self.e.pack()
+        self.b = Button(top, text='Ok', command=self.cleanup)
+        self.b.pack()
+    def cleanup(self):
+        # print(self.e.get())
+        return self.e.get()
+        self.top.destroy()
+
+
 
 root = Tk()
 app = Application(master=root)
