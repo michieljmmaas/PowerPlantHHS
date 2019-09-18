@@ -38,17 +38,17 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         group_values = np.concatenate((solar_values, wind_values), axis=1)  # concatenate on features
         
 
-        # prepare min and max arrays to truncate values later
-        highest_allowed = np.zeros_like(group_values)
-        lowest_allowed = np.zeros_like(group_values)
-        highest_allowed[:, 0:N_SOLAR_FEATURES:3] = surface_max
-        lowest_allowed[:, 0:N_SOLAR_FEATURES:3] = surface_min
-        highest_allowed[:, 1:N_SOLAR_FEATURES:3] = angle_max
-        lowest_allowed[:, 1:N_SOLAR_FEATURES:3] = angle_min
-        highest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_max
-        lowest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_min
-        highest_allowed[:, -1] = 3
-        lowest_allowed[:, -1] = 0
+    # prepare min and max arrays to truncate values later
+    highest_allowed = np.zeros_like(group_values)
+    lowest_allowed = np.zeros_like(group_values)
+    highest_allowed[:, 0:N_SOLAR_FEATURES:3] = surface_max
+    lowest_allowed[:, 0:N_SOLAR_FEATURES:3] = surface_min
+    highest_allowed[:, 1:N_SOLAR_FEATURES:3] = angle_max
+    lowest_allowed[:, 1:N_SOLAR_FEATURES:3] = angle_min
+    highest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_max
+    lowest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_min
+    highest_allowed[:, -1] = 3
+    lowest_allowed[:, -1] = 0
         
 
     last_generation = n_generations - 1
@@ -89,4 +89,4 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-    train(10000, 100, 0, 10000000, 0, 90, -90, 90)
+    train(10000, 100, 0, 10000000, 0, 90, -90, 90, model_name='20190918_123129', load=True)
