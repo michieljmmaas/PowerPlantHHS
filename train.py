@@ -17,8 +17,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
           orientation_min, orientation_max, model_name=None, load=False):
     """train genetic algorithm"""
 
+    genetic_algorithm = GeneticAlgorith(50, 100, 6, 2, 2, True)
     cost_calculator = CostCalculator(400, 0.2, 6000, 1000000)
-    genetic_algorithm = GeneticAlgorith(50, 100, 10, 2)
     simulink = Simulink('WT_SP_model_vs1total')
     saver = PopulationSaver(model_name, load)
 

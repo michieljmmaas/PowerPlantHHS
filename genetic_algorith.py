@@ -7,12 +7,14 @@ from copy import copy
 class GeneticAlgorith():
     """class to create new populations"""
     def __init__(self, mutation_percentage_chance, max_mutation_percentage,
-                 n_optimal_to_select, n_different_to_select):
+                 n_optimal_to_select, n_different_to_select, n_random_to_select, keep_best):
         self.mutation_chance = mutation_percentage_chance / 100
         self.max_mutation = 1 + (max_mutation_percentage / 100)
         self.min_mutation = 1 - (max_mutation_percentage / 100)
         self.n_optimal_to_select = n_optimal_to_select
         self.n_different_to_select = n_different_to_select
+        self.n_random_to_select = n_random_to_select
+        self.keep_best = keep_best
         self.average_array = None
 
     def _mutate(self, population):
@@ -37,18 +39,21 @@ class GeneticAlgorith():
         # sort population by cost (low to high)
         population = population[cost.argsort()]
         # select fittest
-        selected = population[:self.n_optimal_to_select]
+        best_selected = population[:self.n_optimal_to_select]
         # get average values of fittest
-        self.average_array = np.mean(selected, axis=0)
+        self.average_array = np.mean(best_selected, axis=0)
         # select remaining
         remaining = population[self.n_optimal_to_select:]
         differences = np.array(list(map(self._calculate_difference, remaining)))
         # sort remaining by difference (low to high)
         remaining = remaining[differences.argsort()]
         # select most different of the remaining
-        remaining = remaining[-self.n_different_to_select:]
+        different_selected = remaining[-self.n_different_to_select:]
+        # select remaining again
+        remaining = remaining[:-self.n_different_to_select]
+        randomly_selected = remaining[np.random.choice(remaining.shape[0], self.n_random_to_select)]
         # get parents
-        parents = np.concatenate((selected, remaining), axis=0)
+        parents = np.concatenate((best_selected, different_selected, randomly_selected), axis=0)
         n_parents = parents.shape[0]
         # make new generation
         new_population = np.zeros_like(population)
@@ -62,12 +67,18 @@ class GeneticAlgorith():
             child[mask] = parent2[mask]
             # assign child to new population
             new_population[i] = child
+        if self.keep_best:
+            new_population[0] = best_selected[0]
         return new_population
 
     def generate_new_population(self, population, cost):
         """make a new population using the old population(2d array) and the cost(1d array)"""
         new_population = self._select_and_mate(population, cost)
+        if self.keep_best:
+            best = new_population[0]
         self._mutate(new_population)
+        if self.keep_best:
+            new_population[0] = best
         return(new_population)
     
     def get_best(self, population, cost, n=1):
@@ -84,7 +95,7 @@ class GeneticAlgorith():
 
 # example code to test the algorithm
 if __name__ == '__main__':
-    genetic_algorithm = GeneticAlgorith(10, 50, 5, 5)
+    genetic_algorithm = GeneticAlgorith(10, 50, 6, 2, 2, True)
     population = np.array([
         [0, 0],
         [0, 1],
