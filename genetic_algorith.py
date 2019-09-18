@@ -75,7 +75,7 @@ class GeneticAlgorith():
         """make a new population using the old population(2d array) and the cost(1d array)"""
         new_population = self._select_and_mate(population, cost)
         if self.keep_best:
-            best = new_population[0]
+            best = new_population[0, :]
         self._mutate(new_population)
         if self.keep_best:
             new_population[0] = best

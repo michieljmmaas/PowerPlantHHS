@@ -32,7 +32,7 @@ class PopulationSaver():
             for file_name in os.listdir(self.path):
                 split = file_name.split('_')
                 if len(split) == 2 and split[0] == 'generation':
-                    highest = max(int(split[1].split('.')[0]))
+                    highest = max(int(split[1].split('.')[0]), highest)
             self.generation = highest
     
     def log(self, *args, to_screen=False):

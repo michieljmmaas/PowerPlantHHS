@@ -96,11 +96,11 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type,
 
     #windturbine shit
     if (wm_type == 2):
-        wm_cost = 2
+        wm_cost = 102000
     elif (wm_type == 3):
-        wm_cost = 3
+        wm_cost = 148800
     elif (wm_type == 1):
-        wm_cost = 1
+        wm_cost = 30000
     else:
         wm_cost = 0
     # calculate the final cost
