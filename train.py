@@ -17,7 +17,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
           orientation_min, orientation_max, model_name=None, load=False):
     """train genetic algorithm"""
 
-    genetic_algorithm = GeneticAlgorith(50, 100, 6, 2, 2, True)
+    genetic_algorithm = GeneticAlgorith(50, 50, 6, 2, 2, True)
     cost_calculator = CostCalculator(400, 0.2, 6000, 1000000)
     simulink = Simulink('WT_SP_model_vs1total')
     saver = PopulationSaver(model_name, load)
@@ -58,7 +58,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         for i in range(group_size):
             current_row = group_values[i]
             # selecting windturbine type
-            wm_type = int(current_row[-1])
+            wm_type = 3 #int(current_row[-1])
             # run simulink
             energy_production = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], wm_type)  # add turbine later
             #energy_production = np.array([np.sum(current_row[:N_SOLAR_FEATURES:3])] * (365*24))  # simple fake simulation
@@ -89,4 +89,4 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-    train(10000, 100, 0, 10000000, 0, 90, -90, 90, model_name='20190918_123129', load=True)
+    train(10000, 100, 0, 10000000, 0, 90, -90, 90, model_name='20190919_154332', load=True)
