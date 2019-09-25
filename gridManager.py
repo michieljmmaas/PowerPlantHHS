@@ -1,10 +1,11 @@
-import matplotlib
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 import csv
+import numpy as np
 
 
 class Application(Frame):
@@ -22,7 +23,11 @@ class Application(Frame):
 
         f = Figure(figsize=(5, 5), dpi=100)
         a = f.add_subplot(111)
-        a.plot([1, 2, 3, 4, 5, 6, 7, 8], [5, 6, 1, 3, 8, 9, 3, 5])
+
+        # gens = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'];
+        # minCost = [1380645658.15, 617306363.53, 617306363.53, 469239361.71, 387622002.09, 365128241.34, 339966956.2, 309698761.48, 299455088.99, 245330372.63, 195903759.14, 175981177.33, 165490209.14, 153228772.75, 143520525.91, 143520525.91, 143387063.52, 122981391.73, 122169797.53, 112646841.61, 103483553.47, 93272310.59]
+        gens, minCost = loadLoggingFile()
+        a.plot(gens, minCost)
 
         canvas = FigureCanvasTkAgg(f, Frame1)
         canvas.draw()
@@ -35,7 +40,7 @@ class Application(Frame):
 
         LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight,
                             command=lambda: loadCsvFile(SolarTupleList))
-        RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight)
+        RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command=lambda: loadLoggingFile())
         NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
         ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
@@ -151,7 +156,7 @@ class Application(Frame):
                 RowCounter = RowCounter + 1
             ColumnCounter = ColumnCounter + 1
 
-
+#Misschien hier panda's toevoegen met cvs
 def loadCsvFile(SolarTupleList):
     try:
         filename = askopenfilename()
@@ -172,6 +177,38 @@ def loadCsvFile(SolarTupleList):
     except:
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+def loadLoggingFile():
+    try:
+        filename = askopenfilename()
+        f = open(filename, "r")
+        f1 = f.readlines()
+        genArray = []
+        # meanCostArray = []
+        minCostArray = []
+
+
+        for x in f1:
+            info = x.split(" ")
+            info[5] = info[5] .replace('\n', '')
+            # progress[int(info[1])] = str(info[5])
+            genArray.append(info[1])
+            # meanCostArray.append(float(info[3]))
+            minCostArray.append(round(float(info[5]), 2))
+
+        # print("Gen = " + str(genArray))
+        # print("meanCost = " + meanCostArray)
+        # print("minCost = " + str(minCostArray))
+
+        return genArray, minCostArray
+
+
+    except Exception as e:
+
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
 
 
 def fillBox(box):
