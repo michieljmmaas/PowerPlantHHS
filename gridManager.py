@@ -5,7 +5,6 @@ from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 import csv
 import matplotlib.ticker as ticker
-from itertools import cycle
 
 
 class Application(Frame):
@@ -21,31 +20,22 @@ class Application(Frame):
         FrameBottom = Frame(master, bg="blue")
         FrameBottom.grid(row=5, column=0, columnspan=4, rowspan=2, sticky=W + E + N + S)
 
-        nextButton = Button(Frame1, text="text", command=lambda: nextChart())
-        nextButton.pack()
-
         f = Figure(figsize=(5, 5), dpi=100)
 
-        graphImages = []
         a = f.add_subplot(111)
         a.plot([1, 2, 3, 4, 5, 6, 7, 8], [5, 6, 1, 3, 8, 9, 3, 5])
         canvas = FigureCanvasTkAgg(f, Frame1)
         canvas.draw()
-        graph1 = canvas.get_tk_widget()
 
-        b = f.add_subplot(121)
+        b = f.add_subplot(111)
         b.plot([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2, 2, 2, 2, 2, 2])
         canvas2 = FigureCanvasTkAgg(f, Frame1)
         canvas2.draw()
-        graph2 = canvas2.get_tk_widget()
 
-        graphImages.append(graph1)
-        graphImages.append(graph2)
 
-        pictures = cycle((PhotoImage(file=image), image) for image in graphImages)
-        picture_display = Label(self)
+        nextButton = Button(Frame1, text="text", command=lambda: nextChart())
+        nextButton.pack()
 
-        # graph1.pack(fill=BOTH)
 
         padx = 10
         pady = 10
