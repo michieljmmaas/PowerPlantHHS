@@ -73,7 +73,7 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
     return cost
 """
 #@njit
-def _calculate_cost_njit(kwh_array, sp_sm, wm_type,
+def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
         target_kw, sp_cost_per_sm, st_cost_per_kwh, deficit_cost):
     surplus_array = kwh_array - target_kw
     cumulative_array = np.cumsum(surplus_array)
@@ -96,16 +96,18 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type,
 
     #windturbine shit
     if (wm_type == 2):
-        wm_cost = 102000
+        wm_cost = 1605000
     elif (wm_type == 3):
-        wm_cost = 148800
+        wm_cost = 5350000
     elif (wm_type == 1):
-        wm_cost = 30000
+        wm_cost = 535000
+    elif (wm_type == 4):
+        wm_cost = 3210000
     else:
         wm_cost = 0
     # calculate the final cost
     cost = sp_sm * sp_cost_per_sm + \
-        wm_cost + \
+        wm_cost * n_Turbines + \
         storage * st_cost_per_kwh +\
         deficit * deficit_cost
     return cost
@@ -124,13 +126,13 @@ class CostCalculator():
         self.target_kw = target_kw
         self.deficit_cost = deficit_cost
 
-    def calculate_cost(self, kwh_array, sp_sm, wm_type):
+    def calculate_cost(self, kwh_array, sp_sm, wm_type, n_Turbines):
         # make a copy of the input array so we don't alter the original one
         kwh_array = copy(kwh_array)
-        return _calculate_cost_njit(kwh_array, sp_sm, wm_type,
+        return _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
             self.target_kw, self.sp_cost_per_sm, self.st_cost_per_kwh, self.deficit_cost)
     
-    def get_stats(self, kwh_array, sp_sm, wm_type):
+    def get_stats(self, kwh_array, sp_sm, wm_type, n_Turbines):
         surplus_array = kwh_array - self.target_kw
         cumulative_array = np.cumsum(surplus_array)
         total_surplus = cumulative_array[-1]
@@ -152,14 +154,15 @@ class CostCalculator():
                 declining = declining[new_start:]
         #windturbine shit
         if (wm_type == 2):
-            wm_cost = 2
+            wm_cost = 1605000
         elif (wm_type == 3):
-            wm_cost = 3
+            wm_cost = 5350000
         elif (wm_type == 1):
-            wm_cost = 1
+            wm_cost = 535000
+        elif (wm_type == 4):
+            wm_cost = 3210000
         else:
             wm_cost = 0
-        
         # calculate the final cost
         solar_cost = sp_sm * self.sp_cost_per_sm
         wind_cost = wm_cost
