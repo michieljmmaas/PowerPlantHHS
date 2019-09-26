@@ -26,16 +26,10 @@ class Application(Frame):
         a.plot([1, 2, 3, 4, 5, 6, 7, 8], [5, 6, 1, 3, 8, 9, 3, 5])
         canvas = FigureCanvasTkAgg(f, Frame1)
         canvas.draw()
+        canvas.get_tk_widget().pack(fill=BOTH)
 
-        b = f.add_subplot(111)
-        b.plot([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2, 2, 2, 2, 2, 2])
-        canvas2 = FigureCanvasTkAgg(f, Frame1)
-        canvas2.draw()
-
-
-        nextButton = Button(Frame1, text="text", command=lambda: nextChart())
+        nextButton = Button(Frame1, text="text", command=lambda: nextChart(f, canvas, a))
         nextButton.pack()
-
 
         padx = 10
         pady = 10
@@ -248,8 +242,11 @@ def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
 
 
-def nextChart():
-    print("kaas")
+def nextChart(f, canvas, a):
+    a.clear()
+    b = f.add_subplot(111)
+    b.plot([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2, 2, 2, 2, 2, 2])
+    canvas.draw()
 
 
 class MyDialog:
