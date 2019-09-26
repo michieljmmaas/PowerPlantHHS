@@ -20,6 +20,8 @@ class Application(Frame):
         FrameBottom = Frame(master, bg="blue")
         FrameBottom.grid(row=5, column=0, columnspan=4, rowspan=2, sticky=W + E + N + S)
 
+        self.graphNumber = 0
+
         self.f = Figure(figsize=(5, 5), dpi=100)
 
         self.a = self.f.add_subplot(111)
@@ -40,26 +42,13 @@ class Application(Frame):
                          2652876157.8, 35474765696.12, 61564067417.33, 136305909177.47, 73743742623.81, 173286460864.29,
                          52274403390.2, 107164182267.39, 114232925026.51, 3450067013.72]
 
-        # gens, minCost, meanCost = loadLoggingFile()
+        # self.gens, self.minCost, self.meanCost = loadLoggingFile()
 
-        self.a.plot(self.gens, self.minCost, color='blue', label="Minimum Cost")
-        # a.plot(gens, meanCost, color='red', label="Mean Cost")
-
-        scale_y = 1e6
-        ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
-        self.a.yaxis.set_major_formatter(ticks_y)
-        # a.set_yscale('log')
-
-        self.a.set_ylim(0, max(self.minCost) * 1.1)
-
-        self.a.set_xlim(self.gens[0], self.gens[20])
-
-        self.a.legend()
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)
-        self.canvas.draw()
+        nextChart(self)
         self.canvas.get_tk_widget().pack(fill=BOTH)
 
-        nextButton = Button(Frame1, text="text", command=lambda: nextChart(self))
+        nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: nextChart(self))
         nextButton.pack()
 
         padx = 10
@@ -276,7 +265,35 @@ def ShowErrorBox(title, message):
 def nextChart(self):
     self.a.clear()
     b = self.f.add_subplot(111)
-    b.plot(self.gens, self.meanCost, color='red')
+    if self.graphNumber == 0:
+        self.a.plot(self.gens, self.minCost, color='blue', label="Minimum Cost")
+
+        scale_y = 1e6
+        ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
+        self.a.yaxis.set_major_formatter(ticks_y)
+        self.a.set(ylabel="Bedrag in miljoenen", xlabel="Generatie", title="Minimum Cost")
+
+        self.a.set_ylim(0, max(self.minCost) * 1.1)
+
+        self.a.set_xlim(self.gens[0], self.gens[20])
+
+        self.a.legend()
+        self.graphNumber = 1
+
+    elif self.graphNumber == 1:
+        self.a.plot(self.gens, self.meanCost, color='red', label="Mean Cost")
+        scale_y = 1e9
+        self.a.set(ylabel="Bedrag in miljarden", xlabel="Generatie", title="Mean Cost")
+        ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
+        self.a.yaxis.set_major_formatter(ticks_y)
+
+        self.a.set_ylim(0, max(self.meanCost) * 1.1)
+
+        self.a.set_xlim(self.gens[0], self.gens[20])
+
+        self.a.legend()
+        self.graphNumber = 0
+
     self.canvas.draw()
 
 
