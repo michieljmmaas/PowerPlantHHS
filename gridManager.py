@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from tkinter import *
@@ -6,7 +5,7 @@ from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 import csv
 import matplotlib.ticker as ticker
-import numpy as np
+from itertools import cycle
 
 
 class Application(Frame):
@@ -22,40 +21,31 @@ class Application(Frame):
         FrameBottom = Frame(master, bg="blue")
         FrameBottom.grid(row=5, column=0, columnspan=4, rowspan=2, sticky=W + E + N + S)
 
+        nextButton = Button(Frame1, text="text", command=lambda: nextChart())
+        nextButton.pack()
+
         f = Figure(figsize=(5, 5), dpi=100)
+
+        graphImages = []
         a = f.add_subplot(111)
-        million = 10 ** (6.0)
-
-        gens = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18',
-                '19', '20', '21']
-        # gens = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
-        minCost = [1380645658.15, 617306363.53, 617306363.53, 469239361.71, 387622002.09, 365128241.34, 339966956.2,
-                   309698761.48, 299455088.99, 245330372.63, 195903759.14, 175981177.33, 165490209.14, 153228772.75,
-                   143520525.91, 143520525.91, 143387063.52, 122981391.73, 122169797.53, 112646841.61, 103483553.47,
-                   93272310.59]
-        meanCost = [8355564463.45, 5718371715.88, 3785891878.45, 3714357126.25, 3906800065.12, 3612190931.48,
-                    2791057630.57, 3705114859.47, 3172927935.13, 3343982297.42, 2962651477.14, 3055757633.03,
-                    2652876157.8, 35474765696.12, 61564067417.33, 136305909177.47, 73743742623.81, 173286460864.29,
-                    52274403390.2, 107164182267.39, 114232925026.51, 3450067013.72]
-        a.plot(gens, minCost, color='blue', label="Minimum Cost")
-        # a.plot(gens, meanCost, color='red', label="Mean Cost")
-
-        # maxMeanCost = int(max(meanCost))
-        # maxYLabelTick = meanCost/million;
-        # gens, minCost, meanCost = loadLoggingFile()
-        # a.ylim(million, maxMeanCost)
-
-        scale_y = 1e6
-        ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
-        a.yaxis.set_major_formatter(ticks_y)
-        a.set_ylim(0, max(minCost) * 1.1)
-
-        a.set_xlim(gens[0], gens[-1])
-
-        a.legend()
+        a.plot([1, 2, 3, 4, 5, 6, 7, 8], [5, 6, 1, 3, 8, 9, 3, 5])
         canvas = FigureCanvasTkAgg(f, Frame1)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill=BOTH)
+        graph1 = canvas.get_tk_widget()
+
+        b = f.add_subplot(121)
+        b.plot([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2, 2, 2, 2, 2, 2])
+        canvas2 = FigureCanvasTkAgg(f, Frame1)
+        canvas2.draw()
+        graph2 = canvas2.get_tk_widget()
+
+        graphImages.append(graph1)
+        graphImages.append(graph2)
+
+        pictures = cycle((PhotoImage(file=image), image) for image in graphImages)
+        picture_display = Label(self)
+
+        # graph1.pack(fill=BOTH)
 
         padx = 10
         pady = 10
@@ -246,7 +236,7 @@ def loadLoggingFile():
         for x in f1:
             info = x.split(" ")
             info[5] = info[5].replace('\n', '')
-            genArray.append(info[1])
+            genArray.append(str(info[1]))
             meanCostArray.append(round(float(info[3]), 2))
             minCostArray.append(round(float(info[5]), 2))
 
@@ -266,6 +256,10 @@ def fillBox(box):
 
 def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
+
+
+def nextChart():
+    print("kaas")
 
 
 class MyDialog:
