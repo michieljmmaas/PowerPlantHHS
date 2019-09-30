@@ -57,7 +57,7 @@ class Application(Frame):
         LabelHeight = 2
 
         LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight,
-                            command=lambda: loadCsvFile(SolarTupleList))
+                            command=lambda: loadCsvFile(SolarTupleList, WTHeightTuple))
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight,
                            command=lambda: loadLoggingFile())
         NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
@@ -90,15 +90,15 @@ class Application(Frame):
                               bg="white")
         PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitFactor, PWDeficitCost)
 
-        WTHeightLabel = Label(ItemFrame, text="Wind Turbine - Heigth", width=LabelWidth, height=LabelHeight, anchor=W,
+        WTNumberLabel = Label(ItemFrame, text="Wind Turbine - Aantal", width=LabelWidth, height=LabelHeight, anchor=W,
                               relief=SOLID)
-        WTHeightEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
+        WTNumberEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
                               bg="white")
-        WTHeightFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
+        WTNumberFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
                                bg="white")
-        WTHeightCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
+        WTNumberCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
                              bg="white")
-        WTHeightTuple = (WTHeightLabel, WTHeightEntry, WTHeightFactor, WTHeightCost)
+        WTHeightTuple = (WTNumberLabel, WTNumberEntry, WTNumberFactor, WTNumberCost)
 
         LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, WTHeightTuple]
         RowCounter = 0
@@ -112,10 +112,10 @@ class Application(Frame):
         # Solar Panels info
         SPNameLabel = Label(ItemFrame, text="Solar Panel Number", width=LabelWidth, height=LabelHeight, anchor=W,
                             relief=SOLID)
-        SPSurfaceLabel = Label(ItemFrame, text="Surface", width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
+        SPSurfaceLabel = Label(ItemFrame, text="Surface (m\u00b2)", width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
         SPAngleLabel = Label(ItemFrame, text="Hoek in graden", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
-        SPOrientationLabel = Label(ItemFrame, text="Orientatie in graden", width=LabelWidth, height=LabelHeight,
+        SPOrientationLabel = Label(ItemFrame, text="Orientatie t.o.v. Zuiden", width=LabelWidth, height=LabelHeight,
                                    anchor=W, relief=SOLID)
         SPHeaderTuple = (SPNameLabel, SPSurfaceLabel, SPAngleLabel, SPOrientationLabel)
 
@@ -206,7 +206,7 @@ class Application(Frame):
 
 
 # Misschien hier panda's toevoegen met cvs
-def loadCsvFile(SolarTupleList):
+def loadCsvFile(SolarTupleList, WTHeightTuple):
     try:
         filename = askopenfilename()
         with open(filename, newline='') as csvfile:
@@ -223,9 +223,38 @@ def loadCsvFile(SolarTupleList):
                     info = round(float(data[counter]), 2)
                     item.config(text=info)
                     counter += 1
-    except:
+
+            wm_cost, windTurbineTotalCost = defWindTurbineCost(int(4), int(data[-1]));
+
+            entry = WTHeightTuple[1];
+            entry.config(text=data[-1]);
+
+            cost = WTHeightTuple[2];
+            cost.config(text=wm_cost);
+
+            total = WTHeightTuple[3];
+            total.config(text=windTurbineTotalCost);
+    except Exception as e:
+        print(e);
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+def defWindTurbineCost(wm_type, wm_number):
+    if (wm_type == 2):
+        wm_cost = 1605000
+    elif (wm_type == 3):
+        wm_cost = 5350000
+    elif (wm_type == 1):
+        wm_cost = 535000
+    elif (wm_type == 4):
+        wm_cost = 3210000
+    else:
+        wm_cost = 0
+
+    return wm_cost, wm_cost * wm_number;
+
+
+
 
 
 def loadLoggingFile():
