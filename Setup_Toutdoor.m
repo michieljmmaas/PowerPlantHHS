@@ -3,7 +3,7 @@
 
 t=NUM(:,18);
 
-vwind=NUM(:,21); % op 10 m hoogte
+vwind=NUM(:,20); % op 10 m hoogte
 
 vwind=horzcat(t,vwind);
 
