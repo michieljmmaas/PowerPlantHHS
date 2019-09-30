@@ -83,7 +83,11 @@ class Simulink():
 if __name__ == '__main__':
     sim = Simulink('WT_SP_model_vs1total')
 
-    output = sim.run_simulation(np.array([1000, 15, 0, 0, 15, 0, 0, 45, 0, 0, 0, 0]), 10)
+    output = sim.run_simulation(np.array([1000, 15, 0, 0, 15, 0, 0, 45, 0, 0, 0, 0]), 0)
 
-    print(output)
+    print('Mean:')
     print(np.mean(output))
+
+    print('Sum:')
+    print(np.sum(output))
+
