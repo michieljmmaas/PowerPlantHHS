@@ -12,7 +12,7 @@ class PopulationSaver():
 
         if model_name is None:
             model_name = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.path = 'saved_runs\\' + model_name
+        self.path = 'saved_runs'+ os.sep + model_name
 
         if not os.path.isdir('saved_runs'):
             os.mkdir('saved_runs')
@@ -24,7 +24,7 @@ class PopulationSaver():
         else:
             os.mkdir(self.path)
         
-        self.path += '\\'
+        self.path += os.sep
         self.log_file = self.path + 'log.txt'
 
         if load:
