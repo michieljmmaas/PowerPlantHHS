@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from run_sim import Simulink
 from save_and_load import PopulationSaver
+import os
 
 def plot(model_name, generation_number):
     simulink = Simulink('WT_SP_model_vs1total')
     generation = load(model_name=model_name, generation_number=generation_number)
-    kW_distribution = simulink.run_simulation(generation[0][0:-1], 3)
+    kW_distribution = simulink.run_simulation(generation[0][0:-1], 4, 7)
     kW_distribution = np.mean(np.reshape(kW_distribution[:8760], (365,24)), axis=1)
     consumption = np.full(len(kW_distribution), 6000)
 
@@ -32,7 +33,7 @@ def load(model_name, generation_number, takebest=True):
         raise Exception('None attribute detected on model or generation parameter')
     elif generation_number < 0:
         raise Exception('There can be no generation with a number less then zero')
-    path = 'saved_runs\\' + model_name + '\\'
+    path = 'saved_runs'+ os.sep + model_name + os.sep
     if takebest: 
         return np.loadtxt(path + 'best_' + str(generation_number) + '.csv', delimiter=',')
     else:
@@ -40,4 +41,4 @@ def load(model_name, generation_number, takebest=True):
     
 
 if __name__ == '__main__':
-    plot('20190919_154332', 49)
+    plot('20191002_163425', 39)

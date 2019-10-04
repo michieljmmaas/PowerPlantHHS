@@ -61,7 +61,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             wm_type = 4
             n_Turbines = int(current_row[-1])
             # run simulink
-            energy_production = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], wm_type, n_Turbines)  # add turbine later
+            energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], wm_type, n_Turbines)  # add turbine later
             #energy_production = np.array([np.sum(current_row[:N_SOLAR_FEATURES:3])] * (365*24))  # simple fake simulation
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
@@ -90,4 +90,4 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-    train(10000, 100, 0, 10000000, 0, 90, -90, 90, model_name=None, load=False)
+    train(10000, 100, 0, 1000000, 0, 90, 0, 359, model_name=None, load=False)
