@@ -57,8 +57,7 @@ class Simulink():
 
         power = curve
         
-        terrain_rating = '1'
-        
+        terrain_rating = '0.19'
 
         self.engine.load_system(self.model_name)
 
@@ -87,16 +86,12 @@ class Simulink():
         self.engine.workspace['Output'] = output
         output = np.array(self.engine.eval("Output.Ptotal"))
         total = np.sum(output[:,1:], axis=1)
-        return total
+        return total, output
 
 if __name__ == '__main__':
     sim = Simulink('WT_SP_model_vs1total')
+    output, all_out = sim.run_simulation(np.array([1000, 15, 0, 1000, 15, 0, 1000, 15, 0, 1000, 15, 0]), 4, 7)
 
-    output = sim.run_simulation(np.array([1000, 15, 0, 0, 15, 0, 0, 45, 0, 0, 0, 0]), 4)
-
-    print('Mean:')
-    print(np.mean(output))
-
-    print('Sum:')
-    print(np.sum(output))
+    print('Total: ' + str(np.sum(output)))
+    print('Mean: ' + str(np.mean(output)))
 
