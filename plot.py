@@ -9,7 +9,7 @@ from save_and_load import PopulationSaver
 def plot(model_name, generation_number):
     simulink = Simulink('WT_SP_model_vs1total')
     generation = load(model_name=model_name, generation_number=generation_number)
-    kW_distribution = simulink.run_simulation(generation[0][0:-1], 3)
+    kW_distribution = simulink.run_simulation(generation[0][0:-1], 3, 4)
     kW_distribution = np.mean(np.reshape(kW_distribution[:8760], (365,24)), axis=1)
     consumption = np.full(len(kW_distribution), 6000)
 
