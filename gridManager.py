@@ -5,6 +5,7 @@ from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 import csv
 import matplotlib.ticker as ticker
+import sys
 
 
 class Application(Frame):
@@ -12,6 +13,8 @@ class Application(Frame):
         Frame.__init__(self, master)
         self.grid()
         self.master.title("Grid Manager")
+
+        print(sys.path);
 
         Frame1 = Frame(master, bg="red")
         Frame1.grid(row=0, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
