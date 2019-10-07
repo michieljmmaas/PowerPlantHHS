@@ -85,7 +85,7 @@ class Simulink():
         output = self.engine.sim(self.model_name, 'ReturnWorkspaceOutputs', 'on')
         self.engine.workspace['Output'] = output
         output = np.array(self.engine.eval("Output.Ptotal"))
-        total = np.sum(output[:,1:], axis=1)
+        total = np.sum(output[:, 1:], axis=1)
         return total, output
 
 if __name__ == '__main__':
