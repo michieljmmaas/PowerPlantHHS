@@ -91,4 +91,4 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-    train(10000, 100, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)
+    train(10000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)

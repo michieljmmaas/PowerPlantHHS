@@ -226,17 +226,17 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
                     info = round(float(data[counter]), 2)
                     item.config(text=info)
                     counter += 1
-
-            wm_cost, windTurbineTotalCost = defWindTurbineCost(int(4), int(data[-1]));
-
-            entry = WTHeightTuple[1];
-            entry.config(text=data[-1]);
-
-            cost = WTHeightTuple[2];
-            cost.config(text=wm_cost);
-
-            total = WTHeightTuple[3];
-            total.config(text=windTurbineTotalCost);
+            #
+            # wm_cost, windTurbineTotalCost = defWindTurbineCost(int(4), int(data[-1]));
+            #
+            # entry = WTHeightTuple[1];
+            # entry.config(text=data[-1]);
+            #
+            # cost = WTHeightTuple[2];
+            # cost.config(text=wm_cost);
+            #
+            # total = WTHeightTuple[3];
+            # total.config(text=windTurbineTotalCost);
     except Exception as e:
         print(e);
         ShowErrorBox("Foutmelding verkeerd bestand",
@@ -261,7 +261,7 @@ def defWindTurbineCost(wm_type, wm_number):
 
 
 def loadLoggingFile():
-    try:
+    # try:
         filename = askopenfilename()
         f = open(filename, "r")
         f1 = f.readlines()
@@ -278,10 +278,10 @@ def loadLoggingFile():
 
         return genArray, minCostArray, meanCostArray
 
-    except Exception as e:
-        print(e)
-        ShowErrorBox("Foutmelding verkeerd bestand",
-                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+    # except Exception as e:
+    #     print(e)
+    #     ShowErrorBox("Foutmelding verkeerd bestand",
+    #                  "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
 def fillBox(box):
@@ -307,7 +307,7 @@ def nextChart(self):
 
         self.a.set_ylim(0, max(self.minCost) * 1.1)
 
-        self.a.set_xlim(self.gens[0], self.gens[20])
+        self.a.set_xlim(self.gens[0], self.gens[8])
 
         self.a.legend()
         self.graphNumber = 1
@@ -321,7 +321,7 @@ def nextChart(self):
 
         self.a.set_ylim(0, max(self.meanCost) * 1.1)
 
-        self.a.set_xlim(self.gens[0], self.gens[20])
+        self.a.set_xlim(self.gens[0], self.gens[8])
 
         self.a.legend()
         self.graphNumber = 0
