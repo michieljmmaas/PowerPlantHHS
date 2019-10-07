@@ -27,7 +27,7 @@ class Simulink():
         azimuth = str(list(orientation_features)).replace(' ', '')
         inclanation = str(list(angle_features)).replace(' ', '')
         surface = str(list(surface_features)).replace(' ', '')
-        efficiency = '[15]'
+        efficiency = '[16]'
         
         if (wm_type == 2):
             turbines = str(n_Turbine)
