@@ -2,6 +2,7 @@
 
 import numpy as np
 from copy import copy
+from run_sim import Simulink
 #from numba import njit
 
 """
@@ -217,17 +218,23 @@ class CostCalculator():
 
 # code example to test if storage and deficit calculations are working
 if __name__ == '__main__':
-    cost_calculator = CostCalculator(0, 1, 10, 100)
-    print(0 == cost_calculator.calculate_cost(np.array([11, 11, 11, 10]), 0, 0))
-    print(1 == cost_calculator.calculate_cost(np.array([11, 11, 11, 9]), 0, 0))
-    print(2 == cost_calculator.calculate_cost(np.array([11, 11, 11, 8]), 0, 0))
-    print(3 == cost_calculator.calculate_cost(np.array([11, 11, 11, 7]), 0, 0))
-    print(100 == cost_calculator.calculate_cost(np.array([11, 11, 11, 6]), 0, 0))
-    print(0 == cost_calculator.calculate_cost(np.array([10, 11, 11, 11]), 0, 0))
-    print(1 == cost_calculator.calculate_cost(np.array([9, 11, 11, 11]), 0, 0))
-    print(2 == cost_calculator.calculate_cost(np.array([8, 11, 11, 11]), 0, 0))
-    print(3 == cost_calculator.calculate_cost(np.array([7, 11, 11, 11]), 0, 0))
-    print(100 == cost_calculator.calculate_cost(np.array([6, 11, 11, 11]), 0, 0))
-    print(2 == cost_calculator.calculate_cost(np.array([12, 8, 12, 8]), 0, 0))
-    print(2 == cost_calculator.calculate_cost(np.array([8, 12, 8, 12]), 0, 0))
-    print(6 == cost_calculator.calculate_cost(np.array([8, 16, 8, 8]), 0, 0))
+    simulink = Simulink('WT_SP_model_vs1total')
+    cost_calculator = CostCalculator(190, 400, 6000, 1000000)
+    # print(0 == cost_calculator.calculate_cost(np.array([11, 11, 11, 10]), 0, 0))
+    # print(1 == cost_calculator.calculate_cost(np.array([11, 11, 11, 9]), 0, 0))
+    # print(2 == cost_calculator.calculate_cost(np.array([11, 11, 11, 8]), 0, 0))
+    # print(3 == cost_calculator.calculate_cost(np.array([11, 11, 11, 7]), 0, 0))
+    # print(100 == cost_calculator.calculate_cost(np.array([11, 11, 11, 6]), 0, 0))
+    # print(0 == cost_calculator.calculate_cost(np.array([10, 11, 11, 11]), 0, 0))
+    # print(1 == cost_calculator.calculate_cost(np.array([9, 11, 11, 11]), 0, 0))
+    # print(2 == cost_calculator.calculate_cost(np.array([8, 11, 11, 11]), 0, 0))
+    # print(3 == cost_calculator.calculate_cost(np.array([7, 11, 11, 11]), 0, 0))
+    # print(100 == cost_calculator.calculate_cost(np.array([6, 11, 11, 11]), 0, 0))
+    # print(2 == cost_calculator.calculate_cost(np.array([12, 8, 12, 8]), 0, 0))
+    # print(2 == cost_calculator.calculate_cost(np.array([8, 12, 8, 12]), 0, 0))
+    # print(6 == cost_calculator.calculate_cost(np.array([8, 16, 8, 8]), 0, 0))
+
+    output = simulink.run_simulation(np.array([100000,50,13,47695,37,14,82249,39,21,89706,38,1]),4,7)
+
+    cost = cost_calculator.get_stats(output,319650,4,7)
+    print(cost)

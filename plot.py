@@ -8,6 +8,7 @@ import math
 from run_sim import Simulink
 from save_and_load import PopulationSaver
 from calculate_cost import CostCalculator
+import os
 
 def plot(model_name, generation_number):
     simulink = Simulink('WT_SP_model_vs1total')
@@ -53,12 +54,12 @@ def load(model_name, generation_number, takebest=True):
         raise Exception('None attribute detected on model or generation parameter')
     elif generation_number < 0:
         raise Exception('There can be no generation with a number less then zero')
-    path = 'saved_runs\\' + model_name + '\\'
+    path = 'saved_runs'+ os.sep + model_name + os.sep
     if takebest: 
         return np.loadtxt(path + 'best_' + str(generation_number) + '.csv', delimiter=',')
     else:
         return np.loadtxt(path + 'generation_' + str(generation_number) + '.csv', delimiter=',')
     
 
-if __name__ == '__main__':    
-    plot('Save_Accukosten_400', 23)
+if __name__ == '__main__':
+    plot('20191002_163425', 39)

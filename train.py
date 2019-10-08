@@ -10,6 +10,7 @@ from save_and_load import PopulationSaver
 N_PANELS = 4
 N_SOLAR_FEATURES = N_PANELS * 3
 N_WIND_FEATURES = 1
+N_WIND_MAX = 20
 N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 
@@ -37,7 +38,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         solar_values[:, 2::3] *= (orientation_max - orientation_min)
         solar_values[:, 2::3] += orientation_min
         wind_values = np.random.rand(group_size, N_WIND_FEATURES)
-        wind_values *= 7
+        wind_values *= N_WIND_MAX
         group_values = np.concatenate((solar_values, wind_values), axis=1)  # concatenate on features
         
 
@@ -50,7 +51,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     lowest_allowed[:, 1:N_SOLAR_FEATURES:3] = angle_min
     highest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_max
     lowest_allowed[:, 2:N_SOLAR_FEATURES:3] = orientation_min
-    highest_allowed[:, -1] = 7
+    highest_allowed[:, -1] = N_WIND_MAX
     lowest_allowed[:, -1] = 0
         
 
@@ -64,7 +65,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             wm_type = 4
             n_Turbines = int(current_row[-1])
             # run simulink
-            energy_production = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], wm_type, n_Turbines)  # add turbine later
+            energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], wm_type, n_Turbines)  # add turbine later
             #energy_production = np.array([np.sum(current_row[:N_SOLAR_FEATURES:3])] * (365*24))  # simple fake simulation
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
@@ -93,4 +94,4 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-    train(10000, 100, 0, 10000000, 0, 90, 0, 360, model_name='Save_Accukosten_25', load=True)
+    train(10000, 100, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)

@@ -27,7 +27,7 @@ class Simulink():
         azimuth = str(list(orientation_features)).replace(' ', '')
         inclanation = str(list(angle_features)).replace(' ', '')
         surface = str(list(surface_features)).replace(' ', '')
-        efficiency = '[15]'
+        efficiency = '[16]'
         
         if (wm_type == 2):
             turbines = str(n_Turbine)
@@ -57,8 +57,7 @@ class Simulink():
 
         power = curve
         
-        terrain_rating = '1'
-        
+        terrain_rating = '0.19'
 
         self.engine.load_system(self.model_name)
 
@@ -86,13 +85,13 @@ class Simulink():
         output = self.engine.sim(self.model_name, 'ReturnWorkspaceOutputs', 'on')
         self.engine.workspace['Output'] = output
         output = np.array(self.engine.eval("Output.Ptotal"))
-        total = np.sum(output[:,1:], axis=1)
-        return total
+        total = np.sum(output[:, 1:], axis=1)
+        return total, output
 
 if __name__ == '__main__':
     sim = Simulink('WT_SP_model_vs1total')
+    output, all_out = sim.run_simulation(np.array([1000, 15, 0, 1000, 15, 0, 1000, 15, 0, 1000, 15, 0]), 4, 7)
 
-    output = sim.run_simulation(np.array([1000, 15, 0, 0, 15, 0, 0, 45, 0, 0, 0, 0]), 4)
+    print('Total: ' + str(np.sum(output)))
+    print('Mean: ' + str(np.mean(output)))
 
-    print(output)
-    print(np.mean(output))
