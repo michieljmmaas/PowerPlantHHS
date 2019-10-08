@@ -27,7 +27,7 @@ class Simulink():
         azimuth = str(list(orientation_features)).replace(' ', '')
         inclanation = str(list(angle_features)).replace(' ', '')
         surface = str(list(surface_features)).replace(' ', '')
-        efficiency = '[16]'
+        efficiency = '[15]'
         
         if (wm_type == 2):
             turbines = str(n_Turbine)
@@ -57,7 +57,7 @@ class Simulink():
 
         power = curve
         
-        terrain_rating = '0.19'
+        terrain_rating = '0.12'
 
         self.engine.load_system(self.model_name)
 

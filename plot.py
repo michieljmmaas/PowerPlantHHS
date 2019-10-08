@@ -13,11 +13,11 @@ import os
 def plot(model_name, generation_number):
     simulink = Simulink('WT_SP_model_vs1total')
     generation = load(model_name=model_name, generation_number=generation_number)
-    kW_distribution = simulink.run_simulation(generation[0][0:-1], 4, generation[0][-1])
+    kW_distribution, _ = simulink.run_simulation(generation[0][0:-1], 4, generation[0][-1])
     cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
         'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
     calculatecost = CostCalculator(190, 50, 6000, 1000000, cb_cost_table, 1000, 230)
-    dic = calculatecost.get_stats(kW_distribution,319650,4,generation[0][-1])
+    dic = calculatecost.get_stats(kW_distribution,319650,4,int(generation[0][-1]))
     kW_distribution = np.mean(np.reshape(kW_distribution[:8760], (365,24)), axis=1)
     consumption = np.full(len(kW_distribution), 6000)
 
@@ -35,7 +35,7 @@ def plot(model_name, generation_number):
     plt.subplot(2, 1, 1)
     plt.text(350, kW_distribution.max() * 0.90, t2, ha='left', style='italic', wrap=True)
     plt.text(350, kW_distribution.max() * 0.90, t1, ha='right', wrap=True)
-    plt.text(280, kW_distribution.max() * 0.74, t3, ha='left', wrap=True)
+    plt.text(280, kW_distribution.max() * 0.65, t3, ha='left', wrap=True)
     #sns.set_style("whitegrid")
     plt.plot(kW_distribution, color='green', alpha=0.5)
     plt.plot(consumption, color='red')
@@ -62,4 +62,4 @@ def load(model_name, generation_number, takebest=True):
     
 
 if __name__ == '__main__':
-    plot('20191002_163425', 39)
+    plot('Save_Accukosten_100000', 52)
