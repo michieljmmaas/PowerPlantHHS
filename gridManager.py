@@ -50,7 +50,7 @@ class Application(Frame):
         self.meanCost = [4611297453.12, 4296382782.98, 3945328950.50, 3400852428.68, 2928522993.03, 2441527183.68,
                          5259124454.19, 2685947243.92, 2258377078.39, 1750162255.54, 1800532731.67]
 
-        self.gens, self.minCost, self.kaas = loadLoggingFile()
+        self.gens, self.minCost, self.meanCost = loadLoggingFile()
 
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)
         nextChart(self)
@@ -248,10 +248,18 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
+def x_limit(array):
+    a = len(array)
+    if a > 21:
+        a = 21
+    return a - 1;
+
+
 def ceil_power_of_10(n):
     exp = log(n, 10)
     exp = ceil(exp)
     return 10**exp
+
 
 def defWindTurbineCost(wm_type, wm_number):
     if (wm_type == 2):
@@ -317,10 +325,9 @@ def nextChart(self):
         ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
         self.a.yaxis.set_major_formatter(ticks_y)
         self.a.set(ylabel="Bedrag in " + str(format_e(scale_y)), xlabel="Generatie", title="Minimum Cost")
-
         self.a.set_ylim(0, max(self.minCost) * 1.1)
-
-        self.a.set_xlim(self.gens[0], self.gens[8])
+        limit = x_limit(self.gens)
+        self.a.set_xlim(self.gens[0], self.gens[limit])
 
         self.a.legend()
         self.graphNumber = 1
@@ -332,8 +339,8 @@ def nextChart(self):
         self.a.set(ylabel="Bedrag in " + str(format_e(scale_y)), xlabel="Generatie", title="Mean Cost")
         self.a.yaxis.set_major_formatter(ticks_y)
         self.a.set_ylim(0, max(self.meanCost) * 1.1)
-        self.a.set_xlim(self.gens[0], self.gens[8])
-
+        limit = x_limit(self.gens)
+        self.a.set_xlim(self.gens[0], self.gens[limit])
         self.a.legend()
         self.graphNumber = 0
 
