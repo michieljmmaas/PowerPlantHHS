@@ -12,21 +12,24 @@ from train import train
 import threading
 import logging
 import time
+from multiprocessing import Process, Manager, Queue
 
 
 class Application(Frame):
-    def __init__(self, master=None):
-        Frame.__init__(self, master)
+    def __init__(self, parent):
+        Frame.__init__(self, parent, name="frame")
+        self.parent = parent
+        self.initUI()
         self.grid()
-        self.master.title("Grid Manager")
+        self.parent.title("Grid Manager")
 
-        print(sys.path);
 
-        Frame1 = Frame(master, bg="red")
+    def initUI(self):
+        Frame1 = Frame(self.parent, bg="red")
         Frame1.grid(row=0, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
-        ItemFrame = Frame(master, bg="green")
+        ItemFrame = Frame(self.parent, bg="green")
         ItemFrame.grid(row=0, column=4, rowspan=6, columnspan=2, sticky=W + E + N + S)
-        FrameBottom = Frame(master, bg="blue")
+        FrameBottom = Frame(self.parent, bg="blue")
         FrameBottom.grid(row=5, column=0, columnspan=4, rowspan=2, sticky=W + E + N + S)
 
         self.graphNumber = 0
@@ -42,7 +45,7 @@ class Application(Frame):
         self.meanCost = [4611297453.12, 4296382782.98, 3945328950.50, 3400852428.68, 2928522993.03, 2441527183.68,
                          5259124454.19, 2685947243.92, 2258377078.39, 1750162255.54, 1800532731.67]
 
-        # self.gens, self.minCost, self.meanCost = loadLoggingFile()
+        self.gens, self.minCost, self.meanCost = loadLoggingFile()
 
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)
         nextChart(self)
@@ -60,7 +63,7 @@ class Application(Frame):
                             command=lambda: loadCsvFile(SolarTupleList, WTHeightTuple))
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight,
                            command=lambda: loadLoggingFile())
-        NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight, command=lambda: runSimulation(InfoGenerationEntry, InfoPoolEntry))
+        NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight, command=self.runSimulation)
         ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
@@ -206,6 +209,14 @@ class Application(Frame):
                 RowCounter = RowCounter + 1
             ColumnCounter = ColumnCounter + 1
 
+    def runSimulation(self):
+         #    generations = int(GenerationEntry.get())
+         #    GroupSize = int(GroupSizeEntry.get());
+         self.p1 = Process(target=runTrain)
+         self.p1.start()
+         # pbar.start(DELAY2)
+         # after(DELAY1, self.onGetValue)
+
 
 # Misschien hier panda's toevoegen met cvs
 def loadCsvFile(SolarTupleList, WTHeightTuple):
@@ -242,16 +253,11 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
-def runSimulation(GenerationEntry, GroupSizeEntry):
-    generations = int(GenerationEntry.get())
-    GroupSize = int(GroupSizeEntry.get());
-    x = threading.Thread(target=callTrain(generations, GroupSize), args=(1,))
-    logging.info("Main    : before running thread")
-    x.start()
 
 
-def callTrain(generations, GroupSize):
-    train(generations, GroupSize, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)
+def runTrain():
+    train(1000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)
+
 
 
 def x_limit(array):
@@ -309,9 +315,10 @@ def loadLoggingFile():
 
 
 def fillBox(box):
-    d = MyDialog(root)
-    root.wait_window(d.top)
-    box.config(text=d.value)
+    v = 2
+    # d = MyDialog(root)
+    # root.wait_window(d.top)
+    # box.config(text=d.value)
 
 def format_e(n):
     a = '%E' % n
@@ -371,19 +378,13 @@ class MyDialog:
             self.value = int(0)
             self.top.destroy()
 
-root = Tk()
-app = Application(master=root)
-app.mainloop()
+def main():
+    root = Tk()
+    app = Application(root)
+    root.mainloop()
 
 
-class Worker(threading.Thread):
-    def run(self):
-        # long process goes here
-        time.sleep(10)
+if __name__ == '__main__':
+    main()
 
-w = Worker()
-w.start()
-ShowErrorBox("Work Started", "OK started working")
-root.update()
-w.join()
-ShowErrorBox("Work Complete", "OK Done")
+
