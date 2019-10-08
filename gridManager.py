@@ -45,13 +45,13 @@ class Application(Frame):
         self.meanCost = [4611297453.12, 4296382782.98, 3945328950.50, 3400852428.68, 2928522993.03, 2441527183.68,
                          5259124454.19, 2685947243.92, 2258377078.39, 1750162255.54, 1800532731.67]
 
-        self.gens, self.minCost, self.meanCost = loadLoggingFile()
+        # self.gens, self.minCost, self.meanCost = loadLoggingFile()
 
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)
         nextChart(self)
         self.canvas.get_tk_widget().pack(fill=BOTH)
 
-        nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: nextChart(self))
+        nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: nextChart(self, False))
         nextButton.pack()
 
         padx = 10
@@ -62,7 +62,7 @@ class Application(Frame):
         LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight,
                             command=lambda: loadCsvFile(SolarTupleList, WTHeightTuple))
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight,
-                           command=lambda: loadLoggingFile())
+                           command=lambda: loadLoggingFile(self))
         NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight, command=self.runSimulation)
         ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
@@ -288,7 +288,7 @@ def defWindTurbineCost(wm_type, wm_number):
     return wm_cost, wm_cost * wm_number;
 
 
-def loadLoggingFile():
+def loadLoggingFile(self):
     # try:
         filename = askopenfilename()
         f = open(filename, "r")
@@ -306,7 +306,11 @@ def loadLoggingFile():
             meanCostArray.append(mean);
             minCostArray.append(minCost)
 
-        return genArray, minCostArray, meanCostArray
+        self.gens = genArray
+        self.meanCost = meanCostArray
+        self.minCost = minCostArray
+        nextChart(self)
+        # return genArray, minCostArray, meanCostArray
 
     # except Exception as e:
     #     print(e)
@@ -328,9 +332,11 @@ def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
 
 
-def nextChart(self):
+def nextChart(self, starting = True):
     self.a.clear()
     b = self.f.add_subplot(111)
+    if starting == True:
+        self.graphNumber = 0
     if self.graphNumber == 0:
         self.a.plot(self.gens, self.minCost, color='blue', label="Minimum Cost")
 
