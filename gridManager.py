@@ -3,9 +3,11 @@ from matplotlib.figure import Figure
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
+import numpy as np
 import csv
 import matplotlib.ticker as ticker
 import sys
+from math import ceil, log
 
 
 class Application(Frame):
@@ -40,12 +42,15 @@ class Application(Frame):
                         143520525.91, 143520525.91, 143387063.52, 122981391.73, 122169797.53, 112646841.61,
                         103483553.47,
                         93272310.59]
-        self.meanCost = [8355564463.45, 5718371715.88, 3785891878.45, 3714357126.25, 3906800065.12, 3612190931.48,
-                         2791057630.57, 3705114859.47, 3172927935.13, 3343982297.42, 2962651477.14, 3055757633.03,
-                         2652876157.8, 35474765696.12, 61564067417.33, 136305909177.47, 73743742623.81, 173286460864.29,
-                         52274403390.2, 107164182267.39, 114232925026.51, 3450067013.72]
+        # self.meanCost = [8355564463.45, 5718371715.88, 3785891878.45, 3714357126.25, 3906800065.12, 3612190931.48,
+        #                  2791057630.57, 3705114859.47, 3172927935.13, 3343982297.42, 2962651477.14, 3055757633.03,
+        #                  2652876157.8, 35474765696.12, 61564067417.33, 136305909177.47, 73743742623.81,
+        #                  173286460864.29, 52274403390.2, 107164182267.39, 114232925026.51, 3450067013.72]
 
-        # self.gens, self.minCost, self.meanCost = loadLoggingFile()
+        self.meanCost = [4611297453.12, 4296382782.98, 3945328950.50, 3400852428.68, 2928522993.03, 2441527183.68,
+                         5259124454.19, 2685947243.92, 2258377078.39, 1750162255.54, 1800532731.67]
+
+        self.gens, self.minCost, self.kaas = loadLoggingFile()
 
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)
         nextChart(self)
@@ -242,6 +247,12 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
+
+def ceil_power_of_10(n):
+    exp = log(n, 10)
+    exp = ceil(exp)
+    return 10**exp
+
 def defWindTurbineCost(wm_type, wm_number):
     if (wm_type == 2):
         wm_cost = 1605000
@@ -257,9 +268,6 @@ def defWindTurbineCost(wm_type, wm_number):
     return wm_cost, wm_cost * wm_number;
 
 
-
-
-
 def loadLoggingFile():
     # try:
         filename = askopenfilename()
@@ -273,8 +281,10 @@ def loadLoggingFile():
             info = x.split(" ")
             info[5] = info[5].replace('\n', '')
             genArray.append(str(info[1]))
-            meanCostArray.append(round(float(info[3]), 2))
-            minCostArray.append(round(float(info[5]), 2))
+            mean = round(float(info[3]), 2);
+            minCost = round(float(info[5]), 2);
+            meanCostArray.append(mean);
+            minCostArray.append(minCost)
 
         return genArray, minCostArray, meanCostArray
 
@@ -289,6 +299,9 @@ def fillBox(box):
     root.wait_window(d.top)
     box.config(text=d.value)
 
+def format_e(n):
+    a = '%E' % n
+    return a.split('E')[0].rstrip('0').rstrip('.') + 'E' + a.split('E')[1]
 
 def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
@@ -300,10 +313,10 @@ def nextChart(self):
     if self.graphNumber == 0:
         self.a.plot(self.gens, self.minCost, color='blue', label="Minimum Cost")
 
-        scale_y = 1e6
+        scale_y = ceil_power_of_10(np.mean(self.minCost)/5);
         ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
         self.a.yaxis.set_major_formatter(ticks_y)
-        self.a.set(ylabel="Bedrag in miljoenen", xlabel="Generatie", title="Minimum Cost")
+        self.a.set(ylabel="Bedrag in " + str(format_e(scale_y)), xlabel="Generatie", title="Minimum Cost")
 
         self.a.set_ylim(0, max(self.minCost) * 1.1)
 
@@ -314,13 +327,11 @@ def nextChart(self):
 
     elif self.graphNumber == 1:
         self.a.plot(self.gens, self.meanCost, color='red', label="Mean Cost")
-        scale_y = 1e9
-        self.a.set(ylabel="Bedrag in miljarden", xlabel="Generatie", title="Mean Cost")
+        scale_y = ceil_power_of_10(np.mean(self.meanCost)/5);
         ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
+        self.a.set(ylabel="Bedrag in " + str(format_e(scale_y)), xlabel="Generatie", title="Mean Cost")
         self.a.yaxis.set_major_formatter(ticks_y)
-
         self.a.set_ylim(0, max(self.meanCost) * 1.1)
-
         self.a.set_xlim(self.gens[0], self.gens[8])
 
         self.a.legend()
