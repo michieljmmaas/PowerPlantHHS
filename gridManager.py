@@ -8,6 +8,10 @@ import csv
 import matplotlib.ticker as ticker
 import sys
 from math import ceil, log
+from train import train
+import threading
+import logging
+import time
 
 
 class Application(Frame):
@@ -31,26 +35,14 @@ class Application(Frame):
 
         self.a = self.f.add_subplot(111)
 
-        self.gens = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17',
-                     '18',
-                     '19', '20', '21']
-        # gens = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+        self.gens = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
         self.minCost = [1380645658.15, 617306363.53, 617306363.53, 469239361.71, 387622002.09, 365128241.34,
-                        339966956.2,
-                        309698761.48, 299455088.99, 245330372.63, 195903759.14, 175981177.33, 165490209.14,
-                        153228772.75,
-                        143520525.91, 143520525.91, 143387063.52, 122981391.73, 122169797.53, 112646841.61,
-                        103483553.47,
-                        93272310.59]
-        # self.meanCost = [8355564463.45, 5718371715.88, 3785891878.45, 3714357126.25, 3906800065.12, 3612190931.48,
-        #                  2791057630.57, 3705114859.47, 3172927935.13, 3343982297.42, 2962651477.14, 3055757633.03,
-        #                  2652876157.8, 35474765696.12, 61564067417.33, 136305909177.47, 73743742623.81,
-        #                  173286460864.29, 52274403390.2, 107164182267.39, 114232925026.51, 3450067013.72]
+                        339966956.2, 309698761.48, 299455088.99, 245330372.63, 195903759.14]
 
         self.meanCost = [4611297453.12, 4296382782.98, 3945328950.50, 3400852428.68, 2928522993.03, 2441527183.68,
                          5259124454.19, 2685947243.92, 2258377078.39, 1750162255.54, 1800532731.67]
 
-        self.gens, self.minCost, self.meanCost = loadLoggingFile()
+        # self.gens, self.minCost, self.meanCost = loadLoggingFile()
 
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)
         nextChart(self)
@@ -68,7 +60,7 @@ class Application(Frame):
                             command=lambda: loadCsvFile(SolarTupleList, WTHeightTuple))
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight,
                            command=lambda: loadLoggingFile())
-        NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight)
+        NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight, command=lambda: runSimulation(InfoGenerationEntry, InfoPoolEntry))
         ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
@@ -181,13 +173,15 @@ class Application(Frame):
         # Bottom info
         InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight,
                                      relief=SOLID, command=lambda: fillBox(InfoGenerationEntry))
-        InfoGenerationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                    bg="white")
+        # InfoGenerationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
+                                    # bg="white")
+        InfoGenerationEntry = Entry(FrameBottom, width=LabelWidth)
         InfoGenerationTuple = (InfoGenerationLabel, InfoGenerationEntry)
 
         InfoPoolLabel = Button(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID,
                                command=lambda: fillBox(InfoPoolEntry))
-        InfoPoolEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
+        InfoPoolEntry = Entry(FrameBottom, width=LabelWidth)
+        # InfoPoolEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         InfoPoolTuple = (InfoPoolLabel, InfoPoolEntry)
 
         InfoMutationLabel = Button(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight, relief=SOLID,
@@ -246,6 +240,18 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
         print(e);
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
+def runSimulation(GenerationEntry, GroupSizeEntry):
+    generations = int(GenerationEntry.get())
+    GroupSize = int(GroupSizeEntry.get());
+    x = threading.Thread(target=callTrain(generations, GroupSize), args=(1,))
+    logging.info("Main    : before running thread")
+    x.start()
+
+
+def callTrain(generations, GroupSize):
+    train(generations, GroupSize, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)
 
 
 def x_limit(array):
@@ -365,7 +371,19 @@ class MyDialog:
             self.value = int(0)
             self.top.destroy()
 
-
 root = Tk()
 app = Application(master=root)
 app.mainloop()
+
+
+class Worker(threading.Thread):
+    def run(self):
+        # long process goes here
+        time.sleep(10)
+
+w = Worker()
+w.start()
+ShowErrorBox("Work Started", "OK started working")
+root.update()
+w.join()
+ShowErrorBox("Work Complete", "OK Done")
