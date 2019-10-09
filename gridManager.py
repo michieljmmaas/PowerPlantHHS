@@ -3,6 +3,7 @@ from matplotlib.figure import Figure
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
+from tkinter.ttk import Progressbar
 import numpy as np
 import csv
 import matplotlib.ticker as ticker
@@ -14,6 +15,9 @@ import logging
 import time
 from multiprocessing import Process, Manager, Queue
 
+
+DELAY1 = 20
+DELAY2 = 5000
 
 class Application(Frame):
     def __init__(self, parent):
@@ -51,6 +55,9 @@ class Application(Frame):
         nextChart(self)
         self.canvas.get_tk_widget().pack(fill=BOTH)
 
+        self.pbar = Progressbar(Frame1, mode='indeterminate')
+        self.pbar.pack()
+
         nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: nextChart(self, False))
         nextButton.pack()
 
@@ -64,7 +71,7 @@ class Application(Frame):
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight,
                            command=lambda: loadLoggingFile(self))
         NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight, command=self.runSimulation)
-        ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight)
+        ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight, command=self.destory)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight, relief=SOLID)
@@ -214,43 +221,55 @@ class Application(Frame):
          #    GroupSize = int(GroupSizeEntry.get());
          self.p1 = Process(target=runTrain)
          self.p1.start()
-         # pbar.start(DELAY2)
-         # after(DELAY1, self.onGetValue)
+         self.pbar.start(DELAY1)
+         self.after(DELAY2, self.onGetValue)
 
+    def onGetValue(self):
+        if (self.p1.is_alive()):
+            print("Checking")
+            self.after(DELAY2, self.onGetValue)
+            return
+        else:
+            print("Klaar")
+
+    def destory(self):
+        self.parent.destroy()
+        self.p1.kill()
 
 # Misschien hier panda's toevoegen met cvs
 def loadCsvFile(SolarTupleList, WTHeightTuple):
     try:
         filename = askopenfilename()
-        with open(filename, newline='') as csvfile:
-            dataList = list(csv.reader(csvfile))
-            data = dataList[0]
-            counter = 0
+        if(filename != ''):
+            with open(filename, newline='') as csvfile:
+                dataList = list(csv.reader(csvfile))
+                data = dataList[0]
+                counter = 0
 
-            iterSolar = iter(SolarTupleList)
-            next(iterSolar)
-            for tupleItem in iterSolar:
-                iterTuple = iter(tupleItem)
-                next(iterTuple)
-                for item in iterTuple:
-                    info = round(float(data[counter]), 2)
-                    item.config(text=info)
-                    counter += 1
-            #
-            # wm_cost, windTurbineTotalCost = defWindTurbineCost(int(4), int(data[-1]));
-            #
-            # entry = WTHeightTuple[1];
-            # entry.config(text=data[-1]);
-            #
-            # cost = WTHeightTuple[2];
-            # cost.config(text=wm_cost);
-            #
-            # total = WTHeightTuple[3];
-            # total.config(text=windTurbineTotalCost);
+                iterSolar = iter(SolarTupleList)
+                next(iterSolar)
+                for tupleItem in iterSolar:
+                    iterTuple = iter(tupleItem)
+                    next(iterTuple)
+                    for item in iterTuple:
+                        info = round(float(data[counter]), 2)
+                        item.config(text=info)
+                        counter += 1
+                #
+                # wm_cost, windTurbineTotalCost = defWindTurbineCost(int(4), int(data[-1]));
+                #
+                # entry = WTHeightTuple[1];
+                # entry.config(text=data[-1]);
+                #
+                # cost = WTHeightTuple[2];
+                # cost.config(text=wm_cost);
+                #
+                # total = WTHeightTuple[3];
+                # total.config(text=windTurbineTotalCost);
     except Exception as e:
         print(e);
         ShowErrorBox("Foutmelding verkeerd bestand",
-                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+                         "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
 
@@ -289,33 +308,34 @@ def defWindTurbineCost(wm_type, wm_number):
 
 
 def loadLoggingFile(self):
-    # try:
+    try:
         filename = askopenfilename()
-        f = open(filename, "r")
-        f1 = f.readlines()
-        genArray = []
-        meanCostArray = []
-        minCostArray = []
+        print("Filename: " + filename);
+        if(filename != ''):
+            f = open(filename, "r")
+            f1 = f.readlines()
+            genArray = []
+            meanCostArray = []
+            minCostArray = []
 
-        for x in f1:
-            info = x.split(" ")
-            info[5] = info[5].replace('\n', '')
-            genArray.append(str(info[1]))
-            mean = round(float(info[3]), 2);
-            minCost = round(float(info[5]), 2);
-            meanCostArray.append(mean);
-            minCostArray.append(minCost)
+            for x in f1:
+                info = x.split(" ")
+                info[5] = info[5].replace('\n', '')
+                genArray.append(str(info[1]))
+                mean = round(float(info[3]), 2);
+                minCost = round(float(info[5]), 2);
+                meanCostArray.append(mean);
+                minCostArray.append(minCost)
 
-        self.gens = genArray
-        self.meanCost = meanCostArray
-        self.minCost = minCostArray
-        nextChart(self)
-        # return genArray, minCostArray, meanCostArray
+            self.gens = genArray
+            self.meanCost = meanCostArray
+            self.minCost = minCostArray
+            nextChart(self)
 
-    # except Exception as e:
-    #     print(e)
-    #     ShowErrorBox("Foutmelding verkeerd bestand",
-    #                  "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
 def fillBox(box):
@@ -340,11 +360,8 @@ def nextChart(self, starting = True):
     if self.graphNumber == 0:
         self.a.plot(self.gens, self.minCost, color='blue', label="Minimum Cost")
 
-        scale_y = ceil_power_of_10(np.mean(self.minCost)/5);
-        ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
-        self.a.yaxis.set_major_formatter(ticks_y)
-        self.a.set(ylabel="Bedrag in " + str(format_e(scale_y)), xlabel="Generatie", title="Minimum Cost")
-        self.a.set_ylim(0, max(self.minCost) * 1.1)
+        self.a.set_yscale("log")
+        self.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Minimum Cost")
         limit = x_limit(self.gens)
         self.a.set_xlim(self.gens[0], self.gens[limit])
 
@@ -353,11 +370,8 @@ def nextChart(self, starting = True):
 
     elif self.graphNumber == 1:
         self.a.plot(self.gens, self.meanCost, color='red', label="Mean Cost")
-        scale_y = ceil_power_of_10(np.mean(self.meanCost)/5);
-        ticks_y = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x / scale_y))
-        self.a.set(ylabel="Bedrag in " + str(format_e(scale_y)), xlabel="Generatie", title="Mean Cost")
-        self.a.yaxis.set_major_formatter(ticks_y)
-        self.a.set_ylim(0, max(self.meanCost) * 1.1)
+        self.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Mean Cost")
+        self.a.set_yscale("log")
         limit = x_limit(self.gens)
         self.a.set_xlim(self.gens[0], self.gens[limit])
         self.a.legend()
