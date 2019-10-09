@@ -4,18 +4,11 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
 from tkinter.ttk import Progressbar
-import numpy as np
 import csv
-import matplotlib.ticker as ticker
-import sys
 from math import ceil, log
 from train import train
-import threading
-import logging
-import time
 from multiprocessing import Process, Value
 from Listener import Listener
-
 
 DELAY1 = 20
 DELAY2 = 5000
@@ -31,6 +24,7 @@ class Application(Frame):
         self.listener2 = Listener();
         self.parent.title("Grid Manager")
         self.counter = 0
+        self.counterCheck = 0
 
 
     def initUI(self):
@@ -224,10 +218,9 @@ class Application(Frame):
     def runSimulation(self):
          #    generations = int(GenerationEntry.get())
          #    GroupSize = int(GroupSizeEntry.get());
-         # listener = Listener();
          self.listener2 = Listener()
-         # self.parent_conn, child_conn = Pipe()
          self.counter = Value('i', 0)
+
          self.p1 = Process(target=runTrain, args=(self.counter, ))
          self.p1.start()
          self.pbar.start(DELAY1)
@@ -236,11 +229,10 @@ class Application(Frame):
     def onGetValue(self):
         if (self.p1.is_alive()):
             print("Checking")
-            # print("Value van listener:" + str(LISTENER.checkValue()));
-            # self.listener2.increment();
-            # print("Value counting: " + str(self.listener2.checkValue()))
             print("Counter: " + str(self.counter.value))
-            # print(self.paret_conn.recv());
+            if(self.counter.value != self.counterCheck):
+                self.counterCheck = self.counter.value
+                updateGraph()
             self.after(DELAY2, self.onGetValue)
             return
         else:
@@ -288,7 +280,12 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
                          "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
+def newGen():
+    vars = 1
 
+def updateGraph():
+    print("Dit is een check")
+    print()
 
 def runTrain(counter):
     train(1000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter)
