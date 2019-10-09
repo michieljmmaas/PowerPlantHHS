@@ -13,11 +13,14 @@ from train import train
 import threading
 import logging
 import time
-from multiprocessing import Process, Manager, Queue
+from multiprocessing import Process, Value
+from Listener import Listener
 
 
 DELAY1 = 20
 DELAY2 = 5000
+LISTENER = Listener()
+counter5 = 0
 
 class Application(Frame):
     def __init__(self, parent):
@@ -25,7 +28,9 @@ class Application(Frame):
         self.parent = parent
         self.initUI()
         self.grid()
+        self.listener2 = Listener();
         self.parent.title("Grid Manager")
+        self.counter = 0
 
 
     def initUI(self):
@@ -219,7 +224,11 @@ class Application(Frame):
     def runSimulation(self):
          #    generations = int(GenerationEntry.get())
          #    GroupSize = int(GroupSizeEntry.get());
-         self.p1 = Process(target=runTrain)
+         # listener = Listener();
+         self.listener2 = Listener()
+         # self.parent_conn, child_conn = Pipe()
+         self.counter = Value('i', 0)
+         self.p1 = Process(target=runTrain, args=(self.counter, ))
          self.p1.start()
          self.pbar.start(DELAY1)
          self.after(DELAY2, self.onGetValue)
@@ -227,10 +236,17 @@ class Application(Frame):
     def onGetValue(self):
         if (self.p1.is_alive()):
             print("Checking")
+            # print("Value van listener:" + str(LISTENER.checkValue()));
+            # self.listener2.increment();
+            # print("Value counting: " + str(self.listener2.checkValue()))
+            print("Counter: " + str(self.counter.value))
+            # print(self.paret_conn.recv());
             self.after(DELAY2, self.onGetValue)
             return
         else:
             print("Klaar")
+            self.pbar.stop()
+
 
     def destory(self):
         self.parent.destroy()
@@ -274,10 +290,8 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
 
 
 
-def runTrain():
-    train(1000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)
-
-
+def runTrain(counter):
+    train(1000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter)
 
 def x_limit(array):
     a = len(array)

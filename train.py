@@ -6,6 +6,7 @@ from calculate_cost import CostCalculator
 from genetic_algorith import GeneticAlgorith
 from run_sim import Simulink
 from save_and_load import PopulationSaver
+from multiprocessing import Process, Value
 
 N_PANELS = 4
 N_SOLAR_FEATURES = N_PANELS * 3
@@ -15,7 +16,7 @@ N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 
 def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max,
-          orientation_min, orientation_max, model_name=None, load=False):
+          orientation_min, orientation_max, model_name=None, load=False, counter=0):
     """train genetic algorithm"""
 
     genetic_algorithm = GeneticAlgorith(50, 150, 6, 2, 2, True)
@@ -81,6 +82,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         # store intermediate result
         best = genetic_algorithm.get_best(group_values, cost_array)
         saver.save_best(best)
+        counter.value = counter.value + 1
         # quit when done
         if generation == last_generation:
             return best

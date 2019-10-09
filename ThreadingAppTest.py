@@ -29,7 +29,6 @@ DELAY2 = 20
 # Queue must be global
 q = Queue()
 
-
 class Example(Frame):
 
     def __init__(self, parent):
