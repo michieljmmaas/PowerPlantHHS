@@ -1,10 +1,6 @@
 from math import ceil, log
 from tkinter import messagebox
-
-
-# class GUIFunctions:
-#     def __init__(self):
-#         self.name = "kaas"
+import GUI.GUIFileReader as fr
 
 def x_limit(array):
     a = len(array)
@@ -66,7 +62,11 @@ def nextChart(GUI, starting=True):
 
 def updateGraph(directory, gen, GUI):
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"
-    GUI.fileReader.loadCsvFile(GUI, csvFileName)
+    fr.loadCsvFile(GUI, csvFileName)
     loggingFileName = directory + "log.txt"
-    GUI.fileReader.loadLoggingFile(GUI, loggingFileName)
+    fr.loadLoggingFile(GUI, loggingFileName)
+
+def exitProgram(GUI):
+    GUI.parent.destroy()
+    GUI.p1.kill()
 

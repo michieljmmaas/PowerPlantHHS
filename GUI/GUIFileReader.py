@@ -1,9 +1,7 @@
 from tkinter.filedialog import askopenfilename
 import csv
+import GUI.GUIFunctions as fn
 
-# class GUIFileReader:
-    # def __init__(self):
-    #     self.name = "kaas"
 
 def loadLoggingFile(GUI, filename=None):
     try:
@@ -29,12 +27,13 @@ def loadLoggingFile(GUI, filename=None):
             GUI.gens = genArray
             GUI.meanCost = meanCostArray
             GUI.minCost = minCostArray
-            GUI.functions.nextChart(GUI)
+            fn.nextChart(GUI)
 
     except Exception as e:
         print(e)
-        GUI.ShowErrorBox("Foutmelding verkeerd bestand",
+        fn.ShowErrorBox("Foutmelding verkeerd bestand",
                           "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
 
 # Misschien hier panda's toevoegen met cvs
 def loadCsvFile(GUI, filename=None):
@@ -69,5 +68,5 @@ def loadCsvFile(GUI, filename=None):
                 # total.config(text=windTurbineTotalCost)
     except Exception as e:
         print(e)
-        GUI.functions.ShowErrorBox("Foutmelding verkeerd bestand",
+        fn.ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
