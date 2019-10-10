@@ -1,23 +1,24 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tkinter import *
-from tkinter.filedialog import askopenfilename
-from tkinter import messagebox
 from tkinter.ttk import Progressbar
-import csv
-from math import ceil, log
 from train import train
 from multiprocessing import Process, Value, Manager
 from ctypes import c_char_p
+from GUI.GUIFunctions import *
+from GUI.GUIFileReader import *
 
 DELAY1 = 20
 DELAY2 = 5000
 
 
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class Application(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
+        # self.functions = GUIFunctions()
+        # self.fileReader = GUIFileReader()
         self.initUI()
         self.grid()
         self.parent.title("Grid Manager")
@@ -64,11 +65,11 @@ class Application(Frame):
         LabelHeight = 2
 
         LoadButton = Button(ItemFrame, text="Load Csv", width=LabelWidth, height=LabelHeight,
-                            command=lambda: loadCsvFile(self.SolarTupleList, self.WTHeightTuple))
+                            command=lambda: loadCsvFile(self))
         RunButton = Button(ItemFrame, text="Load Logging", width=LabelWidth, height=LabelHeight,
                            command=lambda: loadLoggingFile(self))
         NextButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command=self.runSimulation)
-        ExportButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight, command=self.destory)
+        ExportButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight, command=self.exitProgram)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight, relief=SOLID)
@@ -215,6 +216,8 @@ class Application(Frame):
 
             return
         else:
+            infoArray = [100, 10]
+
             try:
                 GenInfo = int(self.InfoGenerationEntry.get())
                 PoolInfo = int(self.InfoPoolEntry.get())
@@ -223,14 +226,14 @@ class Application(Frame):
                 infoArray = [GenInfo, PoolInfo]
                 # infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
 
-            except Exception as e:
+            except ValueError:
                 ShowErrorBox("Invoerfout", "Controller of de getallen goed zijn ingevoerd")
                 return
 
             self.counter = Value('i', 0)
-            self.manager = Manager();
-            self.Directory = self.manager.Value(c_char_p, "test");
-            self.p1 = Process(target=runTrain, args=(self.counter, self.Directory, infoArray))
+            self.manager = Manager()
+            self.Directory = self.manager.Value(c_char_p, "test")
+            self.p1 = Process(target=self.runTrain, args=(self.counter, self.Directory, infoArray))
             self.p1.start()
             self.pbar.start(DELAY1)
             self.running = 1
@@ -251,174 +254,14 @@ class Application(Frame):
             print("Klaar")
             self.pbar.stop()
 
-    def destory(self):
+    def exitProgram(self):
         self.parent.destroy()
         self.p1.kill()
 
+    def runTrain(self, counter, directory, array):
+        train(array[0], array[1], 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
+              directory=directory)
 
-# Misschien hier panda's toevoegen met cvs
-def loadCsvFile(SolarTupleList, WTHeightTuple, filename=None):
-    try:
-        if filename is None:
-            filename = askopenfilename()
-        if (filename != ''):
-            with open(filename, newline='') as csvfile:
-                dataList = list(csv.reader(csvfile))
-                data = dataList[0]
-                counter = 0
-
-                iterSolar = iter(SolarTupleList)
-                next(iterSolar)
-                for tupleItem in iterSolar:
-                    iterTuple = iter(tupleItem)
-                    next(iterTuple)
-                    for item in iterTuple:
-                        info = round(float(data[counter]), 2)
-                        item.config(text=info)
-                        counter += 1
-                #
-                # wm_cost, windTurbineTotalCost = defWindTurbineCost(int(4), int(data[-1]));
-                #
-                # entry = WTHeightTuple[1];
-                # entry.config(text=data[-1]);
-                #
-                # cost = WTHeightTuple[2];
-                # cost.config(text=wm_cost);
-                #
-                # total = WTHeightTuple[3];
-                # total.config(text=windTurbineTotalCost);
-    except Exception as e:
-        print(e);
-        ShowErrorBox("Foutmelding verkeerd bestand",
-                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
-
-
-def updateGraph(directory, gen, self):
-    csvFileName = directory + "best_" + str(gen - 1) + ".csv"
-    loadCsvFile(self.SolarTupleList, self.WTHeightTuple, csvFileName)
-    loggingFileName = directory + "log.txt"
-    loadLoggingFile(self, loggingFileName)
-
-
-def runTrain(counter, directory, array):
-    train(array[0], array[1], 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
-          directory=directory)
-
-
-def x_limit(array):
-    a = len(array)
-    if a > 21:
-        a = 21
-    return a - 1;
-
-
-def ceil_power_of_10(n):
-    exp = log(n, 10)
-    exp = ceil(exp)
-    return 10 ** exp
-
-
-def defWindTurbineCost(wm_type, wm_number):
-    if (wm_type == 2):
-        wm_cost = 1605000
-    elif (wm_type == 3):
-        wm_cost = 5350000
-    elif (wm_type == 1):
-        wm_cost = 535000
-    elif (wm_type == 4):
-        wm_cost = 3210000
-    else:
-        wm_cost = 0
-
-    return wm_cost, wm_cost * wm_number;
-
-
-def loadLoggingFile(self, filename=None):
-    try:
-        if filename is None:
-            filename = askopenfilename()
-        print("Filename: " + filename);
-        if (filename != ''):
-            f = open(filename, "r")
-            f1 = f.readlines()
-            genArray = []
-            meanCostArray = []
-            minCostArray = []
-
-            for x in f1:
-                info = x.split(" ")
-                info[5] = info[5].replace('\n', '')
-                genArray.append(str(info[1]))
-                mean = round(float(info[3]), 2);
-                minCost = round(float(info[5]), 2);
-                meanCostArray.append(mean);
-                minCostArray.append(minCost)
-
-            self.gens = genArray
-            self.meanCost = meanCostArray
-            self.minCost = minCostArray
-            nextChart(self)
-
-    except Exception as e:
-        print(e)
-        ShowErrorBox("Foutmelding verkeerd bestand",
-                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
-
-
-def format_e(n):
-    a = '%E' % n
-    return a.split('E')[0].rstrip('0').rstrip('.') + 'E' + a.split('E')[1]
-
-
-def ShowErrorBox(title, message):
-    messagebox.showerror(title, message)
-
-
-def nextChart(self, starting=True):
-    self.a.clear()
-    b = self.f.add_subplot(111)
-    if starting == True:
-        self.graphNumber = 0
-    if self.graphNumber == 0:
-        self.a.plot(self.gens, self.minCost, color='blue', label="Minimum Cost")
-
-        self.a.set_yscale("log")
-        self.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Minimum Cost")
-        limit = x_limit(self.gens)
-        self.a.set_xlim(self.gens[0], self.gens[limit])
-
-        self.a.legend()
-        self.graphNumber = 1
-
-    elif self.graphNumber == 1:
-        self.a.plot(self.gens, self.meanCost, color='red', label="Mean Cost")
-        self.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Mean Cost")
-        self.a.set_yscale("log")
-        limit = x_limit(self.gens)
-        self.a.set_xlim(self.gens[0], self.gens[limit])
-        self.a.legend()
-        self.graphNumber = 0
-
-    self.canvas.draw()
-
-
-# class MyDialog:
-#     def __init__(self, parent):
-#         top = self.top = Toplevel(parent)
-#         Label(top, text="Value").pack()
-#         self.e = Entry(top)
-#         self.e.pack(padx=5)
-#         b = Button(top, text="OK", command=self.ok)
-#         b.pack(pady=5)
-#
-#     def ok(self):
-#         try:
-#             self.value = int(self.e.get())
-#             self.top.destroy()
-#         except ValueError:
-#             ShowErrorBox("Foute Invoer", "Dit veld verwacht een geheel getal")
-#             self.value = int(0)
-#             self.top.destroy()
 
 def main():
     root = Tk()
