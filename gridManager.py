@@ -7,8 +7,10 @@ from tkinter.ttk import Progressbar
 import csv
 from math import ceil, log
 from train import train
-from multiprocessing import Process, Value
+from multiprocessing import Process, Value, Manager
 from Listener import Listener
+from ctypes import c_char_p
+import os.path
 
 DELAY1 = 20
 DELAY2 = 5000
@@ -23,6 +25,7 @@ class Application(Frame):
         self.grid()
         self.listener2 = Listener();
         self.parent.title("Grid Manager")
+        self.Directory = "";
         self.counter = 0
         self.counterCheck = 0
 
@@ -66,7 +69,7 @@ class Application(Frame):
         LabelHeight = 2
 
         LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight,
-                            command=lambda: loadCsvFile(SolarTupleList, WTHeightTuple))
+                            command=lambda: loadCsvFile(self.SolarTupleList, self.WTHeightTuple))
         RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight,
                            command=lambda: loadLoggingFile(self))
         NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight, command=self.runSimulation)
@@ -107,9 +110,9 @@ class Application(Frame):
                                bg="white")
         WTNumberCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
                              bg="white")
-        WTHeightTuple = (WTNumberLabel, WTNumberEntry, WTNumberFactor, WTNumberCost)
+        self.WTHeightTuple = (WTNumberLabel, WTNumberEntry, WTNumberFactor, WTNumberCost)
 
-        LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, WTHeightTuple]
+        LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
         RowCounter = 0
         for Tuple in LabelTupleList:
             ColumnCounter = 0
@@ -164,9 +167,9 @@ class Application(Frame):
                                     bg="white")
         SP4HeaderTuple = (SP4NameLabel, SP4SurfaceLabel, SP4AngleLabel, SP4OrientationLabel)
 
-        SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
+        self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
-        for Tuple in SolarTupleList:
+        for Tuple in self.SolarTupleList:
             ColumnCounter = 0
             for Item in Tuple:
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
@@ -220,8 +223,10 @@ class Application(Frame):
          #    GroupSize = int(GroupSizeEntry.get());
          self.listener2 = Listener()
          self.counter = Value('i', 0)
+         self.manager = Manager();
+         self.Directory = self.manager.Value(c_char_p, "test");
 
-         self.p1 = Process(target=runTrain, args=(self.counter, ))
+         self.p1 = Process(target=runTrain, args=(self.counter, self.Directory))
          self.p1.start()
          self.pbar.start(DELAY1)
          self.after(DELAY2, self.onGetValue)
@@ -232,7 +237,8 @@ class Application(Frame):
             print("Counter: " + str(self.counter.value))
             if(self.counter.value != self.counterCheck):
                 self.counterCheck = self.counter.value
-                updateGraph()
+                print("DirectoryPath: " + self.Directory.value)
+                updateGraph(self.Directory.value, self.counterCheck, self)
             self.after(DELAY2, self.onGetValue)
             return
         else:
@@ -245,9 +251,10 @@ class Application(Frame):
         self.p1.kill()
 
 # Misschien hier panda's toevoegen met cvs
-def loadCsvFile(SolarTupleList, WTHeightTuple):
+def loadCsvFile(SolarTupleList, WTHeightTuple, filename=None):
     try:
-        filename = askopenfilename()
+        if filename is None:
+            filename = askopenfilename()
         if(filename != ''):
             with open(filename, newline='') as csvfile:
                 dataList = list(csv.reader(csvfile))
@@ -283,12 +290,20 @@ def loadCsvFile(SolarTupleList, WTHeightTuple):
 def newGen():
     vars = 1
 
-def updateGraph():
+def updateGraph(directory, gen, self):
     print("Dit is een check")
-    print()
+    csvFileName = directory + "best_" + str(gen-1) + ".csv"
+    print("Csvfilename: " + csvFileName)
+    loadCsvFile(self.SolarTupleList, self.WTHeightTuple, csvFileName)
+    print("txtFile: " + csvFileName)
+    loggingFileName = directory + "log.txt"
+    loadLoggingFile(self, loggingFileName)
 
-def runTrain(counter):
-    train(1000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter)
+    # print("Directory path:" )
+
+
+def runTrain(counter, directory):
+    train(1000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter, directory=directory)
 
 def x_limit(array):
     a = len(array)
@@ -318,9 +333,10 @@ def defWindTurbineCost(wm_type, wm_number):
     return wm_cost, wm_cost * wm_number;
 
 
-def loadLoggingFile(self):
+def loadLoggingFile(self, filename=None):
     try:
-        filename = askopenfilename()
+        if filename is None:
+            filename = askopenfilename()
         print("Filename: " + filename);
         if(filename != ''):
             f = open(filename, "r")
