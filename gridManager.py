@@ -8,14 +8,11 @@ import csv
 from math import ceil, log
 from train import train
 from multiprocessing import Process, Value, Manager
-from Listener import Listener
 from ctypes import c_char_p
-import os.path
 
 DELAY1 = 20
 DELAY2 = 5000
-LISTENER = Listener()
-counter5 = 0
+
 
 class Application(Frame):
     def __init__(self, parent):
@@ -23,12 +20,10 @@ class Application(Frame):
         self.parent = parent
         self.initUI()
         self.grid()
-        self.listener2 = Listener();
         self.parent.title("Grid Manager")
-        self.Directory = "";
         self.counter = 0
         self.counterCheck = 0
-
+        self.running = 0
 
     def initUI(self):
         Frame1 = Frame(self.parent, bg="red")
@@ -68,12 +63,12 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
-        LoadButton = Button(ItemFrame, text="Load", width=LabelWidth, height=LabelHeight,
+        LoadButton = Button(ItemFrame, text="Load Csv", width=LabelWidth, height=LabelHeight,
                             command=lambda: loadCsvFile(self.SolarTupleList, self.WTHeightTuple))
-        RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight,
+        RunButton = Button(ItemFrame, text="Load Logging", width=LabelWidth, height=LabelHeight,
                            command=lambda: loadLoggingFile(self))
-        NextButton = Button(ItemFrame, text="Next", width=LabelWidth, height=LabelHeight, command=self.runSimulation)
-        ExportButton = Button(ItemFrame, text="Export", width=LabelWidth, height=LabelHeight, command=self.destory)
+        NextButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command=self.runSimulation)
+        ExportButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight, command=self.destory)
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight, relief=SOLID)
@@ -124,7 +119,8 @@ class Application(Frame):
         # Solar Panels info
         SPNameLabel = Label(ItemFrame, text="Solar Panel Number", width=LabelWidth, height=LabelHeight, anchor=W,
                             relief=SOLID)
-        SPSurfaceLabel = Label(ItemFrame, text="Surface (m\u00b2)", width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
+        SPSurfaceLabel = Label(ItemFrame, text="Surface (m\u00b2)", width=LabelWidth, height=LabelHeight, anchor=W,
+                               relief=SOLID)
         SPAngleLabel = Label(ItemFrame, text="Hoek in graden", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
         SPOrientationLabel = Label(ItemFrame, text="Orientatie t.o.v. Zuiden", width=LabelWidth, height=LabelHeight,
@@ -184,29 +180,22 @@ class Application(Frame):
 
         # Bottom info
         InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight,
-                                     relief=SOLID, command=lambda: fillBox(InfoGenerationEntry))
-        # InfoGenerationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                    # bg="white")
-        InfoGenerationEntry = Entry(FrameBottom, width=LabelWidth)
-        InfoGenerationTuple = (InfoGenerationLabel, InfoGenerationEntry)
+                                     relief=SOLID)
+        self.InfoGenerationEntry = Entry(FrameBottom, width=LabelWidth)
+        InfoGenerationTuple = (InfoGenerationLabel, self.InfoGenerationEntry)
 
-        InfoPoolLabel = Button(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID,
-                               command=lambda: fillBox(InfoPoolEntry))
-        InfoPoolEntry = Entry(FrameBottom, width=LabelWidth)
-        # InfoPoolEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        InfoPoolTuple = (InfoPoolLabel, InfoPoolEntry)
+        InfoPoolLabel = Button(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        self.InfoPoolEntry = Entry(FrameBottom, width=LabelWidth)
+        InfoPoolTuple = (InfoPoolLabel, self.InfoPoolEntry)
 
-        InfoMutationLabel = Button(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight, relief=SOLID,
-                                   command=lambda: fillBox(InfoMutationEntry))
-        InfoMutationEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                  bg="white")
-        InfoMutationTuple = (InfoMutationLabel, InfoMutationEntry)
+        InfoMutationLabel = Button(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        self.InfoMutationEntry = Entry(FrameBottom, width=LabelWidth)
+        InfoMutationTuple = (InfoMutationLabel, self.InfoMutationEntry)
 
         InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energy", width=LabelWidth, height=LabelHeight,
-                                     relief=SOLID, command=lambda: fillBox(InfoPowerPlantEntry))
-        InfoPowerPlantEntry = Label(FrameBottom, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                    bg="white")
-        InfoPowerPlantTuple = (InfoPowerPlantLabel, InfoPowerPlantEntry)
+                                     relief=SOLID)
+        self.InfoPowerPlantEntry = Entry(FrameBottom, width=LabelWidth)
+        InfoPowerPlantTuple = (InfoPowerPlantLabel, self.InfoPowerPlantEntry)
 
         InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
 
@@ -219,23 +208,40 @@ class Application(Frame):
             ColumnCounter = ColumnCounter + 1
 
     def runSimulation(self):
-         #    generations = int(GenerationEntry.get())
-         #    GroupSize = int(GroupSizeEntry.get());
-         self.listener2 = Listener()
-         self.counter = Value('i', 0)
-         self.manager = Manager();
-         self.Directory = self.manager.Value(c_char_p, "test");
+        if self.running == 1:
+            self.p1.kill()
+            self.running = 0
+            self.pbar.stop()
 
-         self.p1 = Process(target=runTrain, args=(self.counter, self.Directory))
-         self.p1.start()
-         self.pbar.start(DELAY1)
-         self.after(DELAY2, self.onGetValue)
+            return
+        else:
+            try:
+                GenInfo = int(self.InfoGenerationEntry.get())
+                PoolInfo = int(self.InfoPoolEntry.get())
+                # MutationInfo = float(self.InfoMutationEntry.get())
+                # PowerPlantInfo = int(self.InfoPowerPlantEntry.get())
+                infoArray = [GenInfo, PoolInfo]
+                # infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
+
+            except Exception as e:
+                ShowErrorBox("Invoerfout", "Controller of de getallen goed zijn ingevoerd")
+                return
+
+            self.counter = Value('i', 0)
+            self.manager = Manager();
+            self.Directory = self.manager.Value(c_char_p, "test");
+            self.p1 = Process(target=runTrain, args=(self.counter, self.Directory, infoArray))
+            self.p1.start()
+            self.pbar.start(DELAY1)
+            self.running = 1
+            self.after(DELAY2, self.onGetValue)
+            return
 
     def onGetValue(self):
-        if (self.p1.is_alive()):
+        if self.p1.is_alive():
             print("Checking")
             print("Counter: " + str(self.counter.value))
-            if(self.counter.value != self.counterCheck):
+            if self.counter.value != self.counterCheck:
                 self.counterCheck = self.counter.value
                 print("DirectoryPath: " + self.Directory.value)
                 updateGraph(self.Directory.value, self.counterCheck, self)
@@ -245,17 +251,17 @@ class Application(Frame):
             print("Klaar")
             self.pbar.stop()
 
-
     def destory(self):
         self.parent.destroy()
         self.p1.kill()
+
 
 # Misschien hier panda's toevoegen met cvs
 def loadCsvFile(SolarTupleList, WTHeightTuple, filename=None):
     try:
         if filename is None:
             filename = askopenfilename()
-        if(filename != ''):
+        if (filename != ''):
             with open(filename, newline='') as csvfile:
                 dataList = list(csv.reader(csvfile))
                 data = dataList[0]
@@ -284,26 +290,20 @@ def loadCsvFile(SolarTupleList, WTHeightTuple, filename=None):
     except Exception as e:
         print(e);
         ShowErrorBox("Foutmelding verkeerd bestand",
-                         "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
-
-def newGen():
-    vars = 1
 
 def updateGraph(directory, gen, self):
-    print("Dit is een check")
-    csvFileName = directory + "best_" + str(gen-1) + ".csv"
-    print("Csvfilename: " + csvFileName)
+    csvFileName = directory + "best_" + str(gen - 1) + ".csv"
     loadCsvFile(self.SolarTupleList, self.WTHeightTuple, csvFileName)
-    print("txtFile: " + csvFileName)
     loggingFileName = directory + "log.txt"
     loadLoggingFile(self, loggingFileName)
 
-    # print("Directory path:" )
 
+def runTrain(counter, directory, array):
+    train(array[0], array[1], 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
+          directory=directory)
 
-def runTrain(counter, directory):
-    train(1000, 10, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter, directory=directory)
 
 def x_limit(array):
     a = len(array)
@@ -315,7 +315,7 @@ def x_limit(array):
 def ceil_power_of_10(n):
     exp = log(n, 10)
     exp = ceil(exp)
-    return 10**exp
+    return 10 ** exp
 
 
 def defWindTurbineCost(wm_type, wm_number):
@@ -338,7 +338,7 @@ def loadLoggingFile(self, filename=None):
         if filename is None:
             filename = askopenfilename()
         print("Filename: " + filename);
-        if(filename != ''):
+        if (filename != ''):
             f = open(filename, "r")
             f1 = f.readlines()
             genArray = []
@@ -365,21 +365,16 @@ def loadLoggingFile(self, filename=None):
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
-def fillBox(box):
-    v = 2
-    # d = MyDialog(root)
-    # root.wait_window(d.top)
-    # box.config(text=d.value)
-
 def format_e(n):
     a = '%E' % n
     return a.split('E')[0].rstrip('0').rstrip('.') + 'E' + a.split('E')[1]
+
 
 def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
 
 
-def nextChart(self, starting = True):
+def nextChart(self, starting=True):
     self.a.clear()
     b = self.f.add_subplot(111)
     if starting == True:
@@ -407,23 +402,23 @@ def nextChart(self, starting = True):
     self.canvas.draw()
 
 
-class MyDialog:
-    def __init__(self, parent):
-        top = self.top = Toplevel(parent)
-        Label(top, text="Value").pack()
-        self.e = Entry(top)
-        self.e.pack(padx=5)
-        b = Button(top, text="OK", command=self.ok)
-        b.pack(pady=5)
-
-    def ok(self):
-        try:
-            self.value = int(self.e.get())
-            self.top.destroy()
-        except ValueError:
-            ShowErrorBox("Foute Invoer", "Dit veld verwacht een geheel getal")
-            self.value = int(0)
-            self.top.destroy()
+# class MyDialog:
+#     def __init__(self, parent):
+#         top = self.top = Toplevel(parent)
+#         Label(top, text="Value").pack()
+#         self.e = Entry(top)
+#         self.e.pack(padx=5)
+#         b = Button(top, text="OK", command=self.ok)
+#         b.pack(pady=5)
+#
+#     def ok(self):
+#         try:
+#             self.value = int(self.e.get())
+#             self.top.destroy()
+#         except ValueError:
+#             ShowErrorBox("Foute Invoer", "Dit veld verwacht een geheel getal")
+#             self.value = int(0)
+#             self.top.destroy()
 
 def main():
     root = Tk()
@@ -433,5 +428,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
