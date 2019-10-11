@@ -67,7 +67,8 @@ class Application(Frame):
         RunButton = Button(ItemFrame, text="Load Logging", width=LabelWidth, height=LabelHeight,
                            command=lambda: fr.loadLoggingFile(self))
         NextButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command= self.runSimulation)
-        ExportButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight, command=lambda: fn.exitProgram(self))
+        ExportButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight,
+                              command=lambda: fn.exitProgram(self))
         ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight, relief=SOLID)
@@ -242,7 +243,6 @@ class Application(Frame):
             print("Counter: " + str(self.counter.value))
             if self.counter.value != self.counterCheck:
                 self.counterCheck = self.counter.value
-                print("DirectoryPath: " + self.Directory.value)
                 fn.updateGraph(self.Directory.value, self.counterCheck, self)
             self.after(DELAY2, self.onGetValue)
             return
