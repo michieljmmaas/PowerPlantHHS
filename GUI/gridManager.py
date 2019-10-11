@@ -62,14 +62,14 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
-        LoadButton = Button(ItemFrame, text="Load Csv", width=LabelWidth, height=LabelHeight,
+        LoadCSVButton = Button(ItemFrame, text="Load Csv", width=LabelWidth, height=LabelHeight,
                             command=lambda: fr.loadCsvFile(self))
-        RunButton = Button(ItemFrame, text="Load Logging", width=LabelWidth, height=LabelHeight,
+        LoadTXTBButton = Button(ItemFrame, text="Load Logging", width=LabelWidth, height=LabelHeight,
                            command=lambda: fr.loadLoggingFile(self))
-        NextButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command= self.runSimulation)
-        ExportButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight,
+        self.RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command= self.runSimulation)
+        ExitButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight,
                               command=lambda: fn.exitProgram(self))
-        ActionTuple = (LoadButton, RunButton, NextButton, ExportButton)
+        ActionTuple = (LoadCSVButton, LoadTXTBButton, self.RunButton, ExitButton)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight, relief=SOLID)
         NumberLabel = Label(ItemFrame, text="Number", width=LabelWidth, height=LabelHeight, relief=SOLID)
@@ -175,26 +175,27 @@ class Application(Frame):
         TotalLabel = Label(ItemFrame, text="Total Cost", height=5)
         TotalLabel.grid(row=RowCounter + 2, column=0, padx=padx, pady=pady, columnspan=3, sticky=W + E)
 
-        TotalCost = Label(ItemFrame, text="", width=20, height=5)
-        TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
+        self.TotalCost = Label(ItemFrame, text="", width=20, height=5)
+        self.TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
         # Bottom info
         InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight,
                                      relief=SOLID)
-        self.InfoGenerationEntry = Entry(FrameBottom, width=LabelWidth)
+        self.InfoGenerationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
+        # self.InfoGenerationEntry.tag_configure(justify='center')
         InfoGenerationTuple = (InfoGenerationLabel, self.InfoGenerationEntry)
 
         InfoPoolLabel = Button(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        self.InfoPoolEntry = Entry(FrameBottom, width=LabelWidth)
+        self.InfoPoolEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
         InfoPoolTuple = (InfoPoolLabel, self.InfoPoolEntry)
 
         InfoMutationLabel = Button(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        self.InfoMutationEntry = Entry(FrameBottom, width=LabelWidth)
+        self.InfoMutationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
         InfoMutationTuple = (InfoMutationLabel, self.InfoMutationEntry)
 
         InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energy", width=LabelWidth, height=LabelHeight,
                                      relief=SOLID)
-        self.InfoPowerPlantEntry = Entry(FrameBottom, width=LabelWidth)
+        self.InfoPowerPlantEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
         InfoPowerPlantTuple = (InfoPowerPlantLabel, self.InfoPowerPlantEntry)
 
         InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
@@ -212,6 +213,7 @@ class Application(Frame):
             self.p1.kill()
             self.running = 0
             self.pbar.stop()
+            self.RunButton.config(text="Run")
 
             return
         else:
@@ -227,6 +229,10 @@ class Application(Frame):
                 fn.ShowErrorBox("Invoerfout", "Controller of de getallen goed zijn ingevoerd")
                 return
 
+            if(PoolInfo < 10):
+                fn.ShowErrorBox("Waarschuwing", "Voor een optimaal resultaat wordt het aangeraden om een Pool die groter is dan 10 mee te geven")
+                return
+
             self.counter = Value('i', 0)
             self.manager = Manager()
             self.Directory = self.manager.Value(c_char_p, "test")
@@ -234,6 +240,7 @@ class Application(Frame):
             self.p1.start()
             self.pbar.start(DELAY1)
             self.running = 1
+            self.RunButton.config(text="Stop simulatie")
             self.after(DELAY2, self.onGetValue)
             return
 

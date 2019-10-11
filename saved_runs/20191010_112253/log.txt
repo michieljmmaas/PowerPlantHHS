@@ -1,1 +1,0 @@
-generation: 0 mean_cost: 234669161689495.1 min_cost: 115241778181220.02

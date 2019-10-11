@@ -1,6 +1,7 @@
 from tkinter.filedialog import askopenfilename
 import csv
 import GUI.GUIFunctions as fn
+import babel.numbers as bb
 
 
 def loadLoggingFile(GUI, filename=None):
@@ -27,6 +28,9 @@ def loadLoggingFile(GUI, filename=None):
             GUI.gens = genArray
             GUI.meanCost = meanCostArray
             GUI.minCost = minCostArray
+
+            totalCostNumber = bb.format_currency(minCostArray[-1], 'EUR', locale='en_US')
+            GUI.TotalCost.config(text=totalCostNumber)
             fn.nextChart(GUI)
 
     except Exception as e:
@@ -55,17 +59,18 @@ def loadCsvFile(GUI, filename=None):
                         info = round(float(data[counter]), 2)
                         item.config(text=info)
                         counter += 1
-                #
-                # wm_cost, windTurbineTotalCost = defWindTurbineCost(int(4), int(data[-1]))
-                #
-                # entry = WTHeightTuple[1]
-                # entry.config(text=data[-1])
-                #
-                # cost = WTHeightTuple[2]
-                # cost.config(text=wm_cost)
-                #
-                # total = WTHeightTuple[3]
-                # total.config(text=windTurbineTotalCost)
+
+                windData = round(float(data[-1]))
+                wm_cost, windTurbineTotalCost = fn.defWindTurbineCost(int(4), windData)
+
+                entry = GUI.WTHeightTuple[1]
+                entry.config(text=windData)
+
+                cost = GUI.WTHeightTuple[2]
+                cost.config(text=wm_cost)
+
+                total = GUI.WTHeightTuple[3]
+                total.config(text=windTurbineTotalCost)
     except Exception as e:
         print(e)
         fn.ShowErrorBox("Foutmelding verkeerd bestand",
