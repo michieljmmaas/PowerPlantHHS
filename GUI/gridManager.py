@@ -23,13 +23,14 @@ class Application(Frame):
         self.counter = 0
         self.counterCheck = 0
         self.running = 0
+        fn.fillEntries(self)
 
     def initUI(self):
-        Frame1 = Frame(self.parent, bg="red")
+        Frame1 = Frame(self.parent)
         Frame1.grid(row=0, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
-        ItemFrame = Frame(self.parent, bg="green")
+        ItemFrame = Frame(self.parent)
         ItemFrame.grid(row=0, column=4, rowspan=6, columnspan=2, sticky=W + E + N + S)
-        FrameBottom = Frame(self.parent, bg="blue")
+        FrameBottom = Frame(self.parent)
         FrameBottom.grid(row=5, column=0, columnspan=4, rowspan=2, sticky=W + E + N + S)
 
         self.graphNumber = 0
@@ -52,7 +53,7 @@ class Application(Frame):
         self.canvas.get_tk_widget().pack(fill=BOTH)
 
         self.pbar = Progressbar(Frame1, mode='indeterminate')
-        self.pbar.pack()
+        self.pbar.pack(fill=BOTH)
 
         nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: fn.nextChart(self, False))
         nextButton.pack()
@@ -63,12 +64,12 @@ class Application(Frame):
         LabelHeight = 2
 
         LoadCSVButton = Button(ItemFrame, text="Load Csv", width=LabelWidth, height=LabelHeight,
-                            command=lambda: fr.loadCsvFile(self))
+                            command=lambda: fr.loadCsvFile(self), relief=SOLID)
         LoadTXTBButton = Button(ItemFrame, text="Load Logging", width=LabelWidth, height=LabelHeight,
-                           command=lambda: fr.loadLoggingFile(self))
-        self.RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command= self.runSimulation)
+                           command=lambda: fr.loadLoggingFile(self), relief=SOLID)
+        self.RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command=self.runSimulation, relief=SOLID)
         ExitButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight,
-                              command=lambda: fn.exitProgram(self))
+                              command=lambda: fn.exitProgram(self), relief=SOLID)
         ActionTuple = (LoadCSVButton, LoadTXTBButton, self.RunButton, ExitButton)
 
         ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight, relief=SOLID)
@@ -172,30 +173,30 @@ class Application(Frame):
                 ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
 
-        TotalLabel = Label(ItemFrame, text="Total Cost", height=5)
+        TotalLabel = Label(ItemFrame, text="Total Cost", height=5, relief=SOLID)
         TotalLabel.grid(row=RowCounter + 2, column=0, padx=padx, pady=pady, columnspan=3, sticky=W + E)
 
-        self.TotalCost = Label(ItemFrame, text="", width=20, height=5)
+        self.TotalCost = Label(ItemFrame, width=20, height=5, anchor=W, relief=SUNKEN, bg="white")
         self.TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
         # Bottom info
         InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight,
                                      relief=SOLID)
-        self.InfoGenerationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
+        self.InfoGenerationEntry = Entry(FrameBottom, font=("Helvetica", 10))
         # self.InfoGenerationEntry.tag_configure(justify='center')
         InfoGenerationTuple = (InfoGenerationLabel, self.InfoGenerationEntry)
 
         InfoPoolLabel = Button(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        self.InfoPoolEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
+        self.InfoPoolEntry = Entry(FrameBottom, font=("Helvetica", 10))
         InfoPoolTuple = (InfoPoolLabel, self.InfoPoolEntry)
 
-        InfoMutationLabel = Button(FrameBottom, text="MutationRate", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        self.InfoMutationEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
+        InfoMutationLabel = Button(FrameBottom, text="MutationRate (%)", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        self.InfoMutationEntry = Entry(FrameBottom, font=("Helvetica", 10))
         InfoMutationTuple = (InfoMutationLabel, self.InfoMutationEntry)
 
-        InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energy", width=LabelWidth, height=LabelHeight,
+        InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energy (KW)", width=LabelWidth, height=LabelHeight,
                                      relief=SOLID)
-        self.InfoPowerPlantEntry = Text(FrameBottom, width=LabelWidth, height=LabelHeight, font=("Helvetica", 10))
+        self.InfoPowerPlantEntry = Entry(FrameBottom, font=("Helvetica", 10))
         InfoPowerPlantTuple = (InfoPowerPlantLabel, self.InfoPowerPlantEntry)
 
         InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
@@ -220,17 +221,25 @@ class Application(Frame):
             try:
                 GenInfo = int(self.InfoGenerationEntry.get())
                 PoolInfo = int(self.InfoPoolEntry.get())
-                # MutationInfo = float(self.InfoMutationEntry.get())
-                # PowerPlantInfo = int(self.InfoPowerPlantEntry.get())
-                infoArray = [GenInfo, PoolInfo]
-                # infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
+                MutationInfo = int(self.InfoMutationEntry.get())
+                PowerPlantInfo = int(self.InfoPowerPlantEntry.get())
+                # infoArray = [GenInfo, PoolInfo, MutationInfo]
+                infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
 
             except ValueError:
                 fn.ShowErrorBox("Invoerfout", "Controller of de getallen goed zijn ingevoerd")
                 return
 
-            if(PoolInfo < 10):
+            if PoolInfo < 10:
                 fn.ShowErrorBox("Waarschuwing", "Voor een optimaal resultaat wordt het aangeraden om een Pool die groter is dan 10 mee te geven")
+                return
+
+            if GenInfo < 5:
+                fn.ShowErrorBox("Waarschuwing", "Voor een optimaal resultaat wordt het aangeraden om voor meer dan 10 generaties te draaien")
+                return
+
+            if MutationInfo > 100 or MutationInfo < 0:
+                fn.ShowErrorBox("Waarschuwing", "Het mutatie percentage moet tussen de 0 en de 100 liggen. Het wordt aangeraden om het het boven de 25% te houden.")
                 return
 
             self.counter = Value('i', 0)
@@ -259,7 +268,7 @@ class Application(Frame):
 
 def runTrain(counter, directory, array):
     train(array[0], array[1], 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
-          directory=directory)
+          directory=directory, mutationPercentage=array[2], target_kw=array[3])
 
 def main():
     root = Tk()

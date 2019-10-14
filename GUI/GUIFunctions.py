@@ -36,7 +36,7 @@ def ShowErrorBox(title, message):
 
 def nextChart(GUI, starting=True):
     GUI.a.clear()
-    if starting == True:
+    if starting:
         GUI.graphNumber = 0
     if GUI.graphNumber == 0:
         GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Minimum Cost")
@@ -70,3 +70,8 @@ def exitProgram(GUI):
     GUI.parent.destroy()
     GUI.p1.kill()
 
+def fillEntries(GUI):
+    GUI.InfoGenerationEntry.insert(0, '100')
+    GUI.InfoPoolEntry.insert(0, '10')
+    GUI.InfoMutationEntry.insert(0, '50')
+    GUI.InfoPowerPlantEntry.insert(0, '6000')
