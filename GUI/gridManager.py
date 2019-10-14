@@ -39,24 +39,21 @@ class Application(Frame):
 
         self.a = self.f.add_subplot(111)
 
-        self.gens = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-        self.minCost = [1380645658.15, 617306363.53, 617306363.53, 469239361.71, 387622002.09, 365128241.34,
-                        339966956.2, 309698761.48, 299455088.99, 245330372.63, 195903759.14]
+        self.gens = []
+        self.minCost = []
+        self.meanCost = []
 
-        self.meanCost = [4611297453.12, 4296382782.98, 3945328950.50, 3400852428.68, 2928522993.03, 2441527183.68,
-                         5259124454.19, 2685947243.92, 2258377078.39, 1750162255.54, 1800532731.67]
-
-        # self.gens, self.minCost, self.meanCost = loadLoggingFile()
+        self.a.plot([0], [0])
+        self.a.axis('off')
 
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)
-        fn.nextChart(self)
         self.canvas.get_tk_widget().pack(fill=BOTH)
 
         self.pbar = Progressbar(Frame1, mode='indeterminate')
         self.pbar.pack(fill=BOTH)
 
-        nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: fn.nextChart(self, False))
-        nextButton.pack()
+        self.nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: fn.nextChart(self, False), state="disabled")
+        self.nextButton.pack()
 
         padx = 10
         pady = 10
@@ -215,6 +212,9 @@ class Application(Frame):
             self.running = 0
             self.pbar.stop()
             self.RunButton.config(text="Run")
+            self.nextButton.config(state="normal")
+            if len(self.gens) > 1:
+                self.counterCheck = 0
 
             return
         else:
@@ -223,7 +223,6 @@ class Application(Frame):
                 PoolInfo = int(self.InfoPoolEntry.get())
                 MutationInfo = int(self.InfoMutationEntry.get())
                 PowerPlantInfo = int(self.InfoPowerPlantEntry.get())
-                # infoArray = [GenInfo, PoolInfo, MutationInfo]
                 infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
 
             except ValueError:
@@ -242,6 +241,7 @@ class Application(Frame):
                 fn.ShowErrorBox("Waarschuwing", "Het mutatie percentage moet tussen de 0 en de 100 liggen. Het wordt aangeraden om het het boven de 25% te houden.")
                 return
 
+            fn.clearGraph(self, True)
             self.counter = Value('i', 0)
             self.manager = Manager()
             self.Directory = self.manager.Value(c_char_p, "test")

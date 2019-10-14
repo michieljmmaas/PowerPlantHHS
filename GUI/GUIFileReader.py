@@ -4,12 +4,12 @@ import GUI.GUIFunctions as fn
 import babel.numbers as bb
 
 
-def loadLoggingFile(GUI, filename=None):
+def loadLoggingFile(GUI, first, filename=None):
     try:
         if filename is None:
             filename = askopenfilename()
         print("Filename: " + filename)
-        if (filename != ''):
+        if filename != '':
             f = open(filename, "r")
             f1 = f.readlines()
             genArray = []
@@ -31,7 +31,9 @@ def loadLoggingFile(GUI, filename=None):
 
             totalCostNumber = bb.format_currency(minCostArray[-1], 'EUR', locale='en_US')
             GUI.TotalCost.config(text=totalCostNumber)
-            fn.nextChart(GUI)
+            if not first:
+                fn.nextChart(GUI)
+                GUI.nextButton.config(state="normal")
 
     except Exception as e:
         print(e)
@@ -44,7 +46,7 @@ def loadCsvFile(GUI, filename=None):
     try:
         if filename is None:
             filename = askopenfilename()
-        if (filename != ''):
+        if filename != '':
             with open(filename, newline='') as csvfile:
                 dataList = list(csv.reader(csvfile))
                 data = dataList[0]
