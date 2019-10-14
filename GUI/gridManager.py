@@ -19,7 +19,7 @@ class Application(Frame):
         self.parent = parent
         self.initUI()
         self.grid()
-        self.parent.title("Grid Manager")
+        self.parent.title("Danone Powerplant")
         self.counter = 0
         self.counterCheck = 0
         self.running = 0
@@ -60,22 +60,22 @@ class Application(Frame):
         LabelWidth = 20
         LabelHeight = 2
 
-        LoadCSVButton = Button(ItemFrame, text="Load Csv", width=LabelWidth, height=LabelHeight,
+        LoadCSVButton = Button(ItemFrame, text="Laad Csv", width=LabelWidth, height=LabelHeight,
                             command=lambda: fr.loadCsvFile(self), relief=SOLID)
-        LoadTXTBButton = Button(ItemFrame, text="Load Logging", width=LabelWidth, height=LabelHeight,
+        LoadTXTBButton = Button(ItemFrame, text="Laad Logging", width=LabelWidth, height=LabelHeight,
                            command=lambda: fr.loadLoggingFile(self), relief=SOLID)
         self.RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command=self.runSimulation, relief=SOLID)
-        ExitButton = Button(ItemFrame, text="Close program", width=LabelWidth, height=LabelHeight,
+        ExitButton = Button(ItemFrame, text="Afsluiten", width=LabelWidth, height=LabelHeight,
                               command=lambda: fn.exitProgram(self), relief=SOLID)
         ActionTuple = (LoadCSVButton, LoadTXTBButton, self.RunButton, ExitButton)
 
-        ItemLabel = Label(ItemFrame, text="Item", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        NumberLabel = Label(ItemFrame, text="Number", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        ItemLabel = Label(ItemFrame, text="Onderwerp", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        NumberLabel = Label(ItemFrame, text="Aantal", width=LabelWidth, height=LabelHeight, relief=SOLID)
         FactorLabel = Label(ItemFrame, text="Factor", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        CostLabel = Label(ItemFrame, text="Cost", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        CostLabel = Label(ItemFrame, text="Kosten", width=LabelWidth, height=LabelHeight, relief=SOLID)
         headerTuple = (ItemLabel, NumberLabel, FactorLabel, CostLabel)
 
-        PWSurplusLabel = Label(ItemFrame, text="Energy Surplus", width=LabelWidth, height=LabelHeight, anchor=W,
+        PWSurplusLabel = Label(ItemFrame, text="Energie Overschot", width=LabelWidth, height=LabelHeight, anchor=W,
                                relief=SOLID)
         PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
                                bg="white")
@@ -85,7 +85,7 @@ class Application(Frame):
                                bg="white")
         PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWSurplusFactor, PWDSurplusCost)
 
-        PWDeficitLabel = Label(ItemFrame, text="Energy Deficit", width=LabelWidth, height=LabelHeight, anchor=W,
+        PWDeficitLabel = Label(ItemFrame, text="Energie Tekort", width=LabelWidth, height=LabelHeight, anchor=W,
                                relief=SOLID)
         PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
                                bg="white")
@@ -115,18 +115,18 @@ class Application(Frame):
             RowCounter = RowCounter + 1
 
         # Solar Panels info
-        SPNameLabel = Label(ItemFrame, text="Solar Panel Number", width=LabelWidth, height=LabelHeight, anchor=W,
+        SPNameLabel = Label(ItemFrame, text="Zonnepaneel Nummer", width=LabelWidth, height=LabelHeight, anchor=W,
                             relief=SOLID)
-        SPSurfaceLabel = Label(ItemFrame, text="Surface (m\u00b2)", width=LabelWidth, height=LabelHeight, anchor=W,
+        SPSurfaceLabel = Label(ItemFrame, text="Oppervlakte (m\u00b2)", width=LabelWidth, height=LabelHeight, anchor=W,
                                relief=SOLID)
         SPAngleLabel = Label(ItemFrame, text="Hoek in graden", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
-        SPOrientationLabel = Label(ItemFrame, text="Orientatie t.o.v. Zuiden", width=LabelWidth, height=LabelHeight,
+        SPOrientationLabel = Label(ItemFrame, text="Oriëntatie t.o.v. Zuiden", width=LabelWidth, height=LabelHeight,
                                    anchor=W, relief=SOLID)
         SPHeaderTuple = (SPNameLabel, SPSurfaceLabel, SPAngleLabel, SPOrientationLabel)
 
         # Solar Panel 1
-        SP1NameLabel = Label(ItemFrame, text="Solar Panel 1", width=LabelWidth, height=LabelHeight, anchor=W,
+        SP1NameLabel = Label(ItemFrame, text="Zonnepaneel 1", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
         SP1SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP1AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
@@ -135,7 +135,7 @@ class Application(Frame):
         SP1HeaderTuple = (SP1NameLabel, SP1SurfaceLabel, SP1AngleLabel, SP1OrientationLabel)
 
         # Solar Panel 2
-        SP2NameLabel = Label(ItemFrame, text="Solar Panel 2", width=LabelWidth, height=LabelHeight, anchor=W,
+        SP2NameLabel = Label(ItemFrame, text="Zonnepaneel 2", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
         SP2SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP2AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
@@ -144,7 +144,7 @@ class Application(Frame):
         SP2HeaderTuple = (SP2NameLabel, SP2SurfaceLabel, SP2AngleLabel, SP2OrientationLabel)
 
         # Solar Panel 3
-        SP3NameLabel = Label(ItemFrame, text="Solar Panel 3", width=LabelWidth, height=LabelHeight, anchor=W,
+        SP3NameLabel = Label(ItemFrame, text="Zonnepaneel 3", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
         SP3SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP3AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
@@ -153,7 +153,7 @@ class Application(Frame):
         SP3HeaderTuple = (SP3NameLabel, SP3SurfaceLabel, SP3AngleLabel, SP3OrientationLabel)
 
         # Solar Panel 4
-        SP4NameLabel = Label(ItemFrame, text="Solar Panel 4", width=LabelWidth, height=LabelHeight, anchor=W,
+        SP4NameLabel = Label(ItemFrame, text="Zonnepaneel 4", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
         SP4SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
         SP4AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
@@ -170,7 +170,7 @@ class Application(Frame):
                 ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
 
-        TotalLabel = Label(ItemFrame, text="Total Cost", height=5, relief=SOLID)
+        TotalLabel = Label(ItemFrame, text="Totale Kosten", height=5, relief=SOLID)
         TotalLabel.grid(row=RowCounter + 2, column=0, padx=padx, pady=pady, columnspan=3, sticky=W + E)
 
         self.TotalCost = Label(ItemFrame, width=20, height=5, anchor=W, relief=SUNKEN, bg="white")
@@ -187,11 +187,11 @@ class Application(Frame):
         self.InfoPoolEntry = Entry(FrameBottom, font=("Helvetica", 10))
         InfoPoolTuple = (InfoPoolLabel, self.InfoPoolEntry)
 
-        InfoMutationLabel = Button(FrameBottom, text="MutationRate (%)", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        InfoMutationLabel = Button(FrameBottom, text="Mutation Rate (%)", width=LabelWidth, height=LabelHeight, relief=SOLID)
         self.InfoMutationEntry = Entry(FrameBottom, font=("Helvetica", 10))
         InfoMutationTuple = (InfoMutationLabel, self.InfoMutationEntry)
 
-        InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energy (KW)", width=LabelWidth, height=LabelHeight,
+        InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energie (KW)", width=LabelWidth, height=LabelHeight,
                                      relief=SOLID)
         self.InfoPowerPlantEntry = Entry(FrameBottom, font=("Helvetica", 10))
         InfoPowerPlantTuple = (InfoPowerPlantLabel, self.InfoPowerPlantEntry)
@@ -212,9 +212,9 @@ class Application(Frame):
             self.running = 0
             self.pbar.stop()
             self.RunButton.config(text="Run")
-            self.nextButton.config(state="normal")
+            self.counterCheck = 0
             if len(self.gens) > 1:
-                self.counterCheck = 0
+                self.nextButton.config(state="normal")
 
             return
         else:
@@ -249,7 +249,7 @@ class Application(Frame):
             self.p1.start()
             self.pbar.start(DELAY1)
             self.running = 1
-            self.RunButton.config(text="Stop simulatie")
+            self.RunButton.config(text="Stop Simulatie")
             self.after(DELAY2, self.onGetValue)
             return
 
