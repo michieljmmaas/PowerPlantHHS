@@ -13,17 +13,23 @@ import os
 def plot(model_name, generation_number):
     simulink = Simulink('WT_SP_model_vs1total')
     generation = load(model_name=model_name, generation_number=generation_number)
-    kW_distribution, _ = simulink.run_simulation(generation[0][0:-1], 4, generation[0][-1])
+    power_distribution, _ = simulink.run_simulation(generation[0][0:-1], 4, generation[0][-1])
     cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
         'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
     calculatecost = CostCalculator(190, 50, 6000, 1000000, cb_cost_table, 1000, 230)
-    dic = calculatecost.get_stats(kW_distribution,319650,4,int(generation[0][-1]))
-    kW_distribution = np.mean(np.reshape(kW_distribution[:8760], (365,24)), axis=1)
-    consumption = np.full(len(kW_distribution), 6000)
+    dic = calculatecost.get_stats(power_distribution,319650,4,int(generation[0][-1]))
+    power_max = power_distribution.max()
+    power_generated = power_distribution.sum()
+    power_distribution = np.mean(np.reshape(power_distribution[:8760], (365,24)), axis=1)
+    consumption = np.full(len(power_distribution), 6000)
 
     #sns.set()
-    t1 = "Storage capacity: \nAmount of windturbines: \nCable Area: "
-    t2 = str(int(dic['total_storage'])) + " kWh\n" + str(int(generation[0][-1])) + "\n" + str(int(dic['cable_area'])) + "mm²"
+    t1 = "Storage capacity: \nAmount of windturbines: \nCable area: \nMaximum Power Output: \nTotal Power Generated: "
+    t2 = str(int(dic['total_storage'])) + " kWh\n" + \
+        str(int(generation[0][-1])) + "\n" + \
+        str(int(dic['cable_area'])) + " mm²\n" + \
+        str(int(power_max)) + " kW\n" + \
+        str(int(power_generated)) + " kWh"
     t3 = ""
     for I in range(4):
         if generation[0][0 + I*3] > 0:
@@ -33,18 +39,20 @@ def plot(model_name, generation_number):
 
     #sns.set_style("whitegrid")
     plt.subplot(2, 1, 1)
-    plt.text(350, kW_distribution.max() * 0.90, t2, ha='left', style='italic', wrap=True)
-    plt.text(350, kW_distribution.max() * 0.90, t1, ha='right', wrap=True)
-    plt.text(280, kW_distribution.max() * 0.65, t3, ha='left', wrap=True)
+    plt.text(350, power_distribution.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
+    plt.text(350, power_distribution.max() * 1.04, t1, ha='right', va='top', wrap=False)
+    plt.text(382, power_distribution.max() * 0.78, t3, ha='right', va='top', wrap=False)
     #sns.set_style("whitegrid")
-    plt.plot(kW_distribution, color='green', alpha=0.5)
+    plt.plot(power_distribution, color='green', alpha=0.5)
     plt.plot(consumption, color='red')
+    plt.title("Power Average per Day")
     plt.xlabel('Days')
     plt.ylabel('kW')
     plt.subplot(2, 1, 2)
     #sns.set_style("whitegrid")
-    plt.plot(np.cumsum(kW_distribution - 6000), color='green', alpha=0.5)
-    plt.plot(np.zeros(len(kW_distribution)), color='red')
+    plt.plot(np.cumsum(power_distribution - 6000), color='green', alpha=0.5)
+    plt.plot(np.zeros(len(power_distribution)), color='red')
+    plt.title("Energy Balance over a Year")
     plt.xlabel('Days')
     plt.ylabel('kWh')
     plt.show()
@@ -62,4 +70,4 @@ def load(model_name, generation_number, takebest=True):
     
 
 if __name__ == '__main__':
-    plot('Save_Accukosten_100000', 52)
+    plot('Save_Accukosten_100', 24)
