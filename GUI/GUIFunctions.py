@@ -1,9 +1,10 @@
 from math import ceil, log
 from tkinter import messagebox
 import GUI.GUIFileReader as fr
+import numpy as np
+import ast
 
-#Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
-
+# Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
 # Geef een limit aan het aantal generaties die de grafiek laat zien
 def x_limit(array):
     a = len(array)
@@ -50,9 +51,9 @@ def nextChart(GUI, starting=True):
 
     # Instellingen voor de eerste grafiek
     if GUI.graphNumber == 0:
-        GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Minimum Cost")
+        GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Minimum Cost")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
         limit = x_limit(GUI.gens)
         GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         GUI.a.legend()
@@ -60,11 +61,20 @@ def nextChart(GUI, starting=True):
 
     # Instellingen voor de tweede grafiek
     elif GUI.graphNumber == 1:
-        GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Mean Cost")
+        GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Mean Cost")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
         limit = x_limit(GUI.gens)
         GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+        GUI.a.legend()
+        GUI.graphNumber = 2 #Als je nog een keer klikt krijg je de andere
+
+    # Instellingen voor de tweede grafiek
+    elif GUI.graphNumber == 2:
+        GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Kilowat geproduceerd")
+        GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
+        GUI.a.set(ylabel="Kilo Watt", xlabel="Dagen", title="Energie geproduceerd")
+        GUI.a.set_xlim(0, 365)
         GUI.a.legend()
         GUI.graphNumber = 0 #Als je nog een keer klikt krijg je de andere
 
@@ -80,12 +90,29 @@ def clearGraph(GUI, visible):
     GUI.nextButton.config(state="disabled")
 
 # Als er een nieuwe generatie is roept hij dit aan
-def updateGraph(directory, gen, GUI):
+def updateGraph(directory, gen, PowerArraySting, GUI):
     csvFileName = directory + "best_" + str(gen - 1) + ".csv" # Pak het goede CSV bestand
     fr.loadCsvFile(GUI, csvFileName) # Laad deze in de vleden
     first = not gen > 1 # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt" # Pak het goede logging bestand
     fr.loadLoggingFile(GUI, first, loggingFileName) # Laat het logging bestand is
+    PowerArrayPre = ast.literal_eval(PowerArraySting)
+    PowerArray = np.mean(np.reshape(PowerArrayPre[:8760], (365,24)), axis=1)
+    GUI.consumption = np.full(len(PowerArray), 6000)
+    # PowerArray = np.array(PowerArrayPre)
+    # print(str(PowerArray))
+    setUpPower(PowerArray, GUI)
+
+    # consumption, kW_distribution, dic, generation = AurinPlot.plot(directory, (gen-1))
+    # print(str(kW_distribution))
+
+def setUpPower(PowerArray, GUI):
+    GUI.kW_distribution = PowerArray
+    # GUI.uren = list(range(0, 8761))
+    # GUI.uren =
+    # print("KWH: " + str(len(GUI.kW_distribution)))
+    # print("uren: " + str(len(GUI.uren)))
+    # GUI.consumption = np.full(len(PowerArray), 6000)
 
 # Sluit het programma af en sluit de thread als hij runt
 def exitProgram(GUI):
@@ -95,6 +122,6 @@ def exitProgram(GUI):
 # Deze functie laad standaard waarden in voor het genetische algortime
 def fillEntries(GUI):
     GUI.InfoGenerationEntry.insert(0, '100')
-    GUI.InfoPoolEntry.insert(0, '100')
+    GUI.InfoPoolEntry.insert(0, '10')
     GUI.InfoMutationEntry.insert(0, '50')
     GUI.InfoPowerPlantEntry.insert(0, '6000')

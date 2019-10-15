@@ -6,6 +6,7 @@ from calculate_cost import CostCalculator
 from genetic_algorith import GeneticAlgorith
 from run_sim import Simulink
 from save_and_load import PopulationSaver
+import GUI.plot as AurinPlot
 from multiprocessing import Process, Value
 
 N_PANELS = 4
@@ -16,7 +17,7 @@ N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 
 def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max,
-          orientation_min, orientation_max, model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000):
+          orientation_min, orientation_max, model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000, EnergyArray=None):
     """train genetic algorithm"""
 
     genetic_algorithm = GeneticAlgorith(mutationPercentage, 150, 6, 2, 2, True)
@@ -59,6 +60,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     last_generation = n_generations - 1
     for generation in range(saver.generation, n_generations):
         cost_array = np.zeros(group_size)
+        energy_array = []
         print('finished simulation 0 of {}'.format(group_size), end='\r')
         for i in range(group_size):
             current_row = group_values[i]
@@ -67,6 +69,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             n_Turbines = int(current_row[-1])
             # run simulink
             energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], wm_type, n_Turbines)  # add turbine later
+            # print(energy_production)
+            energy_array.append(energy_production)
             #energy_production = np.array([np.sum(current_row[:N_SOLAR_FEATURES:3])] * (365*24))  # simple fake simulation
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
@@ -81,15 +85,23 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             to_screen=True)
         # store intermediate result
         best = genetic_algorithm.get_best(group_values, cost_array)
-        windTurbs = best[0][-1]
-        print("Type windTurbs: " + str(type(windTurbs)))
-        print("Aantal turbines: " + str(windTurbs))
+
+        # Reverse engineer de Power Graph
+        NPindex = np.where(group_values == best[0])
+        index = NPindex[0][0]
+        sending2 = energy_array[index].tolist()
+        sending = str(sending2)
 
         saver.save_best(best)
+
+        if EnergyArray is not None:
+            EnergyArray.value = sending
+            # EnergyArray.value = [1,2,3,4,5,6]
         if directory is not None:
             directory.value = saver.path
         if counter is not None:
             counter.value = counter.value + 1
+
         # quit when done
         if generation == last_generation:
             return best
