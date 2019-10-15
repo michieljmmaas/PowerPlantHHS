@@ -213,6 +213,7 @@ class Application(Frame):
             self.pbar.stop()
             self.RunButton.config(text="Run")
             self.counterCheck = 0
+            self.counter = 0
             if len(self.gens) > 1:
                 self.nextButton.config(state="normal")
 
