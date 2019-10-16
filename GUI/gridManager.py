@@ -40,7 +40,7 @@ class Application(Frame):
 
         # Rechter paneel met waarden
         ItemFrame = Frame(self.parent)
-        ItemFrame.grid(row=0, column=4, rowspan=6, columnspan=2, sticky=W + E + N + S)
+        ItemFrame.grid(row=0, column=6, rowspan=6, columnspan=2, sticky=W + E + N + S)
 
         # Onderpaneel met items
         FrameBottom = Frame(self.parent)
@@ -48,7 +48,7 @@ class Application(Frame):
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
-        self.f = Figure(figsize=(5, 5), dpi=100)  # Maakt figuur waar de grafiek in komt
+        self.f = Figure(figsize=(8, 5), dpi=100)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
 
         self.gens = []  # X-as met de genertaties
@@ -59,6 +59,8 @@ class Application(Frame):
         self.Uren = []
         self.kW_distribution = []
         self.consumption = []
+        self.KW_sum = []
+        self.zeros = []
 
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een hleeg scherm
@@ -214,6 +216,7 @@ class Application(Frame):
         self.TotalCost = Label(ItemFrame, width=20, height=5, anchor=W, relief=SUNKEN, bg="white")
         self.TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
+        LabelWidth = 25
         # Hieronder worden de invul velden voor de genetisch algoritme gemaakt.
         InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight,
                                      relief=SOLID)
@@ -295,9 +298,6 @@ class Application(Frame):
                                  0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             self.PowerArray = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
-            # self.PowerArray = mp.Array("f", range(8760))
-            # self.PowerArray = self.manager.list(range(8760))
-            # self.PowerArray = self.manager.Value(c_char_p, "test")
             self.p1 = Process(target=runTrain, args=(
             self.counter, self.Directory, infoArray, self.PowerArray))  # Maak een thread aan die runTrain aanroept.
             self.p1.start()  # Start de thread

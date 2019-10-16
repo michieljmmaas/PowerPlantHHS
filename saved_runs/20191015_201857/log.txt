@@ -1,3 +1,0 @@
-generation: 0 mean_cost: 171810343794411.3 min_cost: 90622188067728.67
-generation: 1 mean_cost: 216754502993778.25 min_cost: 74371753055886.28
-generation: 2 mean_cost: 182547300729277.06 min_cost: 64096175553178.516
