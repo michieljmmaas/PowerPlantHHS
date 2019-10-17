@@ -105,8 +105,8 @@ def nextChart(GUI, starting=True):
         colors = ['gold', 'dodgerblue']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
         GUI.a.legend(patches, Labels, loc="best")
-        GUI.a.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-        GUI.a.axis('off')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
+        GUI.a.axis('off')  # Zet de assen uit voor een plaatje
         GUI.graphNumber = 0  # Als je nog een keer klikt krijg je de andere
 
     GUI.canvas.draw()
@@ -167,9 +167,9 @@ def setUpPower(MultiListString, GUI):
 
     PowerArray = np.mean(np.reshape(PowerArrayPre[:8760], (365, 24)), axis=1)  # Zet gegevens om naar dag
     PowerArray = savgol_filter(PowerArray, 51, 3)  # Smooth out line
-    GUI.consumption = np.full(len(PowerArray), 6000)  # Maak de consumptie lijn
+    GUI.consumption = np.full(len(PowerArray), GUI.consumptionGrade)  # Maak de consumptie lijn
     GUI.kW_distribution = PowerArray
-    GUI.KW_sum = np.cumsum(PowerArray - 6000)  # Maak de som van de energie
+    GUI.KW_sum = np.cumsum(PowerArray - GUI.consumptionGrade)  # Maak de som van de energie
     GUI.zeros = np.zeros(len(PowerArray))  # Maak nul lijn
 
 

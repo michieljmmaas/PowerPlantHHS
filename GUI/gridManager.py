@@ -8,6 +8,7 @@ import multiprocessing as mp
 from ctypes import c_char_p
 import GUI.GUIFunctions as fn
 import GUI.GUIFileReader as fr
+from tkinter import font as fontMaker
 
 DELAY1 = 20
 DELAY2 = 5000
@@ -51,18 +52,20 @@ class Application(Frame):
         self.f = Figure(figsize=(8, 5), dpi=100)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
 
+        # Onderstaande waardes zijn allemaal de voor de grafieken
         self.gens = []  # X-as met de genertaties
         self.minCost = []  # Y-as met de minium cost
         self.meanCost = []  # Y-as met de mean cost
 
-        self.days = []
-        self.Uren = []
-        self.kW_distribution = []
-        self.consumption = []
-        self.KW_sum = []
-        self.zeros = []
-        self.SolarSum = 0
-        self.WindSum = 0
+        self.days = [] # Dagen in het jaar
+        self.Uren = [] # Uren in het jaar
+        self.kW_distribution = [] # Power opgewekt
+        self.consumption = [] # Hoeveel de consumptie is van de fabriek
+        self.consumptionGrade = 0  # Constante Vraag aan consumptie
+        self.KW_sum = [] # Som van de KW Overproductie
+        self.zeros = [] # Nul lijn
+        self.SolarSum = 0 # Som van alle Solar Energie productie
+        self.WindSum = 0 # Som van alle Wind Energie productie
 
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een hleeg scherm
@@ -81,66 +84,91 @@ class Application(Frame):
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
         padx = 10
         pady = 10
-        LabelWidth = 20
-        LabelHeight = 3
+
+        runButtonIcon = PhotoImage(file="GUI/icons/run-arrow.png")
+        runLabel = Label(Frame1, image=runButtonIcon)
+        runLabel.image = runButtonIcon
+
+        stopButtonIcon = PhotoImage(file="GUI/icons/stop-button.png")
+        stopLabel = Label(Frame1, image=stopButtonIcon)
+        stopLabel.image = stopButtonIcon
+
+        txtButtonIcon = PhotoImage(file="GUI/icons/txt-file.png")
+        txtLabel = Label(Frame1, image=txtButtonIcon)
+        txtLabel.image = txtButtonIcon
+
+        csvButtonIcon = PhotoImage(file="GUI/icons/csv-file.png")
+        csvLabel = Label(Frame1, image=csvButtonIcon)
+        csvLabel.image = csvButtonIcon
+
+        closeButtonIcon = PhotoImage(file="GUI/icons/error.png")
+        closeLabel = Label(Frame1, image=closeButtonIcon)
+        closeLabel.image = closeButtonIcon
+
+        LabelWidth = 150
+        LabelHeight = 50
+
+        compoundImage = LEFT
+        ButtonAnchor = W
+        ButtonRelief = GROOVE
+        ButtonCursor = "hand1"
+        helv36 = fontMaker.Font(family='Helvetica', size=15, weight='bold')
+        fontText = 20
+        ##TextVarible voor aanpassen
 
         # Knoppen aan de bovenkant.
-        # Deze knop leest een CSV file en vult de velden rechts in. De functie staat in het GUIFilereader bestand
-        LoadCSVButton = Button(ItemFrame, text="Laad Csv", width=LabelWidth, height=LabelHeight,
-                               command=lambda: fr.loadCsvFile(self), relief=SOLID)
-        # Deze knop leest een loggin bestand in, en maakt een grafiek. De functie staat in het GUIFilereader bestand
-        LoadTXTBButton = Button(ItemFrame, text="Laad Logging", width=LabelWidth, height=LabelHeight,
-                                command=lambda: fr.loadLoggingFile(self), relief=SOLID)
         # Deze knop runt de simulatie op de achtergrond. Hiervoor neemt het de waarden die onder zijn ingevuld.
-        self.RunButton = Button(ItemFrame, text="Run", width=LabelWidth, height=LabelHeight, command=self.runSimulation,
-                                relief=SOLID)
+        self.RunButton = Button(ItemFrame, width=LabelWidth, height=LabelHeight, command=self.runSimulation,
+                                relief=ButtonRelief, image=runButtonIcon, text="   Run", compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
+        # Deze knop leest een CSV file en vult de velden rechts in. De functie staat in het GUIFilereader bestand
+        LoadCSVButton = Button(ItemFrame, text=" Laad CSV", width=LabelWidth, height=LabelHeight,
+                               command=lambda: fr.loadCsvFile(self), relief=ButtonRelief, image=csvButtonIcon, compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
+        # Deze knop leest een loggin bestand in, en maakt een grafiek. De functie staat in het GUIFilereader bestand
+        LoadTXTBButton = Button(ItemFrame, text=" Laad TXT", width=LabelWidth, height=LabelHeight,
+                                command=lambda: fr.loadLoggingFile(self), relief=ButtonRelief, image=txtButtonIcon, compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
         # Deze knop stopt alle processen en sluit het programma af. Zie het GUIFunctions bestand.
-        ExitButton = Button(ItemFrame, text="Afsluiten", width=LabelWidth, height=LabelHeight,
-                            command=lambda: fn.exitProgram(self), relief=SOLID)
+        ExitButton = Button(ItemFrame, text="   Afsluiten", width=LabelWidth, height=LabelHeight,
+                            command=lambda: fn.exitProgram(self), relief=ButtonRelief, image=closeButtonIcon, compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
         # Deze Tuple bind alle waarnden voor makkelijk inlezen
-        ActionTuple = (LoadCSVButton, LoadTXTBButton, self.RunButton, ExitButton)
+        ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
+
+        LabelWidth = 20
+        LabelHeight = 3
 
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
 
+        LabelRelief = SOLID
+
         # Colom namen
-        ItemLabel = Label(ItemFrame, text="Onderwerp", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        NumberLabel = Label(ItemFrame, text="Aantal", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        FactorLabel = Label(ItemFrame, text="Factor", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        CostLabel = Label(ItemFrame, text="Kosten", width=LabelWidth, height=LabelHeight, relief=SOLID)
+        ItemLabel = Label(ItemFrame, text="Onderwerp", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
+        NumberLabel = Label(ItemFrame, text="Aantal", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
+        FactorLabel = Label(ItemFrame, text="Factor", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
+        CostLabel = Label(ItemFrame, text="Kosten", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
         headerTuple = (ItemLabel, NumberLabel, FactorLabel, CostLabel)
 
         # Energie Surplus: TO DO
         PWSurplusLabel = Label(ItemFrame, text="Energie Overschot", width=LabelWidth, height=LabelHeight, anchor=W,
                                relief=SOLID)
-        PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                               bg="white")
-        PWSurplusFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                bg="white")
-        PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                               bg="white")
+        PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        PWSurplusFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
         PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWSurplusFactor, PWDSurplusCost)
 
         # Energie Deficit: TO DO
         PWDeficitLabel = Label(ItemFrame, text="Energie Tekort", width=LabelWidth, height=LabelHeight, anchor=W,
                                relief=SOLID)
-        PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                               bg="white")
-        PWDeficitFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                bg="white")
-        PWDeficitCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                              bg="white")
+        PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        PWDeficitFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        PWDeficitCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
         PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitFactor, PWDeficitCost)
 
         # Windturbine aantal
         WTNumberLabel = Label(ItemFrame, text="Wind Turbine - Aantal", width=LabelWidth, height=LabelHeight, anchor=W,
                               relief=SOLID)
-        WTNumberEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                              bg="white")
-        WTNumberFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                               bg="white")
-        WTNumberCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                             bg="white")
+        WTNumberEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        WTNumberFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        WTNumberCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
         self.WTHeightTuple = (WTNumberLabel, WTNumberEntry, WTNumberFactor, WTNumberCost)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
@@ -168,37 +196,33 @@ class Application(Frame):
         # Solar Panel 1
         SP1NameLabel = Label(ItemFrame, text="Zonnepaneel 1", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
-        SP1SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP1AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP1OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                    bg="white")
+        SP1SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP1AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP1OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
         SP1HeaderTuple = (SP1NameLabel, SP1SurfaceLabel, SP1AngleLabel, SP1OrientationLabel)
 
         # Solar Panel 2
         SP2NameLabel = Label(ItemFrame, text="Zonnepaneel 2", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
-        SP2SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP2AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP2OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                    bg="white")
+        SP2SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP2AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP2OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
         SP2HeaderTuple = (SP2NameLabel, SP2SurfaceLabel, SP2AngleLabel, SP2OrientationLabel)
 
         # Solar Panel 3
         SP3NameLabel = Label(ItemFrame, text="Zonnepaneel 3", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
-        SP3SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP3AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP3OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                    bg="white")
+        SP3SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP3AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP3OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
         SP3HeaderTuple = (SP3NameLabel, SP3SurfaceLabel, SP3AngleLabel, SP3OrientationLabel)
 
         # Solar Panel 4
         SP4NameLabel = Label(ItemFrame, text="Zonnepaneel 4", width=LabelWidth, height=LabelHeight, anchor=W,
                              relief=SOLID)
-        SP4SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP4AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN, bg="white")
-        SP4OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN,
-                                    bg="white")
+        SP4SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP4AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+        SP4OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
         SP4HeaderTuple = (SP4NameLabel, SP4SurfaceLabel, SP4AngleLabel, SP4OrientationLabel)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
@@ -273,6 +297,7 @@ class Application(Frame):
                 MutationInfo = int(self.InfoMutationEntry.get())
                 PowerPlantInfo = int(self.InfoPowerPlantEntry.get())
                 infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
+                self.consumptionGrade = PowerPlantInfo
 
             except ValueError:
                 fn.ShowErrorBox("Invoerfout", "Controller of de getallen goed zijn ingevoerd")
