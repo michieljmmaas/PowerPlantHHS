@@ -52,11 +52,15 @@ def ShowErrorBox(title, message):
 # Laat de volgende grafiek zien
 def nextChart(GUI, starting=True):
     GUI.a.clear()
+    # GUI.a.axes.Axes.set_aspect('auto')  # resets
+    GUI.a.axis('auto')
+    GUI.a.axis('on')
     if starting:  # Start bij de eeste
         GUI.graphNumber = 0
 
-    # Instellingen voor de eerste grafiek
+    # Instellingen voor de eerste grafiek: Minium Kosten
     if GUI.graphNumber == 0:
+
         GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
@@ -65,7 +69,7 @@ def nextChart(GUI, starting=True):
         GUI.a.legend()
         GUI.graphNumber = 1  # Als je nog een keer klikt krijg je de andere
 
-    # Instellingen voor de tweede grafiek
+    # Instellingen voor de tweede grafiek: Gemiddelde Kosten
     elif GUI.graphNumber == 1:
         GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
@@ -75,28 +79,41 @@ def nextChart(GUI, starting=True):
         GUI.a.legend()
         GUI.graphNumber = 2  # Als je nog een keer klikt krijg je de andere
 
-    # Instellingen voor de tweede grafiek
+    # Instellingen voor de derde grafiek: Energie Productie
     elif GUI.graphNumber == 2:
         GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Geproduceerd")
         GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
-        GUI.a.set(ylabel="Kilo Watt", xlabel="Dagen", title="Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
         GUI.graphNumber = 3  # Als je nog een keer klikt krijg je de andere
 
+    # Instellingen voor de vierde grafiek: Som van overproductie
     elif GUI.graphNumber == 3:
         GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Som Energie surplus")
         GUI.a.plot(GUI.zeros, color='red', label="0 lijn")
-        GUI.a.set(ylabel="Kilo Watt", xlabel="Dagen", title="Som van Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Som van Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
+        GUI.graphNumber = 4  # Als je nog een keer klikt krijg je de andere
+
+    # Instellingen voor de 5de grafiek: Pie chart met verdeling van de energie productie
+    elif GUI.graphNumber == 4:
+        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum))*100), 2))
+        SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
+        colors = ['gold', 'dodgerblue']
+        patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
+        GUI.a.legend(patches, Labels, loc="best")
+        GUI.a.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        GUI.a.axis('off')  # Equal aspect ratio ensures that pie is drawn as a circle.
         GUI.graphNumber = 0  # Als je nog een keer klikt krijg je de andere
 
     GUI.canvas.draw()
 
 
 # Haal de bestaande grafiek weg om verwarring te voorkomen, en laat een wit vlak zien met "Gegevens ophalen"
-def clearGraph(GUI, visible):
+def clearGraph(GUI):
     GUI.a.clear()
     GUI.a.plot([0], [0])
     GUI.a.axis('off')
@@ -115,8 +132,39 @@ def updateGraph(directory, gen, PowerArraySting, GUI):
     setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
 
-def setUpPower(PowerArraySting, GUI):
-    PowerArrayPre = ast.literal_eval(PowerArraySting)  # Verander string van list naar list
+def clearFields(GUI):
+    counter = 0
+    empty = ""
+
+    # Voor de zonnenpanelen moet wil je er doorheen loopen om het in te vullen
+    iterSolar = iter(GUI.SolarTupleList)
+    next(iterSolar)
+    for tupleItem in iterSolar:
+        iterTuple = iter(tupleItem)  # Sla de eerste over want dat is text
+        next(iterTuple)
+        for item in iterTuple:  # Vul de waarden en
+            item.config(text=empty)
+            counter += 1
+
+    # Gegevens voor de windturbines
+    entry = GUI.WTHeightTuple[1]
+    entry.config(text=empty)
+
+    cost = GUI.WTHeightTuple[2]
+    cost.config(text=empty)
+
+    total = GUI.WTHeightTuple[3]
+    total.config(text=empty)
+
+
+def setUpPower(MultiListString, GUI):
+    MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
+    WindArray = [item[1] for item in MultiList]  # Haal wind eruit
+    SolarArray = [item[2] for item in MultiList]  # Haal Solar eruit
+    PowerArrayPre = [sum(x) for x in zip(*[WindArray, SolarArray])] # Voeg samen voor de sum
+    GUI.WindSum = sum(WindArray)
+    GUI.SolarSum = sum(SolarArray)
+
     PowerArray = np.mean(np.reshape(PowerArrayPre[:8760], (365, 24)), axis=1)  # Zet gegevens om naar dag
     PowerArray = savgol_filter(PowerArray, 51, 3)  # Smooth out line
     GUI.consumption = np.full(len(PowerArray), 6000)  # Maak de consumptie lijn
@@ -134,6 +182,6 @@ def exitProgram(GUI):
 # Deze functie laad standaard waarden in voor het genetische algortime
 def fillEntries(GUI):
     GUI.InfoGenerationEntry.insert(0, '100')
-    GUI.InfoPoolEntry.insert(0, '100')
+    GUI.InfoPoolEntry.insert(0, '10')
     GUI.InfoMutationEntry.insert(0, '50')
     GUI.InfoPowerPlantEntry.insert(0, '6000')

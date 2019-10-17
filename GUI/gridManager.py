@@ -61,6 +61,8 @@ class Application(Frame):
         self.consumption = []
         self.KW_sum = []
         self.zeros = []
+        self.SolarSum = 0
+        self.WindSum = 0
 
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een hleeg scherm
@@ -292,7 +294,8 @@ class Application(Frame):
                 return
 
             # Verwijder de bestaande grafiek
-            fn.clearGraph(self, True)
+            fn.clearGraph(self)
+            fn.clearFields(self)
             self.manager = Manager()  # Dit is een manager die the Process waarden kan geven die je dan kan uitlezen.
             self.counter = Value('i',
                                  0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
