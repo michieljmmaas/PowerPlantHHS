@@ -78,7 +78,7 @@ class Application(Frame):
         self.a = self.f.add_subplot(111)  # Maakt grafiek
 
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
-        self.a.axis('off')  # Laat assen niet zien voor een hleeg scherm
+        self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
         self.canvas = FigureCanvasTkAgg(self.f, Frame1)  # Plaats grafiek in UI
         self.canvas.get_tk_widget().pack(fill=BOTH)  # Spreid het over de ruimte die het heeft
@@ -87,8 +87,8 @@ class Application(Frame):
         self.pbar = Progressbar(Frame1, mode='indeterminate')
         self.pbar.pack(fill=BOTH)
         self.nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: fn.nextChart(self, False),
-                                 state="disabled")
-        self.nextButton.pack()
+                                 state="disabled", font=self.ButtonFont, relief=RAISED, borderwidth=3)
+        self.nextButton.pack(pady=10)
 
         # Buttons
         self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", Frame1, ItemFrame, "   Run", self.runSimulation,
@@ -108,6 +108,15 @@ class Application(Frame):
         padx = 10
         pady = 10
 
+        # Background = Label(ItemFrame, bg='blue')
+        # Background.grid(row=0, column=0, columnspan=4, sticky=N+S+E+W)
+
+        ColumnCounter = 0
+        for Item in ActionTuple:
+            Item.grid(row=0, column=ColumnCounter, padx=padx, pady=pady+5, sticky=N + S)
+            ColumnCounter = ColumnCounter + 1
+
+
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
         # Colom namen
@@ -124,14 +133,15 @@ class Application(Frame):
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
         # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
-        LabelTupleList = [ActionTuple, headerTuple, self.WTHeightTuple]
-        RowCounter = 0
+        LabelTupleList = [headerTuple, self.WTHeightTuple]
+        RowCounter = 1
         for Tuple in LabelTupleList:
             ColumnCounter = 0
             for Item in Tuple:
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
                 ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
+
 
         # Solar Panels info
         SPHeaderTuple = wm.HeaderRow("Zonnepaneel Nummer", "Oppervlakte (m\u00b2)", "Hoek in graden",
