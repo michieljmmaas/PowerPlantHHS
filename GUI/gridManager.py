@@ -34,21 +34,20 @@ class Application(Frame):
         self.minCost = []  # Y-as met de minium cost
         self.meanCost = []  # Y-as met de mean cost
 
-        self.days = [] # Dagen in het jaar
-        self.Uren = [] # Uren in het jaar
-        self.kW_distribution = [] # Power opgewekt
-        self.consumption = [] # Hoeveel de consumptie is van de fabriek
+        self.days = []  # Dagen in het jaar
+        self.Uren = []  # Uren in het jaar
+        self.kW_distribution = []  # Power opgewekt
+        self.consumption = []  # Hoeveel de consumptie is van de fabriek
         self.consumptionGrade = 0  # Constante Vraag aan consumptie
-        self.KW_sum = [] # Som van de KW Overproductie
-        self.zeros = [] # Nul lijn
-        self.SolarSum = 0 # Som van alle Solar Energie productie
-        self.WindSum = 0 # Som van alle Wind Energie productie
+        self.KW_sum = []  # Som van de KW Overproductie
+        self.zeros = []  # Nul lijn
+        self.SolarSum = 0  # Som van alle Solar Energie productie
+        self.WindSum = 0  # Som van alle Wind Energie productie
 
         # Deze drie waarden zijn er om de grafiek te updaten
         self.counter = 0
         self.counterCheck = 0
         self.running = 0
-
 
     def initUI(self):
         # Maakt de drie velden aan
@@ -82,11 +81,13 @@ class Application(Frame):
                                  state="disabled")
         self.nextButton.pack()
 
-
         # Buttons
-        self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", Frame1, ItemFrame, "   Run", self.runSimulation, False)
-        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", Frame1, ItemFrame, " Laad CSV", fr.loadCsvFile, True)
-        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", Frame1, ItemFrame, " Laad TXT", fr.loadLoggingFile, True)
+        self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", Frame1, ItemFrame, "   Run", self.runSimulation,
+                                       False)
+        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", Frame1, ItemFrame, " Laad CSV", fr.loadCsvFile,
+                                      True)
+        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", Frame1, ItemFrame, " Laad TXT",
+                                       fr.loadLoggingFile, True)
         ExitButton = wm.makeButton(self, "GUI/icons/error.png", Frame1, ItemFrame, " Afsluiten", fn.exitProgram, True)
         ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
 
@@ -97,8 +98,6 @@ class Application(Frame):
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
         padx = 10
         pady = 10
-        LabelWidth = 25
-        LabelHeight = 3
 
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
@@ -126,7 +125,8 @@ class Application(Frame):
             RowCounter = RowCounter + 1
 
         # Solar Panels info
-        SPHeaderTuple = wm.HeaderRow("Zonnepaneel Nummer", "Oppervlakte (m\u00b2)", "Hoek in graden", "Oriëntatie t.o.v. Zuiden", ItemFrame)
+        SPHeaderTuple = wm.HeaderRow("Zonnepaneel Nummer", "Oppervlakte (m\u00b2)", "Hoek in graden",
+                                     "Oriëntatie t.o.v. Zuiden", ItemFrame)
 
         # Solar Panel 1
         SP1HeaderTuple = wm.LabelRow("Zonnepaneel 1", ItemFrame)
@@ -150,7 +150,6 @@ class Application(Frame):
 
         self.TotalCost = Label(ItemFrame, width=20, height=5, anchor=W, relief=SUNKEN, bg="white")
         self.TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
-
 
         # Hieronder worden de invul velden voor de genetisch algoritme gemaakt.
         self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom)
@@ -222,7 +221,7 @@ class Application(Frame):
             self.Directory = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             self.PowerArray = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             self.p1 = Process(target=runTrain, args=(
-            self.counter, self.Directory, infoArray, self.PowerArray))  # Maak een thread aan die runTrain aanroept.
+                self.counter, self.Directory, infoArray, self.PowerArray))  # Maak een thread aan die runTrain aanroept.
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
             self.running = 1  # Zeg dat het algoritme aan het draaien is
@@ -237,7 +236,8 @@ class Application(Frame):
             print("Counter: " + str(self.counter.value))
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
                 self.counterCheck = self.counter.value
-                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update de grafieken
+                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,
+                               self)  # Update de grafieken
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
