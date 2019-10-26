@@ -4,6 +4,7 @@ import GUI.GUIFunctions as fn
 import babel.numbers as bb
 
 # Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
+textPreSpace = "  "
 
 # Dit bestand laad het loggin bestand in
 def loadLoggingFile(GUI, first=None, filename=None):
@@ -34,7 +35,7 @@ def loadLoggingFile(GUI, first=None, filename=None):
 
             #Geef total cost in euro
             totalCostNumber = bb.format_currency(minCostArray[-1], 'EUR', locale='en_US')
-            GUI.TotalCost.config(text=totalCostNumber)
+            GUI.TotalCost.config(text=textPreSpace + str(totalCostNumber))
 
             #Zolang er meer dan twee waarden zijn, laat hij je naar de volgende grafiek gaan
             if not first:
@@ -66,7 +67,7 @@ def loadCsvFile(GUI, filename=None):
                     next(iterTuple)
                     for item in iterTuple: # Vul de waarden en
                         info = round(float(data[counter]), 2)
-                        item.config(text=info)
+                        item.config(text=textPreSpace + str(info))
                         counter += 1
 
                 #Gegevens voor de windturbines
@@ -74,13 +75,13 @@ def loadCsvFile(GUI, filename=None):
                 wm_cost, windTurbineTotalCost = fn.defWindTurbineCost(int(4), windData)
 
                 entry = GUI.WTHeightTuple[1]
-                entry.config(text=windData)
+                entry.config(text=textPreSpace + str(windData))
 
                 cost = GUI.WTHeightTuple[2]
-                cost.config(text=wm_cost)
+                cost.config(text=textPreSpace + str(wm_cost))
 
                 total = GUI.WTHeightTuple[3]
-                total.config(text=windTurbineTotalCost)
+                total.config(text=textPreSpace + str(windTurbineTotalCost))
     except Exception as e:
         print(e)
         fn.ShowErrorBox("Foutmelding verkeerd bestand",

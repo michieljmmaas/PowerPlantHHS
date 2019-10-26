@@ -22,11 +22,20 @@ class Application(Frame):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
         self.defineValues()
+        self.makeFonts()
         self.initUI()  # Maak de UI
         self.grid()  # Het is een grid field
         self.parent.title("Danone Powerplant")  # Titel van het scherm
         # Vul standaard waarden in
         fn.fillEntries(self)
+        fn.clearFields(self)
+
+    def makeFonts(self):
+        fontFamily = 'Helvetica'
+        self.ButtonFont = fontMaker.Font(family=fontFamily, size=15, weight='bold')
+        self.InfoFont = fontMaker.Font(family=fontFamily, size=10)
+        self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
+        self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -102,16 +111,16 @@ class Application(Frame):
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
         # Colom namen
-        headerTuple = wm.HeaderRow("Onderwerp", "Aantal", "Factor", "Kosten", ItemFrame)
+        headerTuple = wm.HeaderRow("Onderwerp", "Aantal", "Factor", "Kosten", ItemFrame, self.HFont)
 
         # Energie Surplus: TO DO
-        PWDSurplusTuple = wm.LabelRow("Energie Overschot", ItemFrame)
+        PWDSurplusTuple = wm.LabelRow("Energie Overschot", ItemFrame, self.HFont, self.ColFont)
 
         # Energie Deficit: TO DO
-        PWDeficitTuple = wm.LabelRow("Energie Tekort", ItemFrame)
+        PWDeficitTuple = wm.LabelRow("Energie Tekort", ItemFrame, self.HFont, self.ColFont)
 
         # Windturbine aantal
-        self.WTHeightTuple = wm.LabelRow("Wind Turbine - Aantal", ItemFrame)
+        self.WTHeightTuple = wm.LabelRow("Wind Turbine - Aantal", ItemFrame, self.HFont, self.ColFont)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
         # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
@@ -126,13 +135,13 @@ class Application(Frame):
 
         # Solar Panels info
         SPHeaderTuple = wm.HeaderRow("Zonnepaneel Nummer", "Oppervlakte (m\u00b2)", "Hoek in graden",
-                                     "Oriëntatie t.o.v. Zuiden", ItemFrame)
+                                     "Oriëntatie t.o.v. Zuiden", ItemFrame, self.HFont)
 
         # Solar Panel 1
-        SP1HeaderTuple = wm.LabelRow("Zonnepaneel 1", ItemFrame)
-        SP2HeaderTuple = wm.LabelRow("Zonnepaneel 2", ItemFrame)
-        SP3HeaderTuple = wm.LabelRow("Zonnepaneel 3", ItemFrame)
-        SP4HeaderTuple = wm.LabelRow("Zonnepaneel 4", ItemFrame)
+        SP1HeaderTuple = wm.LabelRow("Zonnepaneel 1", ItemFrame, self.HFont, self.ColFont)
+        SP2HeaderTuple = wm.LabelRow("Zonnepaneel 2", ItemFrame, self.HFont, self.ColFont)
+        SP3HeaderTuple = wm.LabelRow("Zonnepaneel 3", ItemFrame, self.HFont, self.ColFont)
+        SP4HeaderTuple = wm.LabelRow("Zonnepaneel 4", ItemFrame, self.HFont, self.ColFont)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -145,17 +154,17 @@ class Application(Frame):
             RowCounter = RowCounter + 1
 
         # Dit maakt het overzicht van de totale kosten
-        TotalLabel = Label(ItemFrame, text="Totale Kosten", height=5, relief=SOLID)
-        TotalLabel.grid(row=RowCounter + 2, column=0, padx=padx, pady=pady, columnspan=3, sticky=W + E)
+        TotalLabel = Label(ItemFrame, text="Totale Kosten", height=2, relief=SOLID, font=("Helvetica", 20))
+        TotalLabel.grid(row=RowCounter + 2, column=0, padx=padx, pady=pady, columnspan=2, sticky=W + E)
 
-        self.TotalCost = Label(ItemFrame, width=20, height=5, anchor=W, relief=SUNKEN, bg="white")
-        self.TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
+        self.TotalCost = Label(ItemFrame, width=20, height=2, anchor=W, relief=SUNKEN, font=("Helvetica", 20))
+        self.TotalCost.grid(row=RowCounter + 2, column=2, columnspan=2, padx=padx, pady=pady, sticky=W + E)
 
         # Hieronder worden de invul velden voor de genetisch algoritme gemaakt.
-        self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom)
-        self.InfoPoolEntry, InfoPoolTuple = wm.InfoItem("Pool", FrameBottom)
-        self.InfoMutationEntry, InfoMutationTuple = wm.InfoItem("Mutation Rate (%)", FrameBottom)
-        self.InfoPowerPlantEntry, InfoPowerPlantTuple = wm.InfoItem("PowerPlant Energie (KW)", FrameBottom)
+        self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom, self.InfoFont, self.HFont)
+        self.InfoPoolEntry, InfoPoolTuple = wm.InfoItem("Pool", FrameBottom, self.InfoFont, self.HFont)
+        self.InfoMutationEntry, InfoMutationTuple = wm.InfoItem("Mutation Rate (%)", FrameBottom, self.InfoFont, self.HFont)
+        self.InfoPowerPlantEntry, InfoPowerPlantTuple = wm.InfoItem("PowerPlant Energie (KW)", FrameBottom, self.InfoFont, self.HFont)
 
         InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
 

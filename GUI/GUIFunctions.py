@@ -134,7 +134,7 @@ def updateGraph(directory, gen, PowerArraySting, GUI):
 
 def clearFields(GUI):
     counter = 0
-    empty = ""
+    empty = "  " + str(0)
 
     # Voor de zonnenpanelen moet wil je er doorheen loopen om het in te vullen
     iterSolar = iter(GUI.SolarTupleList)
@@ -155,6 +155,8 @@ def clearFields(GUI):
 
     total = GUI.WTHeightTuple[3]
     total.config(text=empty)
+
+    GUI.TotalCost.config(text="  €0,00")
 
 
 def setUpPower(MultiListString, GUI):
