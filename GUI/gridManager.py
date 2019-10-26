@@ -9,6 +9,7 @@ from ctypes import c_char_p
 import GUI.GUIFunctions as fn
 import GUI.GUIFileReader as fr
 from tkinter import font as fontMaker
+import GUI.GUIWidgetMaker as wm
 
 DELAY1 = 20
 DELAY2 = 5000
@@ -20,20 +21,36 @@ class Application(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
+        self.defineValues()
         self.initUI()  # Maak de UI
         self.grid()  # Het is een grid field
         self.parent.title("Danone Powerplant")  # Titel van het scherm
+        # Vul standaard waarden in
+        fn.fillEntries(self)
+
+    def defineValues(self):
+        # Onderstaande waardes zijn allemaal de voor de grafieken
+        self.gens = []  # X-as met de genertaties
+        self.minCost = []  # Y-as met de minium cost
+        self.meanCost = []  # Y-as met de mean cost
+
+        self.days = [] # Dagen in het jaar
+        self.Uren = [] # Uren in het jaar
+        self.kW_distribution = [] # Power opgewekt
+        self.consumption = [] # Hoeveel de consumptie is van de fabriek
+        self.consumptionGrade = 0  # Constante Vraag aan consumptie
+        self.KW_sum = [] # Som van de KW Overproductie
+        self.zeros = [] # Nul lijn
+        self.SolarSum = 0 # Som van alle Solar Energie productie
+        self.WindSum = 0 # Som van alle Wind Energie productie
 
         # Deze drie waarden zijn er om de grafiek te updaten
         self.counter = 0
         self.counterCheck = 0
         self.running = 0
 
-        # Vul standaard waarden in
-        fn.fillEntries(self)
 
     def initUI(self):
-
         # Maakt de drie velden aan
         # Grafieken
         Frame1 = Frame(self.parent)
@@ -52,21 +69,6 @@ class Application(Frame):
         self.f = Figure(figsize=(8, 5), dpi=100)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
 
-        # Onderstaande waardes zijn allemaal de voor de grafieken
-        self.gens = []  # X-as met de genertaties
-        self.minCost = []  # Y-as met de minium cost
-        self.meanCost = []  # Y-as met de mean cost
-
-        self.days = [] # Dagen in het jaar
-        self.Uren = [] # Uren in het jaar
-        self.kW_distribution = [] # Power opgewekt
-        self.consumption = [] # Hoeveel de consumptie is van de fabriek
-        self.consumptionGrade = 0  # Constante Vraag aan consumptie
-        self.KW_sum = [] # Som van de KW Overproductie
-        self.zeros = [] # Nul lijn
-        self.SolarSum = 0 # Som van alle Solar Energie productie
-        self.WindSum = 0 # Som van alle Wind Energie productie
-
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een hleeg scherm
 
@@ -80,58 +82,21 @@ class Application(Frame):
                                  state="disabled")
         self.nextButton.pack()
 
+
+        # Buttons
+        self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", Frame1, ItemFrame, "   Run", self.runSimulation, False)
+        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", Frame1, ItemFrame, " Laad CSV", fr.loadCsvFile, True)
+        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", Frame1, ItemFrame, " Laad TXT", fr.loadLoggingFile, True)
+        ExitButton = wm.makeButton(self, "GUI/icons/error.png", Frame1, ItemFrame, " Afsluiten", fn.exitProgram, True)
+        ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
+
+        self.RunIcon = wm.makeIcon("GUI/icons/run-arrow.png", Frame1)
+        self.StopIcon = wm.makeIcon("GUI/icons/stop-button.png", Frame1)
+
         # Rechterpaneel
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
         padx = 10
         pady = 10
-
-        runButtonIcon = PhotoImage(file="GUI/icons/run-arrow.png")
-        runLabel = Label(Frame1, image=runButtonIcon)
-        runLabel.image = runButtonIcon
-
-        stopButtonIcon = PhotoImage(file="GUI/icons/stop-button.png")
-        stopLabel = Label(Frame1, image=stopButtonIcon)
-        stopLabel.image = stopButtonIcon
-
-        txtButtonIcon = PhotoImage(file="GUI/icons/txt-file.png")
-        txtLabel = Label(Frame1, image=txtButtonIcon)
-        txtLabel.image = txtButtonIcon
-
-        csvButtonIcon = PhotoImage(file="GUI/icons/csv-file.png")
-        csvLabel = Label(Frame1, image=csvButtonIcon)
-        csvLabel.image = csvButtonIcon
-
-        closeButtonIcon = PhotoImage(file="GUI/icons/error.png")
-        closeLabel = Label(Frame1, image=closeButtonIcon)
-        closeLabel.image = closeButtonIcon
-
-        LabelWidth = 150
-        LabelHeight = 50
-
-        compoundImage = LEFT
-        ButtonAnchor = W
-        ButtonRelief = GROOVE
-        ButtonCursor = "hand1"
-        helv36 = fontMaker.Font(family='Helvetica', size=15, weight='bold')
-        fontText = 20
-        ##TextVarible voor aanpassen
-
-        # Knoppen aan de bovenkant.
-        # Deze knop runt de simulatie op de achtergrond. Hiervoor neemt het de waarden die onder zijn ingevuld.
-        self.RunButton = Button(ItemFrame, width=LabelWidth, height=LabelHeight, command=self.runSimulation,
-                                relief=ButtonRelief, image=runButtonIcon, text="   Run", compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
-        # Deze knop leest een CSV file en vult de velden rechts in. De functie staat in het GUIFilereader bestand
-        LoadCSVButton = Button(ItemFrame, text=" Laad CSV", width=LabelWidth, height=LabelHeight,
-                               command=lambda: fr.loadCsvFile(self), relief=ButtonRelief, image=csvButtonIcon, compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
-        # Deze knop leest een loggin bestand in, en maakt een grafiek. De functie staat in het GUIFilereader bestand
-        LoadTXTBButton = Button(ItemFrame, text=" Laad TXT", width=LabelWidth, height=LabelHeight,
-                                command=lambda: fr.loadLoggingFile(self), relief=ButtonRelief, image=txtButtonIcon, compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
-        # Deze knop stopt alle processen en sluit het programma af. Zie het GUIFunctions bestand.
-        ExitButton = Button(ItemFrame, text="   Afsluiten", width=LabelWidth, height=LabelHeight,
-                            command=lambda: fn.exitProgram(self), relief=ButtonRelief, image=closeButtonIcon, compound=compoundImage, anchor=ButtonAnchor, font=helv36, cursor=ButtonCursor)
-        # Deze Tuple bind alle waarnden voor makkelijk inlezen
-        ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
-
         LabelWidth = 20
         LabelHeight = 3
 
@@ -280,7 +245,7 @@ class Application(Frame):
             self.p1.kill()  # Stop de thread die traint
             self.running = 0  # Zet waarde naar niet meer running
             self.pbar.stop()  # Stop de progress bar met bewegen
-            self.RunButton.config(text="Run")  # Zet de text van de knop weer naar run
+            self.RunButton.config(text="    Run", image=self.RunIcon)  # Zet de text van de knop weer naar run
             self.counterCheck = 0  # Resest update check
             self.counter = 0  # Reset update check
 
@@ -331,7 +296,7 @@ class Application(Frame):
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
             self.running = 1  # Zeg dat het algoritme aan het draaien is
-            self.RunButton.config(text="Stop Simulatie")  # Verander de tekst op de knop
+            self.RunButton.config(text="   Stop", image=self.StopIcon)  # Verander de tekst op de knop
             self.after(DELAY2, self.onGetValue)  # Start met het pollen van de de thread
             return
 

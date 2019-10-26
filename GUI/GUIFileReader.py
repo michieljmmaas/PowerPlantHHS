@@ -6,7 +6,7 @@ import babel.numbers as bb
 # Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
 
 # Dit bestand laad het loggin bestand in
-def loadLoggingFile(GUI, first, filename=None):
+def loadLoggingFile(GUI, first=None, filename=None):
     try:
         if filename is None:
             filename = askopenfilename() #Dit gebeurd als je de knop indrukt, laat hij hem pakken
