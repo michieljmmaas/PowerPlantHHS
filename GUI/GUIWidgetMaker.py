@@ -41,3 +41,33 @@ def makeIcon(fileString, frameHolder):
     IconLabel = Label(frameHolder, image=ButtonIcon)
     IconLabel.image = ButtonIcon
     return ButtonIcon
+
+
+def HeaderRow(text1, text2, text3, text4, frameHolder):
+    LabelWidth = 20
+    LabelHeight = 3
+    Label1 = Label(frameHolder, text=text1, width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
+    Label2 = Label(frameHolder, text=text2, width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
+    Label3 = Label(frameHolder, text=text3, width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
+    Label4 = Label(frameHolder, text=text4, width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
+    Tuple = (Label1, Label2, Label3, Label4)
+    return Tuple
+
+
+def LabelRow(text, frameHolder):
+    LabelWidth = 20
+    LabelHeight = 3
+    Label1 = Label(frameHolder, text=text, width=LabelWidth, height=LabelHeight, anchor=W, relief=SOLID)
+    Label2 = Label(frameHolder, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+    Label3 = Label(frameHolder, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+    Label4 = Label(frameHolder, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
+    Tuple = (Label1, Label2, Label3, Label4)
+    return Tuple
+
+def InfoItem(text, frameHolder):
+    LabelWidth = 25
+    LabelHeight = 3
+    InfoGenerationLabel = Button(frameHolder, text=text, width=LabelWidth, height=LabelHeight, relief=SOLID)
+    InfoGenerationEntry = Entry(frameHolder, font=("Helvetica", 10))
+    InfoTuple = (InfoGenerationLabel, InfoGenerationEntry)
+    return InfoGenerationEntry, InfoTuple

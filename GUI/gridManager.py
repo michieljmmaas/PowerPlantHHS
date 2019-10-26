@@ -97,44 +97,22 @@ class Application(Frame):
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
         padx = 10
         pady = 10
-        LabelWidth = 20
+        LabelWidth = 25
         LabelHeight = 3
 
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
-
-        LabelRelief = SOLID
-
         # Colom namen
-        ItemLabel = Label(ItemFrame, text="Onderwerp", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
-        NumberLabel = Label(ItemFrame, text="Aantal", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
-        FactorLabel = Label(ItemFrame, text="Factor", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
-        CostLabel = Label(ItemFrame, text="Kosten", width=LabelWidth, height=LabelHeight, relief=LabelRelief)
-        headerTuple = (ItemLabel, NumberLabel, FactorLabel, CostLabel)
+        headerTuple = wm.HeaderRow("Onderwerp", "Aantal", "Factor", "Kosten", ItemFrame)
 
         # Energie Surplus: TO DO
-        PWSurplusLabel = Label(ItemFrame, text="Energie Overschot", width=LabelWidth, height=LabelHeight, anchor=W,
-                               relief=SOLID)
-        PWSurplusEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        PWSurplusFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        PWDSurplusCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        PWDSurplusTuple = (PWSurplusLabel, PWSurplusEntry, PWSurplusFactor, PWDSurplusCost)
+        PWDSurplusTuple = wm.LabelRow("Energie Overschot", ItemFrame)
 
         # Energie Deficit: TO DO
-        PWDeficitLabel = Label(ItemFrame, text="Energie Tekort", width=LabelWidth, height=LabelHeight, anchor=W,
-                               relief=SOLID)
-        PWDeficitEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        PWDeficitFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        PWDeficitCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        PWDeficitTuple = (PWDeficitLabel, PWDeficitEntry, PWDeficitFactor, PWDeficitCost)
+        PWDeficitTuple = wm.LabelRow("Energie Tekort", ItemFrame)
 
         # Windturbine aantal
-        WTNumberLabel = Label(ItemFrame, text="Wind Turbine - Aantal", width=LabelWidth, height=LabelHeight, anchor=W,
-                              relief=SOLID)
-        WTNumberEntry = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        WTNumberFactor = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        WTNumberCost = Label(ItemFrame, text="", width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        self.WTHeightTuple = (WTNumberLabel, WTNumberEntry, WTNumberFactor, WTNumberCost)
+        self.WTHeightTuple = wm.LabelRow("Wind Turbine - Aantal", ItemFrame)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
         # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
@@ -148,47 +126,13 @@ class Application(Frame):
             RowCounter = RowCounter + 1
 
         # Solar Panels info
-        SPNameLabel = Label(ItemFrame, text="Zonnepaneel Nummer", width=LabelWidth, height=LabelHeight, anchor=W,
-                            relief=SOLID)
-        SPSurfaceLabel = Label(ItemFrame, text="Oppervlakte (m\u00b2)", width=LabelWidth, height=LabelHeight, anchor=W,
-                               relief=SOLID)
-        SPAngleLabel = Label(ItemFrame, text="Hoek in graden", width=LabelWidth, height=LabelHeight, anchor=W,
-                             relief=SOLID)
-        SPOrientationLabel = Label(ItemFrame, text="Oriëntatie t.o.v. Zuiden", width=LabelWidth, height=LabelHeight,
-                                   anchor=W, relief=SOLID)
-        SPHeaderTuple = (SPNameLabel, SPSurfaceLabel, SPAngleLabel, SPOrientationLabel)
+        SPHeaderTuple = wm.HeaderRow("Zonnepaneel Nummer", "Oppervlakte (m\u00b2)", "Hoek in graden", "Oriëntatie t.o.v. Zuiden", ItemFrame)
 
         # Solar Panel 1
-        SP1NameLabel = Label(ItemFrame, text="Zonnepaneel 1", width=LabelWidth, height=LabelHeight, anchor=W,
-                             relief=SOLID)
-        SP1SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP1AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP1OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP1HeaderTuple = (SP1NameLabel, SP1SurfaceLabel, SP1AngleLabel, SP1OrientationLabel)
-
-        # Solar Panel 2
-        SP2NameLabel = Label(ItemFrame, text="Zonnepaneel 2", width=LabelWidth, height=LabelHeight, anchor=W,
-                             relief=SOLID)
-        SP2SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP2AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP2OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP2HeaderTuple = (SP2NameLabel, SP2SurfaceLabel, SP2AngleLabel, SP2OrientationLabel)
-
-        # Solar Panel 3
-        SP3NameLabel = Label(ItemFrame, text="Zonnepaneel 3", width=LabelWidth, height=LabelHeight, anchor=W,
-                             relief=SOLID)
-        SP3SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP3AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP3OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP3HeaderTuple = (SP3NameLabel, SP3SurfaceLabel, SP3AngleLabel, SP3OrientationLabel)
-
-        # Solar Panel 4
-        SP4NameLabel = Label(ItemFrame, text="Zonnepaneel 4", width=LabelWidth, height=LabelHeight, anchor=W,
-                             relief=SOLID)
-        SP4SurfaceLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP4AngleLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP4OrientationLabel = Label(ItemFrame, width=LabelWidth, height=LabelHeight, anchor=W, relief=SUNKEN)
-        SP4HeaderTuple = (SP4NameLabel, SP4SurfaceLabel, SP4AngleLabel, SP4OrientationLabel)
+        SP1HeaderTuple = wm.LabelRow("Zonnepaneel 1", ItemFrame)
+        SP2HeaderTuple = wm.LabelRow("Zonnepaneel 2", ItemFrame)
+        SP3HeaderTuple = wm.LabelRow("Zonnepaneel 3", ItemFrame)
+        SP4HeaderTuple = wm.LabelRow("Zonnepaneel 4", ItemFrame)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -207,26 +151,12 @@ class Application(Frame):
         self.TotalCost = Label(ItemFrame, width=20, height=5, anchor=W, relief=SUNKEN, bg="white")
         self.TotalCost.grid(row=RowCounter + 2, column=3, padx=padx, pady=pady, sticky=E)
 
-        LabelWidth = 25
+
         # Hieronder worden de invul velden voor de genetisch algoritme gemaakt.
-        InfoGenerationLabel = Button(FrameBottom, text="Generations", width=LabelWidth, height=LabelHeight,
-                                     relief=SOLID)
-        self.InfoGenerationEntry = Entry(FrameBottom, font=("Helvetica", 10))
-        InfoGenerationTuple = (InfoGenerationLabel, self.InfoGenerationEntry)
-
-        InfoPoolLabel = Button(FrameBottom, text="Pool", width=LabelWidth, height=LabelHeight, relief=SOLID)
-        self.InfoPoolEntry = Entry(FrameBottom, font=("Helvetica", 10))
-        InfoPoolTuple = (InfoPoolLabel, self.InfoPoolEntry)
-
-        InfoMutationLabel = Button(FrameBottom, text="Mutation Rate (%)", width=LabelWidth, height=LabelHeight,
-                                   relief=SOLID)
-        self.InfoMutationEntry = Entry(FrameBottom, font=("Helvetica", 10))
-        InfoMutationTuple = (InfoMutationLabel, self.InfoMutationEntry)
-
-        InfoPowerPlantLabel = Button(FrameBottom, text="PowerPlant Energie (KW)", width=LabelWidth, height=LabelHeight,
-                                     relief=SOLID)
-        self.InfoPowerPlantEntry = Entry(FrameBottom, font=("Helvetica", 10))
-        InfoPowerPlantTuple = (InfoPowerPlantLabel, self.InfoPowerPlantEntry)
+        self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom)
+        self.InfoPoolEntry, InfoPoolTuple = wm.InfoItem("Pool", FrameBottom)
+        self.InfoMutationEntry, InfoMutationTuple = wm.InfoItem("Mutation Rate (%)", FrameBottom)
+        self.InfoPowerPlantEntry, InfoPowerPlantTuple = wm.InfoItem("PowerPlant Energie (KW)", FrameBottom)
 
         InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
 
