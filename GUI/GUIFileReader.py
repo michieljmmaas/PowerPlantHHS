@@ -41,6 +41,7 @@ def loadLoggingFile(GUI, first=None, filename=None):
             if not first:
                 fn.nextChart(GUI)
                 GUI.nextButton.config(state="normal")
+                GUI.previousButton.config(state="normal")
 
     except Exception as e:
         print(e)

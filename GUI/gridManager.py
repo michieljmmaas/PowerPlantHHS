@@ -39,13 +39,16 @@ class Application(Frame):
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
     def SetSettings(self):
+        GenerationTuple = ("Generaties", 100)
+        PoolTuple = ("Pool", 10)
+        Mutation = ("Mutatie Percentage (%)", 50)
+        TargetKWHTuple = ("Powerplant Energie in KWH", 6000)
         SurfaceAreaTuple = ("Kosten per m\u00b2 Zonnepanneel", 190)
         KWHTuple = ("Kosten per KWH Opslag", 400)
-        TargetKWHTuple = ("Powerplant Energie in KWH", 6000)
         DeficitTuple = ("Kosten voor tekort per KWH", 1000000)
         CableLengthTuple = ("Kosten voor lengte van kabel in Meter", 1000)
         VoltageTuple = ("Kosten voor voltage van Kabel", 190)
-        self.settingsArray = [SurfaceAreaTuple, KWHTuple, TargetKWHTuple, DeficitTuple, CableLengthTuple, VoltageTuple]
+        self.settingsArray = [GenerationTuple, PoolTuple, Mutation, TargetKWHTuple, SurfaceAreaTuple, KWHTuple, DeficitTuple, CableLengthTuple, VoltageTuple]
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -82,17 +85,27 @@ class Application(Frame):
         ItemFrame = Frame(self.parent)
         ItemFrame.grid(row=0, column=6, rowspan=6, columnspan=2, sticky=W + E + N + S)
 
+        # Hier onder worden de instellen van de grafiek gezet
+        self.graphNumber = 0  # Wisselen tussen grafieken
+        self.f = Figure(figsize=(8, 6), dpi=100)  # Maakt figuur waar de grafiek in komt
+        self.a = self.f.add_subplot(111)  # Maakt grafiek
+
+        self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
+        self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
+
         # Grafiek Buttons
-        previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", FrameGrafiekButtons, FrameGrafiekButtons,
-                                      fn.openCostFunctionSettingWindow, True)
-        nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", FrameGrafiekButtons, FrameGrafiekButtons,
-                                      fn.openCostFunctionSettingWindow, True)
         settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", FrameGrafiekButtons, FrameGrafiekButtons,
                                       fn.openCostFunctionSettingWindow, True)
+        self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", FrameGrafiekButtons, FrameGrafiekButtons,
+                                      fn.previousChart, False)
+        self.previousButton.config(state='disabled')
+        self.nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", FrameGrafiekButtons, FrameGrafiekButtons,
+                                      fn.nextChart, False)
+        self.nextButton.config(state='disabled')
 
         settingButton.grid(row=0, column=0)
-        previousButton.grid(row=0, column=1)
-        nextButton.grid(row=0, column=2, pady=5)
+        self.previousButton.grid(row=0, column=1)
+        self.nextButton.grid(row=0, column=2, pady=5)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -108,9 +121,6 @@ class Application(Frame):
         # Dit is de laad balk en de knop volgende grafiek. De knop staat uit want hij wisselt naar niets
         self.pbar = Progressbar(FrameGrafiek, mode='indeterminate')
         self.pbar.pack(fill=BOTH)
-        # self.nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: fn.nextChart(self, False),
-        #                          state="disabled", font=self.ButtonFont, relief=RAISED, borderwidth=3)
-        # self.nextButton.pack(pady=10)
 
         # Buttons
         self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", FrameGrafiek, ItemFrame, "   Run",
@@ -132,9 +142,6 @@ class Application(Frame):
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
         padx = 10
         pady = 10
-
-        # Background = Label(ItemFrame, bg='blue')
-        # Background.grid(row=0, column=0, columnspan=4, sticky=N+S+E+W)
 
         ColumnCounter = 0
         for Item in ActionTuple:
@@ -193,26 +200,6 @@ class Application(Frame):
         self.TotalCost = Label(ItemFrame, width=20, height=2, anchor=W, relief=SUNKEN, font=("Helvetica", 20))
         self.TotalCost.grid(row=RowCounter + 2, column=2, columnspan=2, padx=padx, pady=pady, sticky=W + E)
 
-        # Hieronder worden de invul velden voor de genetisch algoritme gemaakt.
-        # self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom, self.InfoFont, self.HFont)
-        # self.InfoPoolEntry, InfoPoolTuple = wm.InfoItem("Pool", FrameBottom, self.InfoFont, self.HFont)
-        # self.InfoMutationEntry, InfoMutationTuple = wm.InfoItem("Mutation Rate (%)", FrameBottom, self.InfoFont, self.HFont)
-        # self.InfoPowerPlantEntry, InfoPowerPlantTuple = wm.InfoItem("PowerPlant Energie (KW)", FrameBottom, self.InfoFont, self.HFont)
-        #
-        # # InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple]
-        #
-        # # Deze loop voegt de Infotuples toe
-        # ColumnCounter = 0
-        # for Tuple in InfoTupleList:
-        #     RowCounter = 0
-        #     for Item in Tuple:
-        #         Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
-        #         RowCounter = RowCounter + 1
-        #     ColumnCounter = ColumnCounter + 1
-        #
-        # CostFunction = wm.makeButton(self, "GUI/icons/settings.png", Frame1, FrameBottom, " KostenFunctie", fn.openCostFunctionSettingWindow, True)
-        # CostFunction.grid(row=RowCounter-2, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
-
     # Deze methode is er om het genetisch algoritme aan te roepen en de dingen in te stellen.
     def runSimulation(self):
         if self.running == 1:  # Als het genetisch algoritme aan het runnen is
@@ -226,15 +213,16 @@ class Application(Frame):
             # Als er meer dan twee generaties zijn geweest, dan moet je nog kunnen wissel tussen de grafieken
             if len(self.gens) > 1:
                 self.nextButton.config(state="normal")
+                self.previousButton.config(state="normal")
 
             return
         else:  # Als de algoritme nog niet aan het trainen is. begin nu.
             try:
                 # Haal de waarden op uit de velden. Met passende meldingen
-                GenInfo = int(self.InfoGenerationEntry.get())
-                PoolInfo = int(self.InfoPoolEntry.get())
-                MutationInfo = int(self.InfoMutationEntry.get())
-                PowerPlantInfo = int(self.InfoPowerPlantEntry.get())
+                GenInfo = int(self.settingsArray[0][1])
+                PoolInfo = int(self.settingsArray[1][1])
+                MutationInfo = int(self.settingsArray[2][1])
+                PowerPlantInfo = int(self.settingsArray[3][1])
                 infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
                 self.consumptionGrade = PowerPlantInfo
 
@@ -277,8 +265,8 @@ class Application(Frame):
     # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt de grafiek aangepast en de waarden ingevuld
     def onGetValue(self):
         if self.p1.is_alive():  # Zolang het proces draait
-            print("Checking")
-            print("Counter: " + str(self.counter.value))
+            # print("Checking")
+            # print("Counter: " + str(self.counter.value))
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
                 self.counterCheck = self.counter.value
                 fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,

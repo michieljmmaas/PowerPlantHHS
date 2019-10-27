@@ -51,10 +51,25 @@ def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
 
 
-# Laat de volgende grafiek zien
+def previousChart(GUI, starting=True):
+    if GUI.graphNumber != 0:
+        GUI.graphNumber = GUI.graphNumber - 1
+    else:
+        GUI.graphNumber = 4
+    loadChart(GUI, starting)
+
+
 def nextChart(GUI, starting=True):
+    if GUI.graphNumber != 4:
+        GUI.graphNumber = GUI.graphNumber + 1
+    else:
+        GUI.graphNumber = 0
+    loadChart(GUI, starting)
+
+
+# Laat de volgende grafiek zien
+def loadChart(GUI, starting=True):
     GUI.a.clear()
-    # GUI.a.axes.Axes.set_aspect('auto')  # resets
     GUI.a.axis('auto')
     GUI.a.axis('on')
     if starting:  # Start bij de eeste
@@ -62,14 +77,12 @@ def nextChart(GUI, starting=True):
 
     # Instellingen voor de eerste grafiek: Minium Kosten
     if GUI.graphNumber == 0:
-
         GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
         limit = x_limit(GUI.gens)
         GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         GUI.a.legend()
-        GUI.graphNumber = 1  # Als je nog een keer klikt krijg je de andere
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
     elif GUI.graphNumber == 1:
@@ -79,7 +92,6 @@ def nextChart(GUI, starting=True):
         limit = x_limit(GUI.gens)
         GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         GUI.a.legend()
-        GUI.graphNumber = 2  # Als je nog een keer klikt krijg je de andere
 
     # Instellingen voor de derde grafiek: Energie Productie
     elif GUI.graphNumber == 2:
@@ -88,7 +100,6 @@ def nextChart(GUI, starting=True):
         GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
-        GUI.graphNumber = 3  # Als je nog een keer klikt krijg je de andere
 
     # Instellingen voor de vierde grafiek: Som van overproductie
     elif GUI.graphNumber == 3:
@@ -97,7 +108,6 @@ def nextChart(GUI, starting=True):
         GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Som van Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
-        GUI.graphNumber = 4  # Als je nog een keer klikt krijg je de andere
 
     # Instellingen voor de 5de grafiek: Pie chart met verdeling van de energie productie
     elif GUI.graphNumber == 4:
@@ -109,7 +119,6 @@ def nextChart(GUI, starting=True):
         GUI.a.legend(patches, Labels, loc="best")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
-        GUI.graphNumber = 0  # Als je nog een keer klikt krijg je de andere
 
     GUI.canvas.draw()
 
@@ -122,6 +131,7 @@ def clearGraph(GUI):
     GUI.a.set_title("Gegevens ophalen")
     GUI.canvas.draw()
     GUI.nextButton.config(state="disabled")
+    GUI.previousButton.config(state="disabled")
 
 
 # Als er een nieuwe generatie is roept hij dit aan
@@ -217,4 +227,3 @@ def createCostFunctionPair(NewWindow, textValue, startingValue, font):
     ItemEntry.insert(0, str(startingValue))
     Tuple = (ItemLabel, ItemEntry)
     return Tuple
-

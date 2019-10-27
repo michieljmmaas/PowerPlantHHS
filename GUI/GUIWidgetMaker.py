@@ -42,7 +42,7 @@ def GrafiekButton(GUI, fileString, frameHolder, FramePlacer, function, arg):
     ButtonCursor = "hand1"
 
     if not arg:
-        RunButton = Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=function, relief=ButtonRelief,
+        RunButton = Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=lambda: function(GUI, False), relief=ButtonRelief,
                            image=ButtonIcon, anchor=ButtonAnchor, font=GUI.ButtonFont, cursor=ButtonCursor,
                            borderwidth=borderwidth)
         return RunButton
