@@ -1,5 +1,7 @@
 from math import ceil, log
+from tkinter import *
 from tkinter import messagebox
+
 import GUI.GUIFileReader as fr
 import numpy as np
 import ast
@@ -99,7 +101,7 @@ def nextChart(GUI, starting=True):
 
     # Instellingen voor de 5de grafiek: Pie chart met verdeling van de energie productie
     elif GUI.graphNumber == 4:
-        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum))*100), 2))
+        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
         colors = ['gold', 'dodgerblue']
@@ -163,7 +165,7 @@ def setUpPower(MultiListString, GUI):
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
     WindArray = [item[1] for item in MultiList]  # Haal wind eruit
     SolarArray = [item[2] for item in MultiList]  # Haal Solar eruit
-    PowerArrayPre = [sum(x) for x in zip(*[WindArray, SolarArray])] # Voeg samen voor de sum
+    PowerArrayPre = [sum(x) for x in zip(*[WindArray, SolarArray])]  # Voeg samen voor de sum
     GUI.WindSum = sum(WindArray)
     GUI.SolarSum = sum(SolarArray)
 
@@ -186,4 +188,33 @@ def fillEntries(GUI):
     GUI.InfoGenerationEntry.insert(0, '100')
     GUI.InfoPoolEntry.insert(0, '10')
     GUI.InfoMutationEntry.insert(0, '50')
-    GUI.InfoPowerPlantEntry.insert(0, '6000')
+
+
+def openCostFunctionSettingWindow(GUI):
+    NewWindow = Toplevel(GUI.parent)
+    font = GUI.InfoFont
+    settings = GUI.settingsArray
+    displayCostFunction(NewWindow, font, settings)
+
+
+def displayCostFunction(NewWindow, font, settings):
+    RowCounter = 0
+    padx = 10
+    pady = 10
+    for item in settings:
+        Tuple = createCostFunctionPair(NewWindow, item[0], item[1], font)
+        Tuple[0].grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
+        Tuple[1].grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
+        RowCounter = RowCounter + 1
+
+
+def createCostFunctionPair(NewWindow, textValue, startingValue, font):
+    LabelWidth = 30
+    ItemLabel = Label(NewWindow, text=textValue, width=LabelWidth, font=font, anchor=W)
+    # ItemLabel = Label(NewWindow, text=textValue, font=font, anchor=W)
+    # ItemLabel = Label(NewWindow, text=textValue, font=font, anchor=E)
+    ItemEntry = Entry(NewWindow)
+    ItemEntry.insert(0, str(startingValue))
+    Tuple = (ItemLabel, ItemEntry)
+    return Tuple
+

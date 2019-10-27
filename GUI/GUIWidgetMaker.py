@@ -67,3 +67,6 @@ def InfoItem(text, frameHolder, InfoFont, HFont):
     InfoGenerationEntry = Entry(frameHolder, font=InfoFont)
     InfoTuple = (InfoGenerationLabel, InfoGenerationEntry)
     return InfoGenerationEntry, InfoTuple
+
+
+

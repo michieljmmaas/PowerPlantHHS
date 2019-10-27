@@ -22,6 +22,7 @@ class Application(Frame):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
         self.defineValues()
+        self.SetSettings()
         self.makeFonts()
         self.initUI()  # Maak de UI
         self.grid()  # Het is een grid field
@@ -36,6 +37,15 @@ class Application(Frame):
         self.InfoFont = fontMaker.Font(family=fontFamily, size=10)
         self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
+
+    def SetSettings(self):
+        SurfaceAreaTuple = ("Kosten per m\u00b2 Zonnepanneel", 190)
+        KWHTuple = ("Kosten per KWH Opslag", 400)
+        TargetKWHTuple = ("Powerplant Energie in KWH", 6000)
+        DeficitTuple = ("Kosten voor tekort per KWH", 1000000)
+        CableLengthTuple = ("Kosten voor lengte van kabel in Meter", 1000)
+        VoltageTuple = ("Kosten voor voltage van Kabel", 190)
+        self.settingsArray = [SurfaceAreaTuple, KWHTuple, TargetKWHTuple, DeficitTuple, CableLengthTuple, VoltageTuple]
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -174,9 +184,9 @@ class Application(Frame):
         self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom, self.InfoFont, self.HFont)
         self.InfoPoolEntry, InfoPoolTuple = wm.InfoItem("Pool", FrameBottom, self.InfoFont, self.HFont)
         self.InfoMutationEntry, InfoMutationTuple = wm.InfoItem("Mutation Rate (%)", FrameBottom, self.InfoFont, self.HFont)
-        self.InfoPowerPlantEntry, InfoPowerPlantTuple = wm.InfoItem("PowerPlant Energie (KW)", FrameBottom, self.InfoFont, self.HFont)
+        # self.InfoPowerPlantEntry, InfoPowerPlantTuple = wm.InfoItem("PowerPlant Energie (KW)", FrameBottom, self.InfoFont, self.HFont)
 
-        InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple, InfoPowerPlantTuple]
+        InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple]
 
         # Deze loop voegt de Infotuples toe
         ColumnCounter = 0
@@ -186,6 +196,9 @@ class Application(Frame):
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
                 RowCounter = RowCounter + 1
             ColumnCounter = ColumnCounter + 1
+
+        CostFunction = wm.makeButton(self, "GUI/icons/settings.png", Frame1, FrameBottom, " KostenFunctie", fn.openCostFunctionSettingWindow, True)
+        CostFunction.grid(row=RowCounter-2, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
 
     # Deze methode is er om het genetisch algoritme aan te roepen en de dingen in te stellen.
     def runSimulation(self):
