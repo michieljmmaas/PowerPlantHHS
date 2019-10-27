@@ -1,7 +1,7 @@
 from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
-
+import GUI.GUIWidgetMaker as wm
 import GUI.GUIFileReader as fr
 import numpy as np
 import ast
@@ -189,8 +189,11 @@ def setUpPower(MultiListString, GUI):
 
 # Sluit het programma af en sluit de thread als hij runt
 def exitProgram(GUI):
-    GUI.parent.destroy()
-    GUI.p1.kill()
+    try:
+        GUI.parent.destroy()
+        GUI.p1.kill()
+    except AttributeError as e:
+        print("Nog niet gestart")
 
 
 # Deze functie laad standaard waarden in voor het genetische algortime
@@ -201,29 +204,40 @@ def fillEntries(GUI):
 
 
 def openCostFunctionSettingWindow(GUI):
-    NewWindow = Toplevel(GUI.parent)
+    GUI.NewWindow = Toplevel(GUI.parent)
     font = GUI.InfoFont
     settings = GUI.settingsArray
-    displayCostFunction(NewWindow, font, settings)
+    displayCostFunction(GUI.NewWindow, font, settings, GUI)
 
 
-def displayCostFunction(NewWindow, font, settings):
+def displayCostFunction(NewWindow, font, settings, GUI):
     RowCounter = 0
     padx = 10
     pady = 10
+    preSaveEntries = []
     for item in settings:
         Tuple = createCostFunctionPair(NewWindow, item[0], item[1], font)
         Tuple[0].grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
         Tuple[1].grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
+        preSaveEntries.append(Tuple[1])
         RowCounter = RowCounter + 1
+    SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", SaveValues, True)
+    SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
+    GUI.preSave = preSaveEntries
 
 
 def createCostFunctionPair(NewWindow, textValue, startingValue, font):
     LabelWidth = 30
     ItemLabel = Label(NewWindow, text=textValue, width=LabelWidth, font=font, anchor=W)
-    # ItemLabel = Label(NewWindow, text=textValue, font=font, anchor=W)
-    # ItemLabel = Label(NewWindow, text=textValue, font=font, anchor=E)
     ItemEntry = Entry(NewWindow)
     ItemEntry.insert(0, str(startingValue))
     Tuple = (ItemLabel, ItemEntry)
     return Tuple
+
+
+def SaveValues(GUI):
+    EntryArray = GUI.preSave
+    for x in range(len(EntryArray)):
+        GUI.settingsArray[x][1] = int(EntryArray[x].get())
+    GUI.NewWindow.destroy()
+

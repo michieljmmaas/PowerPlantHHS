@@ -39,15 +39,15 @@ class Application(Frame):
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
     def SetSettings(self):
-        GenerationTuple = ("Generaties", 100)
-        PoolTuple = ("Pool", 10)
-        Mutation = ("Mutatie Percentage (%)", 50)
-        TargetKWHTuple = ("Powerplant Energie in KWH", 6000)
-        SurfaceAreaTuple = ("Kosten per m\u00b2 Zonnepanneel", 190)
-        KWHTuple = ("Kosten per KWH Opslag", 400)
-        DeficitTuple = ("Kosten voor tekort per KWH", 1000000)
-        CableLengthTuple = ("Kosten voor lengte van kabel in Meter", 1000)
-        VoltageTuple = ("Kosten voor voltage van Kabel", 190)
+        GenerationTuple = ["Generaties", 100]
+        PoolTuple = ["Pool", 10]
+        Mutation = ["Mutatie Percentage (%)", 50]
+        TargetKWHTuple = ["Powerplant Energie in KWH", 6000]
+        SurfaceAreaTuple = ["Kosten per m\u00b2 Zonnepanneel", 190]
+        KWHTuple = ["Kosten per KWH Opslag", 400]
+        DeficitTuple = ["Kosten voor tekort per KWH", 1000000]
+        CableLengthTuple = ["Kosten voor lengte van kabel in Meter", 1000]
+        VoltageTuple = ["Kosten voor voltage van Kabel", 190]
         self.settingsArray = [GenerationTuple, PoolTuple, Mutation, TargetKWHTuple, SurfaceAreaTuple, KWHTuple, DeficitTuple, CableLengthTuple, VoltageTuple]
 
     def defineValues(self):
@@ -70,6 +70,8 @@ class Application(Frame):
         self.counter = 0
         self.counterCheck = 0
         self.running = 0
+
+        self.preSave = []
 
     def initUI(self):
         # Maakt de drie velden aan

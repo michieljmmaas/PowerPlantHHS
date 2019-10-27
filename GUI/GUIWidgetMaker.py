@@ -92,7 +92,7 @@ def LabelRow(text, frameHolder, HFont, ColFont):
 def InfoItem(text, frameHolder, InfoFont, HFont):
     LabelWidth = 25
     LabelHeight = 3
-    InfoGenerationLabel = Button(frameHolder, text=text, width=LabelWidth, height=LabelHeight, relief=SOLID, font=HFont)
-    InfoGenerationEntry = Entry(frameHolder, font=InfoFont)
-    InfoTuple = (InfoGenerationLabel, InfoGenerationEntry)
-    return InfoGenerationEntry, InfoTuple
+    InfoLabel = Button(frameHolder, text=text, width=LabelWidth, height=LabelHeight, relief=SOLID, font=HFont)
+    InfoEntry = Entry(frameHolder, font=InfoFont)
+    InfoTuple = (InfoLabel, InfoEntry)
+    return InfoEntry, InfoTuple
