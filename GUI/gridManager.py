@@ -10,6 +10,8 @@ import GUI.GUIFunctions as fn
 import GUI.GUIFileReader as fr
 from tkinter import font as fontMaker
 import GUI.GUIWidgetMaker as wm
+import calculate_cost as cc
+import pandas as pd
 
 DELAY1 = 20
 DELAY2 = 5000
@@ -48,7 +50,8 @@ class Application(Frame):
         DeficitTuple = ["Kosten voor tekort per KWH", 1000000]
         CableLengthTuple = ["Kosten voor lengte van kabel in Meter", 1000]
         VoltageTuple = ["Kosten voor voltage van Kabel", 190]
-        self.settingsArray = [GenerationTuple, PoolTuple, Mutation, TargetKWHTuple, SurfaceAreaTuple, KWHTuple, DeficitTuple, CableLengthTuple, VoltageTuple]
+        self.settingsArray = [GenerationTuple, PoolTuple, Mutation, TargetKWHTuple, SurfaceAreaTuple, KWHTuple,
+                              DeficitTuple, CableLengthTuple, VoltageTuple]
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -72,6 +75,13 @@ class Application(Frame):
         self.running = 0
 
         self.preSave = []
+        self.cb_cost_table = pd.DataFrame(
+            {'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400,
+                      600, 1000, 1250, 1600, 2000, 3000, 5000, 8000, 10000, 12000, 15000,
+                      18000, 22000, 25000, 30000, 40000, 50000],
+             'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15,
+                      0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11,
+                      13, 17.5, 20, 30, 40, 50, 60, 72]})
 
     def initUI(self):
         # Maakt de drie velden aan
@@ -97,12 +107,12 @@ class Application(Frame):
 
         # Grafiek Buttons
         settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", FrameGrafiekButtons, FrameGrafiekButtons,
-                                      fn.openCostFunctionSettingWindow, True)
+                                         fn.openCostFunctionSettingWindow, True)
         self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", FrameGrafiekButtons, FrameGrafiekButtons,
-                                      fn.previousChart, False)
+                                               fn.previousChart, False)
         self.previousButton.config(state='disabled')
         self.nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", FrameGrafiekButtons, FrameGrafiekButtons,
-                                      fn.nextChart, False)
+                                           fn.nextChart, False)
         self.nextButton.config(state='disabled')
 
         settingButton.grid(row=0, column=0)
@@ -255,8 +265,10 @@ class Application(Frame):
                                  0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             self.PowerArray = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
+            CostCalulator = self.getCostCalculator()
             self.p1 = Process(target=runTrain, args=(
-                self.counter, self.Directory, infoArray, self.PowerArray))  # Maak een thread aan die runTrain aanroept.
+                self.counter, self.Directory, infoArray, self.PowerArray,
+                CostCalulator))  # Maak een thread aan die runTrain aanroept.
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
             self.running = 1  # Zeg dat het algoritme aan het draaien is
@@ -279,11 +291,18 @@ class Application(Frame):
             print("Klaar")
             self.pbar.stop()
 
+    def getCostCalculator(self):
+        CostCalculator = cc.CostCalculator(self.settingsArray[4][1], self.settingsArray[5][1], self.settingsArray[3][1],
+                                           self.settingsArray[6][1], self.cb_cost_table, self.settingsArray[7][1],
+                                           self.settingsArray[8][1])
+        return CostCalculator
+
 
 # Run de trainfunctie met mijn eigen waarden
-def runTrain(counter, directory, array, PowerArray):
+def runTrain(counter, directory, array, PowerArray, CostCalculator):
     train(array[0], array[1], 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
-          directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray)
+          directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
+          cost_calculator=CostCalculator)
 
 
 # Maak en open een interface window
