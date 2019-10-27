@@ -28,7 +28,7 @@ class Application(Frame):
         self.grid()  # Het is een grid field
         self.parent.title("Danone Powerplant")  # Titel van het scherm
         # Vul standaard waarden in
-        fn.fillEntries(self)
+        # fn.fillEntries(self)
         fn.clearFields(self)
 
     def makeFonts(self):
@@ -70,48 +70,63 @@ class Application(Frame):
 
     def initUI(self):
         # Maakt de drie velden aan
+        # Graffiek Button
+        FrameGrafiekButtons = Frame(self.parent)
+        FrameGrafiekButtons.grid(row=0, column=0, columnspan=4, sticky=W + E + N + S)
+
         # Grafieken
-        Frame1 = Frame(self.parent)
-        Frame1.grid(row=0, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
+        FrameGrafiek = Frame(self.parent)
+        FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
 
         # Rechter paneel met waarden
         ItemFrame = Frame(self.parent)
         ItemFrame.grid(row=0, column=6, rowspan=6, columnspan=2, sticky=W + E + N + S)
 
-        # Onderpaneel met items
-        FrameBottom = Frame(self.parent)
-        FrameBottom.grid(row=5, column=0, columnspan=4, rowspan=2, sticky=W + E + N + S)
+        # Grafiek Buttons
+        previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", FrameGrafiekButtons, FrameGrafiekButtons,
+                                      fn.openCostFunctionSettingWindow, True)
+        nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", FrameGrafiekButtons, FrameGrafiekButtons,
+                                      fn.openCostFunctionSettingWindow, True)
+        settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", FrameGrafiekButtons, FrameGrafiekButtons,
+                                      fn.openCostFunctionSettingWindow, True)
+
+        settingButton.grid(row=0, column=0)
+        previousButton.grid(row=0, column=1)
+        nextButton.grid(row=0, column=2, pady=5)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
-        self.f = Figure(figsize=(8, 5), dpi=100)  # Maakt figuur waar de grafiek in komt
+        self.f = Figure(figsize=(8, 6), dpi=100)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
 
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
-        self.canvas = FigureCanvasTkAgg(self.f, Frame1)  # Plaats grafiek in UI
+        self.canvas = FigureCanvasTkAgg(self.f, FrameGrafiek)  # Plaats grafiek in UI
         self.canvas.get_tk_widget().pack(fill=BOTH)  # Spreid het over de ruimte die het heeft
 
         # Dit is de laad balk en de knop volgende grafiek. De knop staat uit want hij wisselt naar niets
-        self.pbar = Progressbar(Frame1, mode='indeterminate')
+        self.pbar = Progressbar(FrameGrafiek, mode='indeterminate')
         self.pbar.pack(fill=BOTH)
-        self.nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: fn.nextChart(self, False),
-                                 state="disabled", font=self.ButtonFont, relief=RAISED, borderwidth=3)
-        self.nextButton.pack(pady=10)
+        # self.nextButton = Button(Frame1, text="Volgende Grafiek", command=lambda: fn.nextChart(self, False),
+        #                          state="disabled", font=self.ButtonFont, relief=RAISED, borderwidth=3)
+        # self.nextButton.pack(pady=10)
 
         # Buttons
-        self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", Frame1, ItemFrame, "   Run", self.runSimulation,
+        self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", FrameGrafiek, ItemFrame, "   Run",
+                                       self.runSimulation,
                                        False)
-        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", Frame1, ItemFrame, " Laad CSV", fr.loadCsvFile,
+        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", FrameGrafiek, ItemFrame, " Laad CSV",
+                                      fr.loadCsvFile,
                                       True)
-        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", Frame1, ItemFrame, " Laad TXT",
+        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", FrameGrafiek, ItemFrame, " Laad TXT",
                                        fr.loadLoggingFile, True)
-        ExitButton = wm.makeButton(self, "GUI/icons/error.png", Frame1, ItemFrame, " Afsluiten", fn.exitProgram, True)
+        ExitButton = wm.makeButton(self, "GUI/icons/error.png", FrameGrafiek, ItemFrame, " Afsluiten", fn.exitProgram,
+                                   True)
         ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
 
-        self.RunIcon = wm.makeIcon("GUI/icons/run-arrow.png", Frame1)
-        self.StopIcon = wm.makeIcon("GUI/icons/stop-button.png", Frame1)
+        self.RunIcon = wm.makeIcon("GUI/icons/run-arrow.png", FrameGrafiek)
+        self.StopIcon = wm.makeIcon("GUI/icons/stop-button.png", FrameGrafiek)
 
         # Rechterpaneel
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
@@ -123,9 +138,8 @@ class Application(Frame):
 
         ColumnCounter = 0
         for Item in ActionTuple:
-            Item.grid(row=0, column=ColumnCounter, padx=padx, pady=pady+5, sticky=N + S)
+            Item.grid(row=0, column=ColumnCounter, padx=padx, pady=pady + 5, sticky=N + S)
             ColumnCounter = ColumnCounter + 1
-
 
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
@@ -151,7 +165,6 @@ class Application(Frame):
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
                 ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
-
 
         # Solar Panels info
         SPHeaderTuple = wm.HeaderRow("Zonnepaneel Nummer", "Oppervlakte (m\u00b2)", "Hoek in graden",
@@ -181,24 +194,24 @@ class Application(Frame):
         self.TotalCost.grid(row=RowCounter + 2, column=2, columnspan=2, padx=padx, pady=pady, sticky=W + E)
 
         # Hieronder worden de invul velden voor de genetisch algoritme gemaakt.
-        self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom, self.InfoFont, self.HFont)
-        self.InfoPoolEntry, InfoPoolTuple = wm.InfoItem("Pool", FrameBottom, self.InfoFont, self.HFont)
-        self.InfoMutationEntry, InfoMutationTuple = wm.InfoItem("Mutation Rate (%)", FrameBottom, self.InfoFont, self.HFont)
+        # self.InfoGenerationEntry, InfoGenerationTuple = wm.InfoItem("Generations", FrameBottom, self.InfoFont, self.HFont)
+        # self.InfoPoolEntry, InfoPoolTuple = wm.InfoItem("Pool", FrameBottom, self.InfoFont, self.HFont)
+        # self.InfoMutationEntry, InfoMutationTuple = wm.InfoItem("Mutation Rate (%)", FrameBottom, self.InfoFont, self.HFont)
         # self.InfoPowerPlantEntry, InfoPowerPlantTuple = wm.InfoItem("PowerPlant Energie (KW)", FrameBottom, self.InfoFont, self.HFont)
-
-        InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple]
-
-        # Deze loop voegt de Infotuples toe
-        ColumnCounter = 0
-        for Tuple in InfoTupleList:
-            RowCounter = 0
-            for Item in Tuple:
-                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
-                RowCounter = RowCounter + 1
-            ColumnCounter = ColumnCounter + 1
-
-        CostFunction = wm.makeButton(self, "GUI/icons/settings.png", Frame1, FrameBottom, " KostenFunctie", fn.openCostFunctionSettingWindow, True)
-        CostFunction.grid(row=RowCounter-2, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
+        #
+        # # InfoTupleList = [InfoGenerationTuple, InfoPoolTuple, InfoMutationTuple]
+        #
+        # # Deze loop voegt de Infotuples toe
+        # ColumnCounter = 0
+        # for Tuple in InfoTupleList:
+        #     RowCounter = 0
+        #     for Item in Tuple:
+        #         Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
+        #         RowCounter = RowCounter + 1
+        #     ColumnCounter = ColumnCounter + 1
+        #
+        # CostFunction = wm.makeButton(self, "GUI/icons/settings.png", Frame1, FrameBottom, " KostenFunctie", fn.openCostFunctionSettingWindow, True)
+        # CostFunction.grid(row=RowCounter-2, column=ColumnCounter, padx=padx, pady=pady, sticky=W + E + N + S)
 
     # Deze methode is er om het genetisch algoritme aan te roepen en de dingen in te stellen.
     def runSimulation(self):
