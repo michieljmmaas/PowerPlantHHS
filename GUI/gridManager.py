@@ -12,6 +12,7 @@ from tkinter import font as fontMaker
 import GUI.GUIWidgetMaker as wm
 import calculate_cost as cc
 import pandas as pd
+from run_sim import Simulink
 
 DELAY1 = 20
 DELAY2 = 5000
@@ -48,17 +49,17 @@ class Application(Frame):
                     ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
                     ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
                     ["storage_costs", "Kosten per Opslag (kWh)", 400],
-                    ["defcit_cost", "Kosten voor tekort (kWh)", 1000000],
+                    ["deficit_cost", "Kosten voor tekort (kWh)", 1000000],
                     ["cable_length", "Lengte van de kabel (m)", 1000],
                     ["cable_voltage", "Spanning over de kabel (V)", 230],
                     ["solar_efficiency", "Efficienty van zonnenpanelen (%)", 15],
                     ["terrain", "Terreingesteldheid", 0.12],
                     ["windturbine_type", "Windturbine Type", 4],
+                    ["windturbine_max", "Maximaal aantal windturbines", 20],
                     ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
                     ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000]]
 
         df = pd.DataFrame.from_records(InfoSets, columns=SettingsLabels)
-
 
         # Maximum opslag
         # Minimum opslag
@@ -275,25 +276,38 @@ class Application(Frame):
             # Verwijder de bestaande grafiek
             fn.clearGraph(self)
             fn.clearFields(self)
+            self.RunButton.config(text="   Stop", image=self.StopIcon)  # Verander de tekst op de knop
             self.manager = Manager()  # Dit is een manager die the Process waarden kan geven die je dan kan uitlezen.
             self.counter = Value('i',
                                  0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             self.PowerArray = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             CostCalulator = self.getCostCalculator()
+            surface_min = self.getValueFromSettingsByName("surface_min")
+            surface_max = self.getValueFromSettingsByName("surface_max")
+            windTurbineType = self.getValueFromSettingsByName("windturbine_type")
+            solar_eff = "[" + str(int(self.getValueFromSettingsByName("solar_efficiency"))) + "]"
+            terrain_value = str(self.getValueFromSettingsByName("terrain"))
+            windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
+            simulink = (solar_eff, terrain_value)
+
             self.p1 = Process(target=runTrain, args=(
-                self.counter, self.Directory, infoArray, self.PowerArray,
-                CostCalulator))  # Maak een thread aan die runTrain aanroept.
+                self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator,
+                surface_min,surface_max, simulink, windTurbineType, windTurbineMax))  # Maak een thread aan die runTrain aanroept.
+
+            # def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, simulink,
+            #              windturbineType,
+            #              windturbineMax):
+
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
             self.running = 1  # Zeg dat het algoritme aan het draaien is
-            self.RunButton.config(text="   Stop", image=self.StopIcon)  # Verander de tekst op de knop
             self.after(DELAY2, self.onGetValue)  # Start met het pollen van de de thread
             return
 
     def getValueFromSettingsByName(self, name):
-        row = self.settingsDataFrame.loc[df['name'] == name]
-        return row[2]
+        row = self.settingsDataFrame.loc[self.settingsDataFrame['name'] == name]
+        return row.iloc[0, 2]
 
     # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt de grafiek aangepast en de waarden ingevuld
     def onGetValue(self):
@@ -311,34 +325,21 @@ class Application(Frame):
             self.pbar.stop()
 
     def getCostCalculator(self):
-        CostCalculator = cc.CostCalculator(self.getValueFromSettingsByName("surface_area_costs"), self.getValueFromSettingsByName("storage_costs"), self.getValueFromSettingsByName("powerplant_power"),
-                                           self.getValueFromSettingsByName("defcit_cost"), self.cb_cost_table, self.getValueFromSettingsByName("cable_length"), self.getValueFromSettingsByName("cable_voltage"))
+        CostCalculator = cc.CostCalculator(self.getValueFromSettingsByName("surface_area_costs"),
+                                           self.getValueFromSettingsByName("storage_costs"),
+                                           self.getValueFromSettingsByName("powerplant_power"),
+                                           self.getValueFromSettingsByName("deficit_cost"), self.cb_cost_table,
+                                           self.getValueFromSettingsByName("cable_length"),
+                                           self.getValueFromSettingsByName("cable_voltage"))
         return CostCalculator
 
 
-        # InfoSets = [
-        #0             ["gens", "Generaties", 100],
-        #1            ["pool", "Pool", 10],
-        #2             ["mutate_percentage", "Mutatie Percentage (%)", 50],
-        #3             ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
-        #4             ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
-        #5             ["storage_costs", "Kosten per Opslag (kWh)", 400],
-        #6             ["defcit_cost", "Kosten voor tekort (kWh)", 1000000],
-        #7             ["cable_length", "Lengte van de kabel (m)", 1000],
-        #8             ["cable_voltage", "Spanning over de kabel (V)", 230],
-        #9             ["solar_efficiency", "Efficienty van zonnenpanelen (%)", 15],
-        #10             ["terrain", "Terreingesteldheid", 0.12],
-        #11             ["windturbine_type", "Windturbine Type", 4],
-        #12             ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
-        #13             ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000]]
-
-
-
 # Run de trainfunctie met mijn eigen waarden
-def runTrain(counter, directory, array, PowerArray, CostCalculator):
-    train(array[0], array[1], 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
+def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, simulink, windturbineType,
+             windturbineMax):
+    train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
           directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
-          cost_calculator=CostCalculator)
+          cost_calculator=CostCalculator, simulinkSettings=simulink, windturbineType=windturbineType, N_WIND_MAX=windturbineMax)
 
 
 # Maak en open een interface window
