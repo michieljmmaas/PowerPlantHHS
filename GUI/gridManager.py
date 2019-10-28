@@ -40,17 +40,33 @@ class Application(Frame):
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
     def SetSettings(self):
-        GenerationTuple = ["Generaties", 100]
-        PoolTuple = ["Pool", 10]
-        Mutation = ["Mutatie Percentage (%)", 50]
-        TargetKWHTuple = ["Powerplant Energie in KWH", 6000]
-        SurfaceAreaTuple = ["Kosten per m\u00b2 Zonnepanneel", 190]
-        KWHTuple = ["Kosten per KWH Opslag", 400]
-        DeficitTuple = ["Kosten voor tekort per KWH", 1000000]
-        CableLengthTuple = ["Kosten voor lengte van kabel in Meter", 1000]
-        VoltageTuple = ["Kosten voor voltage van Kabel", 190]
-        self.settingsArray = [GenerationTuple, PoolTuple, Mutation, TargetKWHTuple, SurfaceAreaTuple, KWHTuple,
-                              DeficitTuple, CableLengthTuple, VoltageTuple]
+        SettingsLabels = ["name", "text", "value"]
+
+        InfoSets = [["gens", "Generaties", 100],
+                    ["pool", "Pool", 10],
+                    ["mutate_percentage", "Mutatie Percentage (%)", 50],
+                    ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
+                    ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
+                    ["storage_costs", "Kosten per Opslag (kWh)", 400],
+                    ["defcit_cost", "Kosten voor tekort (kWh)", 1000000],
+                    ["cable_length", "Lengte van de kabel (m)", 1000],
+                    ["cable_voltage", "Spanning over de kabel (V)", 230],
+                    ["solar_efficiency", "Efficienty van zonnenpanelen (%)", 15],
+                    ["terrain", "Terreingesteldheid", 0.12],
+                    ["windturbine_type", "Windturbine Type", 4],
+                    ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
+                    ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000]]
+
+        df = pd.DataFrame.from_records(InfoSets, columns=SettingsLabels)
+
+
+        # Maximum opslag
+        # Minimum opslag
+
+        # self.settingsArray = [GenerationTuple, PoolTuple, Mutation, TargetKWHTuple, SurfaceAreaTuple, KWHTuple,
+        #                       DeficitTuple, CableLengthTuple, VoltageTuple, EfficiencyTuple, TerrainTuple, WindmillTuple, SurfaceMin, SurfaceMax]
+        self.settingsDataFrame = df
+        # print(self.settingsDataFrame)
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -230,10 +246,10 @@ class Application(Frame):
         else:  # Als de algoritme nog niet aan het trainen is. begin nu.
             try:
                 # Haal de waarden op uit de velden. Met passende meldingen
-                GenInfo = int(self.settingsArray[0][1])
-                PoolInfo = int(self.settingsArray[1][1])
-                MutationInfo = int(self.settingsArray[2][1])
-                PowerPlantInfo = int(self.settingsArray[3][1])
+                GenInfo = int(self.getValueFromSettingsByName("gens"))
+                PoolInfo = int(self.getValueFromSettingsByName("pool"))
+                MutationInfo = int(self.getValueFromSettingsByName("mutate_percentage"))
+                PowerPlantInfo = int(self.getValueFromSettingsByName("powerplant_power"))
                 infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
                 self.consumptionGrade = PowerPlantInfo
 
@@ -275,6 +291,10 @@ class Application(Frame):
             self.after(DELAY2, self.onGetValue)  # Start met het pollen van de de thread
             return
 
+    def getValueFromSettingsByName(self, name):
+        row = self.settingsDataFrame.loc[df['name'] == name]
+        return row[2]
+
     # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt de grafiek aangepast en de waarden ingevuld
     def onGetValue(self):
         if self.p1.is_alive():  # Zolang het proces draait
@@ -291,10 +311,27 @@ class Application(Frame):
             self.pbar.stop()
 
     def getCostCalculator(self):
-        CostCalculator = cc.CostCalculator(self.settingsArray[4][1], self.settingsArray[5][1], self.settingsArray[3][1],
-                                           self.settingsArray[6][1], self.cb_cost_table, self.settingsArray[7][1],
-                                           self.settingsArray[8][1])
+        CostCalculator = cc.CostCalculator(self.getValueFromSettingsByName("surface_area_costs"), self.getValueFromSettingsByName("storage_costs"), self.getValueFromSettingsByName("powerplant_power"),
+                                           self.getValueFromSettingsByName("defcit_cost"), self.cb_cost_table, self.getValueFromSettingsByName("cable_length"), self.getValueFromSettingsByName("cable_voltage"))
         return CostCalculator
+
+
+        # InfoSets = [
+        #0             ["gens", "Generaties", 100],
+        #1            ["pool", "Pool", 10],
+        #2             ["mutate_percentage", "Mutatie Percentage (%)", 50],
+        #3             ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
+        #4             ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
+        #5             ["storage_costs", "Kosten per Opslag (kWh)", 400],
+        #6             ["defcit_cost", "Kosten voor tekort (kWh)", 1000000],
+        #7             ["cable_length", "Lengte van de kabel (m)", 1000],
+        #8             ["cable_voltage", "Spanning over de kabel (V)", 230],
+        #9             ["solar_efficiency", "Efficienty van zonnenpanelen (%)", 15],
+        #10             ["terrain", "Terreingesteldheid", 0.12],
+        #11             ["windturbine_type", "Windturbine Type", 4],
+        #12             ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
+        #13             ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000]]
+
 
 
 # Run de trainfunctie met mijn eigen waarden

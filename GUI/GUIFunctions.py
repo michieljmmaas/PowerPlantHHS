@@ -199,7 +199,7 @@ def exitProgram(GUI):
 def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
     font = GUI.InfoFont
-    settings = GUI.settingsArray
+    settings = GUI.settingsDataFrame
     displayCostFunction(GUI.NewWindow, font, settings, GUI)
 
 
@@ -208,8 +208,8 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     padx = 10
     pady = 10
     preSaveEntries = []
-    for item in settings:
-        Tuple = createCostFunctionPair(NewWindow, item[0], item[1], font)
+    for index, row in settings.iterrows():
+        Tuple = createCostFunctionPair(NewWindow, row[1], row[2], font)
         Tuple[0].grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
         Tuple[1].grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
         preSaveEntries.append(Tuple[1])
@@ -231,6 +231,6 @@ def createCostFunctionPair(NewWindow, textValue, startingValue, font):
 def SaveValues(GUI):
     EntryArray = GUI.preSave
     for x in range(len(EntryArray)):
-        GUI.settingsArray[x][1] = int(EntryArray[x].get())
+        GUI.settingsDataFrame.loc[x, 'value'] = float(EntryArray[x].get())
     GUI.NewWindow.destroy()
 

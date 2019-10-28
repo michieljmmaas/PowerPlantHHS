@@ -18,15 +18,15 @@ def makeButton(GUI, fileString, frameHolder, FramePlacer, text, function, arg):
     ButtonCursor = "hand1"
 
     if not arg:
-        RunButton = Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=function,
+        NewButton = Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=function,
                            relief=ButtonRelief, image=ButtonIcon, text=text, compound=compoundImage,
                            anchor=ButtonAnchor, font=GUI.ButtonFont, cursor=ButtonCursor, borderwidth=borderwidth)
-        return RunButton
+        return NewButton
     else:
-        RunButton = Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=lambda: function(GUI),
+        NewButton = Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=lambda: function(GUI),
                            relief=ButtonRelief, image=ButtonIcon, text=text, compound=compoundImage,
                            anchor=ButtonAnchor, font=GUI.ButtonFont, cursor=ButtonCursor, borderwidth=borderwidth)
-        return RunButton
+        return NewButton
     return
 
 
