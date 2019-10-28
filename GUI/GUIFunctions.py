@@ -196,13 +196,6 @@ def exitProgram(GUI):
         print("Nog niet gestart")
 
 
-# Deze functie laad standaard waarden in voor het genetische algortime
-def fillEntries(GUI):
-    GUI.InfoGenerationEntry.insert(0, '100')
-    GUI.InfoPoolEntry.insert(0, '10')
-    GUI.InfoMutationEntry.insert(0, '50')
-
-
 def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
     font = GUI.InfoFont

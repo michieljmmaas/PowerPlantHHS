@@ -15,8 +15,10 @@ N_WIND_MAX = 20
 N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 
-def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max,
-          orientation_min, orientation_max, model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000, EnergyArray=None, cost_calculator=None):
+def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max, orientation_min, orientation_max,
+          model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000,
+          EnergyArray=None, cost_calculator=None):
+
     """train genetic algorithm"""
 
     genetic_algorithm = GeneticAlgorith(mutationPercentage, 150, 6, 2, 2, True)

@@ -30,7 +30,6 @@ class Application(Frame):
         self.grid()  # Het is een grid field
         self.parent.title("Danone Powerplant")  # Titel van het scherm
         # Vul standaard waarden in
-        # fn.fillEntries(self)
         fn.clearFields(self)
 
     def makeFonts(self):
