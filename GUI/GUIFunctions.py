@@ -50,7 +50,7 @@ def format_e(n):
 def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
 
-
+# Ga naar de vorige Grafiek. True wordt gebruikt om het overzicht te resetten
 def previousChart(GUI, starting=True):
     if GUI.graphNumber != 0:
         GUI.graphNumber = GUI.graphNumber - 1
@@ -58,7 +58,7 @@ def previousChart(GUI, starting=True):
         GUI.graphNumber = 4
     loadChart(GUI, starting)
 
-
+# Ga naar de vorige Grafiek. True wordt gebruikt om het overzicht te resetten
 def nextChart(GUI, starting=True):
     if GUI.graphNumber != 4:
         GUI.graphNumber = GUI.graphNumber + 1
@@ -143,7 +143,7 @@ def updateGraph(directory, gen, PowerArraySting, GUI):
     fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
     setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
-
+# Maak alle velden leeg
 def clearFields(GUI):
     counter = 0
     empty = "  " + str(0)
@@ -170,7 +170,7 @@ def clearFields(GUI):
 
     GUI.TotalCost.config(text="  €0,00")
 
-
+# Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
 def setUpPower(MultiListString, GUI):
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
     WindArray = [item[1] for item in MultiList]  # Haal wind eruit
@@ -195,14 +195,14 @@ def exitProgram(GUI):
     except AttributeError as e:
         print("Nog niet gestart")
 
-
+# Deze methode opent het popup scherm met de instellingen
 def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
     font = GUI.InfoFont
     settings = GUI.settingsDataFrame
     displayCostFunction(GUI.NewWindow, font, settings, GUI)
 
-
+# Deze methode voegt de widgets toe aan het popup scherm
 def displayCostFunction(NewWindow, font, settings, GUI):
     RowCounter = 0
     padx = 10
@@ -218,7 +218,7 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
     GUI.preSave = preSaveEntries
 
-
+# Deze methode maakt een paar van de widgets voor item in de instellingen list
 def createCostFunctionPair(NewWindow, textValue, startingValue, font):
     LabelWidth = 30
     ItemLabel = Label(NewWindow, text=textValue, width=LabelWidth, font=font, anchor=W)
@@ -227,7 +227,7 @@ def createCostFunctionPair(NewWindow, textValue, startingValue, font):
     Tuple = (ItemLabel, ItemEntry)
     return Tuple
 
-
+# Deze methode slaat de gegeven van het popupscherm op
 def SaveValues(GUI):
     EntryArray = GUI.preSave
     for x in range(len(EntryArray)):

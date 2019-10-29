@@ -33,6 +33,7 @@ class Application(Frame):
         # Vul standaard waarden in
         fn.clearFields(self)
 
+    # Fonts die gebruikt woorden in de widgets
     def makeFonts(self):
         fontFamily = 'Helvetica'
         self.ButtonFont = fontMaker.Font(family=fontFamily, size=15, weight='bold')
@@ -40,6 +41,7 @@ class Application(Frame):
         self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
+    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe. Als je iets toevoegd aan InfoSet komt er ook een invul set van
     def SetSettings(self):
         SettingsLabels = ["name", "text", "value"]
 
@@ -64,10 +66,7 @@ class Application(Frame):
         # Maximum opslag
         # Minimum opslag
 
-        # self.settingsArray = [GenerationTuple, PoolTuple, Mutation, TargetKWHTuple, SurfaceAreaTuple, KWHTuple,
-        #                       DeficitTuple, CableLengthTuple, VoltageTuple, EfficiencyTuple, TerrainTuple, WindmillTuple, SurfaceMin, SurfaceMax]
         self.settingsDataFrame = df
-        # print(self.settingsDataFrame)
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -90,7 +89,7 @@ class Application(Frame):
         self.counterCheck = 0
         self.running = 0
 
-        self.preSave = []
+        self.preSave = []  # Deze wordt gebruikt om de Entry velden voor de instellingen in op te slaan.
         self.cb_cost_table = pd.DataFrame(
             {'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400,
                       600, 1000, 1250, 1600, 2000, 3000, 5000, 8000, 10000, 12000, 15000,
@@ -100,12 +99,12 @@ class Application(Frame):
                       13, 17.5, 20, 30, 40, 50, 60, 72]})
 
     def initUI(self):
-        # Maakt de drie velden aan
-        # Graffiek Button
+        # Maakt de drie Frames aan van de GUI
+        # Frame Grafiek Buttons, links boven met de knoppen
         FrameGrafiekButtons = Frame(self.parent)
         FrameGrafiekButtons.grid(row=0, column=0, columnspan=4, sticky=W + E + N + S)
 
-        # Grafieken
+        # Grafieken veld links
         FrameGrafiek = Frame(self.parent)
         FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
 
@@ -117,7 +116,6 @@ class Application(Frame):
         self.graphNumber = 0  # Wisselen tussen grafieken
         self.f = Figure(figsize=(8, 6), dpi=100)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
-
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
@@ -131,6 +129,7 @@ class Application(Frame):
                                            fn.nextChart, False)
         self.nextButton.config(state='disabled')
 
+        # Voeg de knoppen toe
         settingButton.grid(row=0, column=0)
         self.previousButton.grid(row=0, column=1)
         self.nextButton.grid(row=0, column=2, pady=5)
@@ -150,7 +149,7 @@ class Application(Frame):
         self.pbar = Progressbar(FrameGrafiek, mode='indeterminate')
         self.pbar.pack(fill=BOTH)
 
-        # Buttons
+        # Maak de buttons aan
         self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", FrameGrafiek, ItemFrame, "   Run",
                                        self.runSimulation,
                                        False)
@@ -163,8 +162,10 @@ class Application(Frame):
                                    True)
         ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
 
-        self.RunIcon = wm.makeIcon("GUI/icons/run-arrow.png", FrameGrafiek)
-        self.StopIcon = wm.makeIcon("GUI/icons/stop-button.png", FrameGrafiek)
+        self.RunIcon = wm.makeIcon("GUI/icons/run-arrow.png",
+                                   FrameGrafiek)  # Deze zijn nodig om te wissel van plaatje op de Run/Stop knop
+        self.StopIcon = wm.makeIcon("GUI/icons/stop-button.png",
+                                    FrameGrafiek)  # Deze zijn nodig om te wissel van plaatje op de Run/Stop knop
 
         # Rechterpaneel
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
@@ -292,12 +293,8 @@ class Application(Frame):
             simulink = (solar_eff, terrain_value)
 
             self.p1 = Process(target=runTrain, args=(
-                self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator,
-                surface_min,surface_max, simulink, windTurbineType, windTurbineMax))  # Maak een thread aan die runTrain aanroept.
-
-            # def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, simulink,
-            #              windturbineType,
-            #              windturbineMax):
+                self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
+                simulink, windTurbineType, windTurbineMax))  # Maak een thread aan die runTrain aanroept.
 
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
@@ -312,8 +309,6 @@ class Application(Frame):
     # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt de grafiek aangepast en de waarden ingevuld
     def onGetValue(self):
         if self.p1.is_alive():  # Zolang het proces draait
-            # print("Checking")
-            # print("Counter: " + str(self.counter.value))
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
                 self.counterCheck = self.counter.value
                 fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,
@@ -324,6 +319,7 @@ class Application(Frame):
             print("Klaar")
             self.pbar.stop()
 
+    # Deze methode maakt een Cost Calculator met de waarden die ingesteld zijn op het scherm
     def getCostCalculator(self):
         CostCalculator = cc.CostCalculator(self.getValueFromSettingsByName("surface_area_costs"),
                                            self.getValueFromSettingsByName("storage_costs"),
@@ -339,7 +335,8 @@ def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, 
              windturbineMax):
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
           directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
-          cost_calculator=CostCalculator, simulinkSettings=simulink, windturbineType=windturbineType, N_WIND_MAX=windturbineMax)
+          cost_calculator=CostCalculator, simulinkSettings=simulink, windturbineType=windturbineType,
+          N_WIND_MAX=windturbineMax)
 
 
 # Maak en open een interface window
