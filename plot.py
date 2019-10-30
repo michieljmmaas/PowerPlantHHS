@@ -10,32 +10,39 @@ from save_and_load import PopulationSaver
 from calculate_cost import CostCalculator
 import os
 
-def plot(model_name, generation_number):
-    simulink = Simulink('WT_SP_model_vs1total')
-    generation = load(model_name=model_name, generation_number=generation_number)
-    power_distribution, _ = simulink.run_simulation(generation[0][0:-1], 4, generation[0][-1])
+# Function to display the distrubution of solar/wind energy over a year
+def plot_energy(generation):
+    power_distribution, _ = simulink.run_simulation(generation[0:-1], 4, generation[-1])
+    # table of the diffrent cable cost
     cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
         'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
-    calculatecost = CostCalculator(190, 50, 6000, 1000000, cb_cost_table, 1000, 230)
-    dic = calculatecost.get_stats(power_distribution,319650,4,int(generation[0][-1]))
+    calculatecost = CostCalculator(190, 1600, 6000, 1000000, cb_cost_table, 1000, 230)
+    # get the dictionary of a configuration that has the stats of the generation
+    dic = calculatecost.get_stats(power_distribution,319650,4,int(generation[-1]))
     power_max = power_distribution.max()
     power_generated = power_distribution.sum()
+    # creating an array of the mean values from the power output of the simulation 
+    wind_distribution = np.mean(np.reshape(_[:8760,1], (365,24)),axis=1)
+    solar_distribution = np.mean(np.reshape(_[:8760,2], (365,24)),axis=1)
     power_distribution = np.mean(np.reshape(power_distribution[:8760], (365,24)), axis=1)
+    # creating an array for the 
     consumption = np.full(len(power_distribution), 6000)
 
-    #sns.set()
+    # Creating mutiple text variables to display in the graph
     t1 = "Storage capacity: \nAmount of windturbines: \nCable area: \nMaximum Power Output: \nTotal Power Generated: "
     t2 = str(int(dic['total_storage'])) + " kWh\n" + \
-        str(int(generation[0][-1])) + "\n" + \
+        str(int(generation[-1])) + "\n" + \
         str(int(dic['cable_area'])) + " mm²\n" + \
         str(int(power_max)) + " kW\n" + \
         str(int(power_generated)) + " kWh"
+    # Creating the solar stats text variables to display in the graph
     t3 = ""
     for I in range(4):
-        if generation[0][0 + I*3] > 0:
-            t3 = t3 + "SP" + str(I) + " - Area: " + str(int(generation[0][0 + I*3])) +\
-                "m² - Angle: " + str(int(generation[0][1 + I*3])) +\
-                "° - Orientation: " + str(int(generation[0][2 + I*3])) + "°\n"
+        if generation[0 + I*3] > 0:
+            t3 = t3 + "SP" + str(I + 1) + " - Area: " + str(int(generation[0 + I*3])) +\
+                "m² - Angle: " + str(int(generation[1 + I*3])) +\
+                "° - Orientation: " + str(int(generation[2 + I*3])) + "°\n"
+
 
     #sns.set_style("whitegrid")
     plt.subplot(2, 1, 1)
@@ -44,6 +51,8 @@ def plot(model_name, generation_number):
     plt.text(382, power_distribution.max() * 0.78, t3, ha='right', va='top', wrap=False)
     #sns.set_style("whitegrid")
     plt.plot(power_distribution, color='green', alpha=0.5)
+    plt.plot(solar_distribution, color='yellow', alpha=0.5)
+    plt.plot(wind_distribution, color='blue', alpha=0.5)
     plt.plot(consumption, color='red')
     plt.title("Power Average per Day")
     plt.xlabel('Days')
@@ -57,12 +66,31 @@ def plot(model_name, generation_number):
     plt.ylabel('kWh')
     plt.show()
 
+# function to display the diffrent configuration of solar energy over a year 
+def plot_solarenergy(generation):
+    npempty = np.zeros(9)
+    colors = np.array(['green','blue','red','yellow'])
+    text = ""
+    for I in range(4):
+        if(generation[0 + I*3]>0):
+            solar_distribution, _ = simulink.run_simulation(np.concatenate((generation[0 + I*3:3 + I*3], npempty), axis=None), 4, 0)
+            text = "SP" + str(I + 1) + " - Area: " + str(int(generation[0 + I*3])) +\
+                "m² - Angle: " + str(int(generation[1 + I*3])) +\
+                "° - Orientation: " + str(int(generation[2 + I*3])) + "°\n"
+            plt.plot(np.mean(np.reshape(solar_distribution[:8760], (365,24)), axis=1), color=colors[I], alpha=0.5, label=text)
+    plt.legend()
+    plt.show()
+
+# the load function returns a numpy array with the configuration parameters of the generation
 def load(model_name, generation_number, takebest=True):
+    # generates an exception if either the model_name or the generation_number has the value None
     if model_name is None or generation_number is None:
         raise Exception('None attribute detected on model or generation parameter')
+    # generates an exception 
     elif generation_number < 0:
         raise Exception('There can be no generation with a number less then zero')
     path = 'saved_runs'+ os.sep + model_name + os.sep
+    # returns the stats of either a generation or the best generation based on the generation number
     if takebest: 
         return np.loadtxt(path + 'best_' + str(generation_number) + '.csv', delimiter=',')
     else:
@@ -70,4 +98,12 @@ def load(model_name, generation_number, takebest=True):
     
 
 if __name__ == '__main__':
-    plot('Save_Accukosten_100', 24)
+    simulink = Simulink('WT_SP_model_vs1total')
+    generation = load(model_name='Save_Accukosten_260', generation_number=49)
+    plot_energy(generation[0])
+    generation = load(model_name='Save_Accukosten_280', generation_number=49)
+    plot_energy(generation[0])
+    generation = load(model_name='Save_Accukosten_240', generation_number=49)
+    plot_energy(generation[0])
+    #plot_solarenergy(generation[0])
+    
