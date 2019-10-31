@@ -2,7 +2,6 @@
 
 import numpy as np
 import matlab.engine
-import matplotlib.pyplot as plt
 
 
 class Simulink():
@@ -28,7 +27,7 @@ class Simulink():
         azimuth = str(list(orientation_features)).replace(' ', '')
         inclanation = str(list(angle_features)).replace(' ', '')
         surface = str(list(surface_features)).replace(' ', '')
-        efficiency = '[16]'
+        efficiency = '[15]'
         
         if (wm_type == 2):
             turbines = str(n_Turbine)
@@ -93,34 +92,6 @@ if __name__ == '__main__':
     sim = Simulink('WT_SP_model_vs1total')
     output, all_out = sim.run_simulation(np.array([1000, 15, 0, 1000, 15, 0, 1000, 15, 0, 1000, 15, 0]), 4, 7)
 
-    output1 = sim.run_simulation(np.array([6000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), 0,0)
-    output2 = sim.run_simulation(np.array([6000, 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), 0,0)
-    output3 = sim.run_simulation(np.array([6000, 35, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0]), 0,0)
-    output4 = sim.run_simulation(np.array([6000, 35, -45, 0, 0, 0, 0, 0, 0, 0, 0, 0]), 0,0)
+    print('Total: ' + str(np.sum(output)))
+    print('Mean: ' + str(np.mean(output)))
 
-
-    #print(output)
-    #print(np.mean(output))
-    reshape01 = np.reshape(output1[:8760], (365,24))
-    mean1 = np.mean(reshape01, axis=0)
-    reshape02 = np.reshape(output2[:8760], (365,24))
-    mean2 = np.mean(reshape02, axis=0)
-    reshape03 = np.reshape(output3[:8760], (365,24))
-    mean3 = np.mean(reshape03, axis=0)
-    reshape04 = np.reshape(output4[:8760], (365,24))
-    mean4 = np.mean(reshape04, axis=0)
-    
-    #print('maximale waarde van 0 graden is: ', reshape01.max())
-    #print('minimale waarde van 0 graden is: ', reshape01.min())
-
-    #plt.subplot(2,1,1)
-    plt.plot(mean1, label='0 degrees angle, 0 degrees rotation')
-    #plt.subplot(2,1,2)
-    plt.plot(mean2, label='35 degrees angle, 0 degrees rotation')
-    plt.plot(mean3, label='35 degrees angle, 45 degrees rotation')
-    plt.plot(mean4, label='35 degrees angle, -45 degrees rotation')
-    plt.xlabel('Hours of the day')
-    plt.ylabel('Production')
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.16),
-          ncol=2, fancybox=True, shadow=True)
-    # plt.show()
