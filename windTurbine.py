@@ -29,6 +29,6 @@ class WindTurbine:
         #     self.wind_velocity = '[0,3,5,7,8,9,10,12,25,25.01,40]'
         #     self.rotor_height = '0'
 
-        self.power = curve
+        self.power = self.curve
 
 
