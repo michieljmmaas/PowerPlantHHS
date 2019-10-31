@@ -21,7 +21,7 @@ def plot_energy(generation):
     dic = calculatecost.get_stats(power_distribution,319650,4,int(generation[-1]))
     power_max = power_distribution.max()
     power_generated = power_distribution.sum()
-    # creating an array of the mean values from the power output of the simulation 
+    # creating an array of the mean values from the power output of the simulation
     wind_distribution = np.mean(np.reshape(_[:8760,1], (365,24)),axis=1)
     solar_distribution = np.mean(np.reshape(_[:8760,2], (365,24)),axis=1)
     power_distribution = np.mean(np.reshape(power_distribution[:8760], (365,24)), axis=1)
@@ -43,13 +43,10 @@ def plot_energy(generation):
                 "m² - Angle: " + str(int(generation[1 + I*3])) +\
                 "° - Orientation: " + str(int(generation[2 + I*3])) + "°\n"
 
-
-    #sns.set_style("whitegrid")
     plt.subplot(2, 1, 1)
     plt.text(350, power_distribution.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
     plt.text(350, power_distribution.max() * 1.04, t1, ha='right', va='top', wrap=False)
     plt.text(382, power_distribution.max() * 0.78, t3, ha='right', va='top', wrap=False)
-    #sns.set_style("whitegrid")
     plt.plot(power_distribution, color='green', alpha=0.5)
     plt.plot(solar_distribution, color='yellow', alpha=0.5)
     plt.plot(wind_distribution, color='blue', alpha=0.5)
@@ -58,11 +55,73 @@ def plot_energy(generation):
     plt.xlabel('Days')
     plt.ylabel('kW')
     plt.subplot(2, 1, 2)
-    #sns.set_style("whitegrid")
     plt.plot(np.cumsum(power_distribution - 6000), color='green', alpha=0.5)
     plt.plot(np.zeros(len(power_distribution)), color='red')
     plt.title("Energy Balance over a Year")
     plt.xlabel('Days')
+    plt.ylabel('kWh')
+    plt.show()
+
+def plot_Battery_Use(generation):
+    power_distribution, _ = simulink.run_simulation(generation[0:-1], 4, generation[-1])
+    # table of the diffrent cable cost
+    cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
+        'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
+    calculatecost = CostCalculator(190, 1600, 6000, 1000000, cb_cost_table, 1000, 230)
+    # get the dictionary of a configuration that has the stats of the generation
+    dic = calculatecost.get_stats(power_distribution,319650,4,int(generation[-1]))
+    power_max = power_distribution.max()
+    power_generated = power_distribution.sum()
+    # creating an array of the mean values from the power output of the simulation
+    power = power_distribution
+    wind_distribution = np.mean(np.reshape(_[:8760,1], (365,24)),axis=1)
+    solar_distribution = np.mean(np.reshape(_[:8760,2], (365,24)),axis=1)
+    power_distribution = np.mean(np.reshape(power_distribution[:8760], (365,24)), axis=1)
+    # creating an array for the 
+    consumption = np.full(len(power_distribution), 6000)
+
+    # Creating mutiple text variables to display in the graph
+    t1 = "Storage capacity: \nAmount of windturbines: \nCable area: \nMaximum Power Output: \nTotal Power Generated: "
+    t2 = str(int(dic['total_storage'])) + " kWh\n" + \
+        str(int(generation[-1])) + "\n" + \
+        str(int(dic['cable_area'])) + " mm²\n" + \
+        str(int(power_max)) + " kW\n" + \
+        str(int(power_generated)) + " kWh"
+    # Creating the solar stats text variables to display in the graph
+    t3 = ""
+    for I in range(4):
+        if generation[0 + I*3] > 0:
+            t3 = t3 + "SP" + str(I + 1) + " - Area: " + str(int(generation[0 + I*3])) +\
+                "m² - Angle: " + str(int(generation[1 + I*3])) +\
+                "° - Orientation: " + str(int(generation[2 + I*3])) + "°\n"
+
+    plt.subplot(2, 1, 1)
+    plt.text(350, power_distribution.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
+    plt.text(350, power_distribution.max() * 1.04, t1, ha='right', va='top', wrap=False)
+    plt.text(382, power_distribution.max() * 0.78, t3, ha='right', va='top', wrap=False)
+    plt.plot(power_distribution, color='green', alpha=0.5)
+    plt.plot(solar_distribution, color='yellow', alpha=0.5)
+    plt.plot(wind_distribution, color='blue', alpha=0.5)
+    plt.plot(consumption, color='red')
+    plt.title("Power Average per Day")
+    plt.xlabel('Days')
+    plt.ylabel('kW')
+    plt.subplot(2, 1, 2)
+    power = power - 6000
+    batterycharge = [int(dic['total_storage'])]
+    Powershortage = []
+    for I in power :
+        batterycharge.append(batterycharge[-1] + I)
+        if(int(dic['total_storage']) < batterycharge[-1]) : 
+            batterycharge[-1] = int(dic['total_storage'])
+        elif(0 > batterycharge[-1]) :
+            batterycharge[-1] = 0
+            Powershortage.append(len(batterycharge)-1)
+    plt.plot(batterycharge, color='green', alpha=0.5)
+    if len(Powershortage) == 0:
+        plt.scatter(np.zeros(len(Powershortage)), Powershortage, color='red')
+    plt.title("Energy Balance over a Year")
+    plt.xlabel('Hour')
     plt.ylabel('kWh')
     plt.show()
 
@@ -99,11 +158,7 @@ def load(model_name, generation_number, takebest=True):
 
 if __name__ == '__main__':
     simulink = Simulink('WT_SP_model_vs1total')
-    generation = load(model_name='Save_Accukosten_260', generation_number=49)
-    plot_energy(generation[0])
-    generation = load(model_name='Save_Accukosten_280', generation_number=49)
-    plot_energy(generation[0])
-    generation = load(model_name='Save_Accukosten_240', generation_number=49)
-    plot_energy(generation[0])
+    generation = load(model_name='Save_Accukosten_320', generation_number=49)
+    plot_Battery_Use(generation[0])
     #plot_solarenergy(generation[0])
     
