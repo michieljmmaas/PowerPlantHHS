@@ -169,7 +169,7 @@ class CostCalculator():
         storage_cost = storage * self.st_cost_per_kwh
         deficit_cost = deficit * self.deficit_cost
         cost = solar_cost + \
-            wind_cost + \
+            wind_cost * n_Turbines + \
             storage_cost +\
             deficit_cost
         stat_dict = {
