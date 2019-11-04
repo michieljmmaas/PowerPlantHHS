@@ -1,17 +1,19 @@
 """train a single group"""
 
 import numpy as np
-
+import pandas as pd
 from calculate_cost import CostCalculator
 from genetic_algorith import GeneticAlgorith
 from run_sim import Simulink
 from save_and_load import PopulationSaver
+from multiprocessing import Process, Value
 
 from generators import Windturbine
 from Simulator import Simulator
 
 N_PANELS = 4
 N_SOLAR_FEATURES = N_PANELS * 3
+
 N_WIND_FEATURES = 2
 N_WIND_MAX = 7
 WIND_HEIGHT_MAX = 135
@@ -28,6 +30,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     # simulink = Simulink('WT_SP_model_vs1total')
     turbine = Windturbine(4)
     simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+
     saver = PopulationSaver(model_name, load)
 
     if load:
@@ -66,16 +69,19 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     last_generation = n_generations - 1
     for generation in range(saver.generation, n_generations):
         cost_array = np.zeros(group_size)
+        energy_array = []
         print('finished simulation 0 of {}'.format(group_size), end='\r')
         for i in range(group_size):
             current_row = group_values[i]
             # selecting windturbine type
+
             wm_type = 4
             n_Turbines = int(current_row[-2])
             turbine_height = int(current_row[-1])
             # run simulink
             # energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], 0.19, wm_type, n_Turbines, turbine_height)  # add turbine later
             energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES],n_Turbines)
+
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
             cost_array[i] = cost_calculator.calculate_cost(energy_production, sp_sm, wm_type, n_Turbines)  # add turbine later
@@ -89,7 +95,22 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             to_screen=True)
         # store intermediate result
         best = genetic_algorithm.get_best(group_values, cost_array)
+
+        # Reverse engineer de Power Graph
+        NPindex = np.where(group_values == best[0])
+        index = NPindex[0][0]
+        sending2 = energy_array[index].tolist()
+        sending = str(sending2)
+
         saver.save_best(best)
+
+        if EnergyArray is not None:
+            EnergyArray.value = sending
+        if directory is not None:
+            directory.value = saver.path
+        if counter is not None:
+            counter.value = counter.value + 1
+
         # quit when done
         if generation == last_generation:
             return best
@@ -103,20 +124,4 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-
     train(100, 100, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, m_rate=25)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
