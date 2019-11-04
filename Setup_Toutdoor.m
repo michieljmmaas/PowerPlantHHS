@@ -3,9 +3,11 @@
 
 t=NUM(:,18);
 
-vwind=NUM(:,20); % op 10 m hoogte
+[NUM]=xlsread('location_375.xls','2018');
+Toutdoor=NUM(:,6)/10;
+%Toutdoor=NUM(:,20);
 
-vwind=horzcat(t,vwind);
+Tout=horzcat(t,Toutdoor);
 
-save vwind vwind
+save Toutdoor Tout
 clear NUM RAW TXT t

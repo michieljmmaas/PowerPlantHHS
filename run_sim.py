@@ -58,7 +58,7 @@ class Simulink():
 
         power = curve
         
-        terrain_rating = '0.12'
+        terrain_rating = '0.15'
 
         self.engine.load_system(self.model_name)
 
