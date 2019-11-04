@@ -2,17 +2,20 @@
 
 import numpy as np
 import matlab.engine
+from windTurbine import WindTurbine
 import matplotlib.pyplot as plt
 
 
 class Simulink():
     """class to run simulink"""
-    def __init__(self, model_name):
+    def __init__(self, model_name, efficiency='[15]', terrain_rating='0.12'):
         self.model_name = model_name
         self.wind_model_name = model_name + '/Wind turbine'
         self.solar_model_name = model_name + '/Solar panels'
         self.engine = matlab.engine.start_matlab()
-        self.engine.warning('off',nargout=0)
+        self.engine.warning('off', nargout=0)
+        self.efficiency = efficiency
+        self.terrain_rating = terrain_rating
     
     def __del__(self):
         self.engine.quit()
@@ -28,37 +31,11 @@ class Simulink():
         azimuth = str(list(orientation_features)).replace(' ', '')
         inclanation = str(list(angle_features)).replace(' ', '')
         surface = str(list(surface_features)).replace(' ', '')
-        efficiency = '[16]'
-        
-        if (wm_type == 2):
-            turbines = str(n_Turbine)
-            curve = '[0,0,80,400,800,1200,1300,1500,1500,0,0]'
-            rotor_height = '85'
-            wind_velocity = '[0,3,5,7,8,9,10,12,25,25.01,40]'
-        elif (wm_type == 3):
-            turbines = str(n_Turbine)
-            curve = '[0,0,27,1300,2700,4000,4300,5000,5000,0,0]'
-            rotor_height = '124'
-            wind_velocity = '[0,3,5,7,8,9,10,12,25,25.01,40]'
-        elif (wm_type == 1):
-            turbines = str(n_Turbine)
-            curve = '[0,0,3,130,270,400,430,500,500,0,0]'
-            rotor_height = '25'
-            wind_velocity = '[0,3,5,7,8,9,10,12,25,25.01,40]'
-        elif (wm_type== 4):
-            turbines = str(n_Turbine)
-            wind_velocity = '[0,2.5,3,4,5,6,7,8,9,10,11,12,25,25.01,40]'
-            curve = '[0,0,47,111,217,375,595,889,1266,1736,2311,3000,3000,0,0]'
-            rotor_height = '135'
-        else:
-            turbines = '0'
-            curve = '[0,0,0,0,0,0,0,0,0,0,0]'
-            wind_velocity = '[0,3,5,7,8,9,10,12,25,25.01,40]'
-            rotor_height = '0'
 
         power = curve
         
         terrain_rating = '0.15'
+        windTurbine = WindTurbine(n_turbines=str(n_Turbine), wm_type=wm_type)
 
         self.engine.load_system(self.model_name)
 
@@ -67,16 +44,16 @@ class Simulink():
             'Az', azimuth,
             'Inc', inclanation,
             'Opp', surface,
-            'ethasp', efficiency,
+            'ethasp', self.efficiency,
             nargout=0)
 
         self.engine.set_param(
             self.wind_model_name,
-            'P', power,
-            'v', wind_velocity,
-            'h', rotor_height,
-            'a', terrain_rating,
-            'nwt', turbines,
+            'P', windTurbine.power,
+            'v', windTurbine.wind_velocity,
+            'h', windTurbine.rotor_height,
+            'a', self.terrain_rating,
+            'nwt', windTurbine.n_turbines,
             nargout=0)
 
         self.engine.Setup_Toutdoor(nargout=0)
