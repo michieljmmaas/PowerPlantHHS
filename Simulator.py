@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from generators import Windturbine
-from location import Location
+#from location import Location
 import time
 
 KAPPA = 1.041 # for calculations in radians
