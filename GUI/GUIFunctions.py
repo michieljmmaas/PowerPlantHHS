@@ -79,20 +79,35 @@ def loadChart(GUI, starting=True):
 
     # Instellingen voor de eerste grafiek: Minium Kosten
     if GUI.graphNumber == 0:
-        GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
+        Length = len(GUI.gens) - 1
+        if Length < 20:
+            GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
+        else:
+            GUI.a.plot(GUI.gens[Length-20:Length], GUI.minCost[Length-20:Length], color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
         limit = x_limit(GUI.gens)
-        GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+
+        if Length < 20:
+            GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+        else:
+            GUI.a.set_xlim(GUI.gens[limit-20], GUI.gens[limit-1])
         GUI.a.legend()
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
     elif GUI.graphNumber == 1:
-        GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
+        Length = len(GUI.gens) - 1
+        if(Length < 20):
+            GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
+        else:
+            GUI.a.plot(GUI.gens[Length-20:Length], GUI.meanCost[Length-20:Length], color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
         limit = x_limit(GUI.gens)
-        GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+        if Length < 20:
+            GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+        else:
+            GUI.a.set_xlim(GUI.gens[limit-20], GUI.gens[limit-1])
         GUI.a.legend()
 
     # Instellingen voor de derde grafiek: Energie Productie
