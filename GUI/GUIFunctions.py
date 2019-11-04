@@ -7,13 +7,15 @@ import numpy as np
 import ast
 from scipy.signal import savgol_filter
 
+NUMBEROFGRAPHS = 2
+
 
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
 # Geef een limit aan het aantal generaties die de grafiek laat zien
 def x_limit(array):
     a = len(array)
-    if a > 21:
-        a = 21
+    if a > 101:
+        a = 101
     return a - 1
 
 
@@ -55,12 +57,12 @@ def previousChart(GUI, starting=True):
     if GUI.graphNumber != 0:
         GUI.graphNumber = GUI.graphNumber - 1
     else:
-        GUI.graphNumber = 4
+        GUI.graphNumber = (NUMBEROFGRAPHS-1)
     loadChart(GUI, starting)
 
 # Ga naar de vorige Grafiek. True wordt gebruikt om het overzicht te resetten
 def nextChart(GUI, starting=True):
-    if GUI.graphNumber != 4:
+    if GUI.graphNumber != (NUMBEROFGRAPHS-1):
         GUI.graphNumber = GUI.graphNumber + 1
     else:
         GUI.graphNumber = 0
@@ -141,7 +143,7 @@ def updateGraph(directory, gen, PowerArraySting, GUI):
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
     fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
-    setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
+    # setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
 # Maak alle velden leeg
 def clearFields(GUI):

@@ -39,7 +39,7 @@ def loadLoggingFile(GUI, first=None, filename=None):
 
             #Zolang er meer dan twee waarden zijn, laat hij je naar de volgende grafiek gaan
             if not first:
-                fn.nextChart(GUI)
+                fn.loadChart(GUI, False)
                 GUI.nextButton.config(state="normal")
                 GUI.previousButton.config(state="normal")
 

@@ -15,7 +15,7 @@ import pandas as pd
 from run_sim import Simulink
 
 DELAY1 = 20
-DELAY2 = 5000
+DELAY2 = 2000
 
 
 # Dit is de module voor de UI. Zat alle veldjes neer en runt de thread voor de funcites
@@ -46,7 +46,7 @@ class Application(Frame):
         SettingsLabels = ["name", "text", "value"]
 
         InfoSets = [["gens", "Generaties", 100],
-                    ["pool", "Pool", 10],
+                    ["pool", "Pool", 100],
                     ["mutate_percentage", "Mutatie Percentage (%)", 50],
                     ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
                     ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],

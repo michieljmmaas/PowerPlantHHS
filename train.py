@@ -38,6 +38,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     else:
         simulink= Simulink('WT_SP_model_vs1total', simulinkSettings[0], simulinkSettings[1])
     turbine = Windturbine(4)
+
+    # def __init__(self, n_turbines="", curve="", rotor_height="", wind_velocity="", wm_type=4):
     simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
 
     saver = PopulationSaver(model_name, load)
@@ -58,7 +60,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         wind_values[1] *= (WIND_HEIGHT_MAX - WIND_HEIGHT_MIN)
         wind_values[1] += WIND_HEIGHT_MIN
         group_values = np.concatenate((solar_values, wind_values), axis=1)  # concatenate on features
-        
+
 
     # prepare min and max arrays to truncate values later
     highest_allowed = np.zeros_like(group_values)
@@ -73,7 +75,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     lowest_allowed[:, -2] = 0
     highest_allowed[:, -1] = WIND_HEIGHT_MAX
     lowest_allowed[:, -1] = WIND_HEIGHT_MIN
-        
+
 
     last_generation = n_generations - 1
     for generation in range(saver.generation, n_generations):
