@@ -76,7 +76,8 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
 """
 #@njit
 def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
-        target_kw, sp_cost_per_sm, st_cost_per_kwh, deficit_cost):
+        target_kw, sp_cost_per_sm, st_cost_per_kwh, deficit_cost,
+        cb_cost_table, cb_length, cb_voltage):
     surplus_array = kwh_array - target_kw
     cumulative_array = np.cumsum(surplus_array)
     storage = 0
@@ -96,7 +97,7 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
             cumulative_array = cumulative_array[new_start:]
             declining = declining[new_start:]
 
-    #windturbine shit
+    # windturbine calculation
     if (wm_type == 2):
         wm_cost = 1605000
     elif (wm_type == 3):
@@ -107,11 +108,22 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
         wm_cost = 3210000
     else:
         wm_cost = 0
+
+    # Cable calculation
+    kwh_max = kwh_array.max()
+    cable_area = (0.01989 * cb_length * (kwh_max / cb_voltage))/0.3 # Formula for minimum cable area
+    usable_cables = cb_cost_table[cb_cost_table['area'] > cable_area]
+    if(len(usable_cables) > 0):
+        cb_cost = int(usable_cables['cost'].iloc[0])
+    else:
+        cb_cost = 100000 * kwh_max
+
     # calculate the final cost
     cost = sp_sm * sp_cost_per_sm + \
         wm_cost * n_Turbines + \
         storage * st_cost_per_kwh +\
-        deficit * deficit_cost
+        deficit * deficit_cost +\
+        cb_cost * cb_length
     return cost
 
 class CostCalculator():
@@ -122,17 +134,21 @@ class CostCalculator():
         st_cost_per_kwh = Storage Cost per KWH
     """
 
-    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost):
+    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_cost_table, cb_length, cb_voltage):
         self.sp_cost_per_sm = sp_cost_per_sm
         self.st_cost_per_kwh = st_cost_per_kwh
         self.target_kw = target_kw
         self.deficit_cost = deficit_cost
+        self.cb_cost_table = cb_cost_table
+        self.cb_length = cb_length
+        self.cb_voltage = cb_voltage
 
     def calculate_cost(self, kwh_array, sp_sm, wm_type, n_Turbines):
         # make a copy of the input array so we don't alter the original one
         kwh_array = copy(kwh_array)
         return _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
-            self.target_kw, self.sp_cost_per_sm, self.st_cost_per_kwh, self.deficit_cost)
+            self.target_kw, self.sp_cost_per_sm, self.st_cost_per_kwh, self.deficit_cost,
+            self.cb_cost_table, self.cb_length, self.cb_voltage)
     
     def get_stats(self, kwh_array, sp_sm, wm_type, n_Turbines):
         surplus_array = kwh_array - self.target_kw
@@ -165,19 +181,34 @@ class CostCalculator():
             wm_cost = 3210000
         else:
             wm_cost = 0
+
+        # Cable calculation
+        kwh_max = kwh_array.max()
+        cable_area = (0.01989 * self.cb_length * (kwh_max / self.cb_voltage))/0.3 # Formula for minimum cable area
+        usable_cables = self.cb_cost_table[self.cb_cost_table['area'] > cable_area]
+        if(len(usable_cables) > 0):
+            cb_cost = usable_cables['cost'].iloc[0]
+        else:
+            cb_cost = 100000 * kwh_max
+
         # calculate the final cost
         solar_cost = sp_sm * self.sp_cost_per_sm
         wind_cost = wm_cost * n_Turbines
         storage_cost = storage * self.st_cost_per_kwh
         deficit_cost = deficit * self.deficit_cost
+        cable_cost = cb_cost * self.cb_length
+
         cost = solar_cost + \
-            wind_cost  + \
-            storage_cost +\
-            deficit_cost
+        wind_cost * n_Turbines + \
+        storage_cost +\
+        cable_cost + \
+        deficit_cost
         stat_dict = {
             'cost': cost,
             'solar_cost': solar_cost,
             'wind_cost': wind_cost,
+            'cable_cost': cable_cost,
+            'cable_area': cable_area,
             'storage_cost': storage_cost,
             'deficit_cost': deficit_cost,
             'total_surplus': total_surplus,
