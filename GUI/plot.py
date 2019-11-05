@@ -61,11 +61,11 @@ def load(model_name, generation_number, takebest=True, load2=True):
         path = 'saved_runs'+ os.sep + model_name + os.sep
     else:
         path = model_name
-    if takebest: 
+    if takebest:
         return np.loadtxt(path + 'best_' + str(generation_number) + '.csv', delimiter=',')
     else:
         return np.loadtxt(path + 'generation_' + str(generation_number) + '.csv', delimiter=',')
-    
+
 
 if __name__ == '__main__':
     consumption, kW_distribution, dic, generation = plot('Save_Accukosten_100000', 52)
