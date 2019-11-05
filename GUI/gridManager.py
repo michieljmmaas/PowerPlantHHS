@@ -12,7 +12,6 @@ from tkinter import font as fontMaker
 import GUI.GUIWidgetMaker as wm
 import calculate_cost as cc
 import pandas as pd
-from run_sim import Simulink
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -286,11 +285,10 @@ class Application(Frame):
             solar_eff = "[" + str(int(self.getValueFromSettingsByName("solar_efficiency"))) + "]"
             terrain_value = str(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
-            simulink = (solar_eff, terrain_value)
 
             self.p1 = Process(target=runTrain, args=(
                 self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
-                simulink, windTurbineType, windTurbineMax))  # Maak een thread aan die runTrain aanroept.
+                windTurbineType, windTurbineMax))  # Maak een thread aan die runTrain aanroept.
 
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
@@ -344,11 +342,11 @@ class Application(Frame):
 
 
 # Run de trainfunctie met mijn eigen waarden
-def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, simulink, windturbineType,
+def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, windturbineType,
              windturbineMax):
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
           directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
-          cost_calculator=CostCalculator, simulinkSettings=simulink, windturbineType=windturbineType,
+          cost_calculator=CostCalculator, windturbineType=windturbineType,
           N_WIND_MAX=windturbineMax)
 
 

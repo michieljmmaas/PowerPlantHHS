@@ -23,7 +23,7 @@ N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max, orientation_min, orientation_max,
           model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000,
-          EnergyArray=None, cost_calculator=None, simulinkSettings=None, windturbineType=4, N_WIND_MAX=20):
+          EnergyArray=None, cost_calculator=None, windturbineType=4, N_WIND_MAX=20):
     """train genetic algorithm"""
 
     genetic_algorithm = GeneticAlgorith(mutationPercentage, 150, 6, 2, 2, True)
@@ -32,11 +32,6 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     # parameter 2 kosten voor accu per kWh
     if cost_calculator is None:
         cost_calculator = CostCalculator(190, 400, target_kw, 1000000, cb_cost_table, 1000, 230)
-    # simulink = Simulink('WT_SP_model_vs1total')
-    if simulinkSettings is None:
-        simulink = Simulink('WT_SP_model_vs1total')
-    else:
-        simulink= Simulink('WT_SP_model_vs1total', simulinkSettings[0], simulinkSettings[1])
     turbine = Windturbine(4)
 
     # def __init__(self, n_turbines="", curve="", rotor_height="", wind_velocity="", wm_type=4):
