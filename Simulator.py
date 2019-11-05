@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from generators import Windturbine
-from location import Location
+# from location import Location
 import time
 import warnings
 warnings.filterwarnings("ignore")
@@ -185,7 +185,7 @@ class Simulator():
 
         return P_out, E_out
 
-    def calc_total_power(self, solar_features, wind_features):
+    def calc_total_power(self, solar_features, wind_features, sp_eff):
         surface_features = solar_features[0::3]
         angle_features = solar_features[1::3]
         orientation_features = solar_features[2::3]
@@ -193,7 +193,7 @@ class Simulator():
 
         self.terrain_factor = wind_features[1]
         wind,_ = self.calc_wind(wind_features[0])
-        solar,_ =self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features)
+        solar,_ =self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features, sp_eff=sp_eff)
 
         total_power = wind + solar
 

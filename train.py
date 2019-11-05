@@ -20,7 +20,7 @@ N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max, orientation_min, orientation_max,
           model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000,
-          EnergyArray=None, cost_calculator=None, windturbineType=4, N_WIND_MAX=20):
+          EnergyArray=None, cost_calculator=None, windturbineType=4, N_WIND_MAX=20, tr_rating=0.12, sp_efficiency=16):
     """train genetic algorithm"""
 
     genetic_algorithm = GeneticAlgorith(mutationPercentage, 150, 6, 2, 2, True)
@@ -83,7 +83,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             turbine_height = int(current_row[-1])
             # run simulink
             # energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], 0.19, wm_type, n_Turbines, turbine_height)  # add turbine later
-            energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, tr_rating]))
+            energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, tr_rating]), sp_efficiency)
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
             cost_array[i] = cost_calculator.calculate_cost(energy_production, sp_sm, wm_type, n_Turbines)  # add turbine later
@@ -127,8 +127,12 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 if __name__ == '__main__':
 
-    sp_price_1 = 450
-    storage_price_1 = 0
-
-    train(100, 100, 10000, 10000000, 0, 90, 0, 359, solar_price=sp_price_1, storage_price=storage_price_1, tr_rating=0.12)
+    cb_cost_table = pd.DataFrame({'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400,
+                                           600, 1000, 1250, 1600, 2000, 3000, 5000, 8000, 10000, 12000, 15000, 18000,
+                                           22000, 25000, 30000, 40000, 50000],
+                                  'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15,
+                                           0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13,
+                                           17.5, 20, 30, 40, 50, 60, 72]})
+    cost_calculator = CostCalculator(190, 400, 6000000, 1000000, cb_cost_table, 1000, 230)
+    train(100, 100, 10000, 10000000, 0, 90, 0, 359, tr_rating=0.12, cost_calculator=cost_calculator, sp_efficiency=15)
 
