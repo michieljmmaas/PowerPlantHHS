@@ -58,7 +58,7 @@ def previousChart(GUI, starting=True):
         GUI.graphNumber = GUI.graphNumber - 1
     else:
         GUI.graphNumber = (NUMBEROFGRAPHS-1)
-    loadChart(GUI, starting)
+    loadChart(GUI, starting, GUI.fullGraph)
 
 # Ga naar de vorige Grafiek. True wordt gebruikt om het overzicht te resetten
 def nextChart(GUI, starting=True):
@@ -66,11 +66,15 @@ def nextChart(GUI, starting=True):
         GUI.graphNumber = GUI.graphNumber + 1
     else:
         GUI.graphNumber = 0
-    loadChart(GUI, starting)
+    loadChart(GUI, starting, GUI.fullGraph)
 
 
 # Laat de volgende grafiek zien
-def loadChart(GUI, starting=True):
+def loadChart(GUI, starting=True, fullChart=False):
+    if fullChart:
+        GrafiekLengte = len(GUI.gens)
+    else:
+        GrafiekLengte = int(GUI.getValueFromSettingsByName("tickLimit"))
     GUI.a.clear()
     GUI.a.axis('auto')
     GUI.a.axis('on')
@@ -80,34 +84,34 @@ def loadChart(GUI, starting=True):
     # Instellingen voor de eerste grafiek: Minium Kosten
     if GUI.graphNumber == 0:
         Length = len(GUI.gens) - 1
-        if Length < 20:
+        if Length < GrafiekLengte:
             GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
         else:
-            GUI.a.plot(GUI.gens[Length-20:Length], GUI.minCost[Length-20:Length], color='blue', label="Laagste Kosten")
+            GUI.a.plot(GUI.gens[Length-GrafiekLengte:Length], GUI.minCost[Length-GrafiekLengte:Length], color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
         limit = x_limit(GUI.gens)
 
-        if Length < 20:
+        if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
-            GUI.a.set_xlim(GUI.gens[limit-20], GUI.gens[limit-1])
+            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte], GUI.gens[limit-1])
         GUI.a.legend()
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
     elif GUI.graphNumber == 1:
         Length = len(GUI.gens) - 1
-        if(Length < 20):
+        if(Length < GrafiekLengte):
             GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
         else:
-            GUI.a.plot(GUI.gens[Length-20:Length], GUI.meanCost[Length-20:Length], color='red', label="Gemiddelde kosten")
+            GUI.a.plot(GUI.gens[Length-GrafiekLengte:Length], GUI.meanCost[Length-GrafiekLengte:Length], color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
         limit = x_limit(GUI.gens)
-        if Length < 20:
+        if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
-            GUI.a.set_xlim(GUI.gens[limit-20], GUI.gens[limit-1])
+            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte], GUI.gens[limit-1])
         GUI.a.legend()
 
     # Instellingen voor de derde grafiek: Energie Productie
@@ -149,6 +153,7 @@ def clearGraph(GUI):
     GUI.canvas.draw()
     GUI.nextButton.config(state="disabled")
     GUI.previousButton.config(state="disabled")
+    GUI.chartButton.config(state="disabled")
 
 
 # Als er een nieuwe generatie is roept hij dit aan
@@ -250,4 +255,9 @@ def SaveValues(GUI):
     for x in range(len(EntryArray)):
         GUI.settingsDataFrame.loc[x, 'value'] = float(EntryArray[x].get())
     GUI.NewWindow.destroy()
+
+
+def fullChart(GUI):
+    loadChart(GUI, fullChart=GUI.fullGraph)
+    GUI.fullGraph = not GUI.fullGraph
 

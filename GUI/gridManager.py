@@ -15,7 +15,7 @@ import pandas as pd
 from run_sim import Simulink
 
 DELAY1 = 20
-DELAY2 = 2000
+DELAY2 = 1000
 
 
 # Dit is de module voor de UI. Zat alle veldjes neer en runt de thread voor de funcites
@@ -59,7 +59,8 @@ class Application(Frame):
                     ["windturbine_type", "Windturbine Type", 4],
                     ["windturbine_max", "Maximaal aantal windturbines", 20],
                     ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
-                    ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000]]
+                    ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000],
+                    ["tickLimit", "Maximum aantal ticks in de grafiek", 33]]
 
         df = pd.DataFrame.from_records(InfoSets, columns=SettingsLabels)
 
@@ -88,6 +89,7 @@ class Application(Frame):
         self.counter = 0
         self.counterCheck = 0
         self.running = 0
+        self.fullGraph = False
 
         self.preSave = []  # Deze wordt gebruikt om de Entry velden voor de instellingen in op te slaan.
         self.cb_cost_table = pd.DataFrame(
@@ -128,11 +130,15 @@ class Application(Frame):
         self.nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", FrameGrafiekButtons, FrameGrafiekButtons,
                                            fn.nextChart, False)
         self.nextButton.config(state='disabled')
+        self.chartButton = wm.GrafiekButton(self, "GUI/icons/chart.png", FrameGrafiekButtons, FrameGrafiekButtons,
+                                            fn.fullChart, True)
+        self.chartButton.config(state='disabled')
 
         # Voeg de knoppen toe
         settingButton.grid(row=0, column=0)
         self.previousButton.grid(row=0, column=1)
         self.nextButton.grid(row=0, column=2, pady=5)
+        self.chartButton.grid(row=0, column=3, pady=5)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -232,17 +238,7 @@ class Application(Frame):
     # Deze methode is er om het genetisch algoritme aan te roepen en de dingen in te stellen.
     def runSimulation(self):
         if self.running == 1:  # Als het genetisch algoritme aan het runnen is
-            self.p1.kill()  # Stop de thread die traint
-            self.running = 0  # Zet waarde naar niet meer running
-            self.pbar.stop()  # Stop de progress bar met bewegen
-            self.RunButton.config(text="    Run", image=self.RunIcon)  # Zet de text van de knop weer naar run
-            self.counterCheck = 0  # Resest update check
-            self.counter = 0  # Reset update check
-
-            # Als er meer dan twee generaties zijn geweest, dan moet je nog kunnen wissel tussen de grafieken
-            if len(self.gens) > 1:
-                self.nextButton.config(state="normal")
-                self.previousButton.config(state="normal")
+            self.endSimulation()
 
             return
         else:  # Als de algoritme nog niet aan het trainen is. begin nu.
@@ -317,7 +313,7 @@ class Application(Frame):
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             print("Klaar")
-            self.pbar.stop()
+            self.endSimulation()
 
     # Deze methode maakt een Cost Calculator met de waarden die ingesteld zijn op het scherm
     def getCostCalculator(self):
@@ -328,6 +324,20 @@ class Application(Frame):
                                            self.getValueFromSettingsByName("cable_length"),
                                            self.getValueFromSettingsByName("cable_voltage"))
         return CostCalculator
+
+    def endSimulation(self):
+        self.p1.kill()  # Stop de thread die traint
+        self.running = 0  # Zet waarde naar niet meer running
+        self.pbar.stop()  # Stop de progress bar met bewegen
+        self.RunButton.config(text="    Run", image=self.RunIcon)  # Zet de text van de knop weer naar run
+        self.counterCheck = 0  # Resest update check
+        self.counter = 0  # Reset update check
+
+        # Als er meer dan twee generaties zijn geweest, dan moet je nog kunnen wissel tussen de grafieken
+        if len(self.gens) > 1:
+            self.nextButton.config(state="normal")
+            self.previousButton.config(state="normal")
+            self.chartButton.config(state="normal")
 
 
 # Run de trainfunctie met mijn eigen waarden
@@ -343,6 +353,7 @@ def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, 
 def main():
     root = Tk()
     app = Application(root)
+    root.wm_iconbitmap("GUI/icons/icon.ico")
     root.mainloop()
 
 
