@@ -4,27 +4,25 @@ import numpy as np
 
 from calculate_cost import CostCalculator
 from genetic_algorith import GeneticAlgorith
-from run_sim import Simulink
 from save_and_load import PopulationSaver
-
 from generators import Windturbine
 from Simulator import Simulator
 
 N_PANELS = 4
 N_SOLAR_FEATURES = N_PANELS * 3
 N_WIND_FEATURES = 2
-N_WIND_MAX = 7
+N_WIND_MAX = 10
 WIND_HEIGHT_MAX = 135
 WIND_HEIGHT_MIN = 85
 N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
 
 def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max,
-          orientation_min, orientation_max, model_name=None, load=False, m_rate=50):
+          orientation_min, orientation_max, model_name=None, load=False, m_rate=125, solar_price=170, storage_price=170, tr_rating=0.19):
     """train genetic algorithm"""
 
     genetic_algorithm = GeneticAlgorith(50, m_rate, 6, 2, 2, True)
-    cost_calculator = CostCalculator(190, 400, 6000, 1000000)
+    cost_calculator = CostCalculator(solar_price, storage_price, 6000, 1000000)
     # simulink = Simulink('WT_SP_model_vs1total')
     turbine = Windturbine(4)
     simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
@@ -75,7 +73,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             turbine_height = int(current_row[-1])
             # run simulink
             # energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], 0.19, wm_type, n_Turbines, turbine_height)  # add turbine later
-            energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES],n_Turbines)
+            energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, tr_rating]))
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
             cost_array[i] = cost_calculator.calculate_cost(energy_production, sp_sm, wm_type, n_Turbines)  # add turbine later
@@ -104,18 +102,10 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 if __name__ == '__main__':
 
-    train(100, 100, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False, m_rate=25)
+    sp_price_1 = 450
+    storage_price_1 = 0
 
-
-
-
-
-
-
-
-
-
-
+    train(100, 100, 10000, 10000000, 0, 90, 0, 359, solar_price=sp_price_1, storage_price=storage_price_1, tr_rating=0.12)
 
 
 

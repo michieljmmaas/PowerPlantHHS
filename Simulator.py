@@ -181,7 +181,8 @@ class Simulator():
         angle_features = solar_features[1::3]
         orientation_features = solar_features[2::3]
 
-        wind,_ = self.calc_wind(wind_features)
+        self.terrain_factor = wind_features[1]
+        wind,_ = self.calc_wind(wind_features[0])
         solar,_ =self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features)
         total_power = wind + solar
 
@@ -192,23 +193,18 @@ if __name__ == '__main__':
     file = 'formatted_data.xls'
     sheet = '1%overschrijding-B.2'
 
-    start_time= time.time()
+    # start_time= time.time()
 
     turbine = Windturbine(4)
 
     sim = Simulator(file, sheet, turbine, skiprows=[0, 1, 2, 3])
-    p_wind, e_wind = sim.calc_wind(7)
-    p_solar, e_solar =sim.calc_solar(Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100])
 
-    df = pd.DataFrame({'p_wind': p_wind, 'e_wind':e_wind, 'p_solar': p_solar, 'e_solar': e_solar})
-    df.index = df.index + 1
-
-    df.to_excel('Simulator_out.xlsx')
-
-    end_time = time.time()
-
-    duration = end_time-start_time
-
-    print('Time elapsed: ' + str(duration))
-
+    print('Training: 1')
+    n_turb = 0
+    solar_feat = list([10000, 41, 0, 10000, 0, 0, 10000, 64, 0, 772720, 49, 0])
+    sim.terrain_factor = 0.12
+    p_solar,_ = sim.calc_solar(Az=solar_feat[2::3],Inc=solar_feat[1::3],sp_area=solar_feat[0::3])
+    p_wind,_ = sim.calc_wind(n_turb)
+    print('Solar: ' + str(np.sum(p_solar)))
+    print('Wind: ' + str(np.sum(p_wind)))
 
