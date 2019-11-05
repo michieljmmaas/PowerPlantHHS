@@ -198,10 +198,10 @@ class CostCalculator():
         cable_cost = cb_cost * self.cb_length
 
         cost = solar_cost + \
-            wind_cost + \
-            storage_cost + \
-            cable_cost + \
-            deficit_cost
+        wind_cost * n_Turbines + \
+        storage_cost +\
+        cable_cost + \
+        deficit_cost
         stat_dict = {
             'cost': cost,
             'solar_cost': solar_cost,
