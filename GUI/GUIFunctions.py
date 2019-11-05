@@ -83,7 +83,7 @@ def loadChart(GUI, starting=True, fullChart=False):
 
     # Instellingen voor de eerste grafiek: Minium Kosten
     if GUI.graphNumber == 0:
-        Length = len(GUI.gens) - 1
+        Length = len(GUI.gens)
         if Length < GrafiekLengte:
             GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
         else:
@@ -95,12 +95,12 @@ def loadChart(GUI, starting=True, fullChart=False):
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
-            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte], GUI.gens[limit-1])
+            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
         GUI.a.legend()
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
     elif GUI.graphNumber == 1:
-        Length = len(GUI.gens) - 1
+        Length = len(GUI.gens)
         if(Length < GrafiekLengte):
             GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
         else:
@@ -111,7 +111,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
-            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte], GUI.gens[limit-1])
+            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
         GUI.a.legend()
 
     # Instellingen voor de derde grafiek: Energie Productie

@@ -11,7 +11,6 @@ def loadLoggingFile(GUI, first=None, filename=None):
     try:
         if filename is None:
             filename = askopenfilename() #Dit gebeurd als je de knop indrukt, laat hij hem pakken
-        print("Filename: " + filename)
         if filename != '': # Zolang het een normaal bestand is
             f = open(filename, "r")
             f1 = f.readlines() # Lees het bestand
@@ -22,7 +21,8 @@ def loadLoggingFile(GUI, first=None, filename=None):
             for x in f1: #Voor elke regel in het bestand, vul de arrays aan
                 info = x.split(" ")
                 info[5] = info[5].replace('\n', '')
-                genArray.append(str(info[1]))
+                gen = int(info[1]) + 1
+                genArray.append(str(gen))
                 mean = round(float(info[3]), 2)
                 minCost = round(float(info[5]), 2)
                 meanCostArray.append(mean)

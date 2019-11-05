@@ -60,7 +60,7 @@ class Application(Frame):
                     ["windturbine_max", "Maximaal aantal windturbines", 20],
                     ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
                     ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000],
-                    ["tickLimit", "Maximum aantal ticks in de grafiek", 33]]
+                    ["tickLimit", "Maximum aantal ticks in de grafiek", 30]]
 
         df = pd.DataFrame.from_records(InfoSets, columns=SettingsLabels)
 
@@ -312,6 +312,9 @@ class Application(Frame):
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
+            self.counterCheck = self.counter.value
+            fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,
+                           self)  # Update de grafieken
             print("Klaar")
             self.endSimulation()
 
