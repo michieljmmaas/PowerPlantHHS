@@ -18,14 +18,22 @@ WIND_HEIGHT_MAX = 135
 WIND_HEIGHT_MIN = 85
 N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES
 
-
-def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max,
-          orientation_min, orientation_max, model_name=None, load=False, m_rate=125, solar_price=170, storage_price=170, tr_rating=0.19):
+def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max, orientation_min, orientation_max,
+          model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000,
+          EnergyArray=None, cost_calculator=None, simulinkSettings=None, windturbineType=4, N_WIND_MAX=20):
     """train genetic algorithm"""
 
-    genetic_algorithm = GeneticAlgorith(50, m_rate, 6, 2, 2, True)
-    cost_calculator = CostCalculator(solar_price, storage_price, 6000, 1000000)
+    genetic_algorithm = GeneticAlgorith(mutationPercentage, 150, 6, 2, 2, True)
+    cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
+        'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
+    # parameter 2 kosten voor accu per kWh
+    if cost_calculator is None:
+        cost_calculator = CostCalculator(190, 400, target_kw, 1000000, cb_cost_table, 1000, 230)
     # simulink = Simulink('WT_SP_model_vs1total')
+    if simulinkSettings is None:
+        simulink = Simulink('WT_SP_model_vs1total')
+    else:
+        simulink= Simulink('WT_SP_model_vs1total', simulinkSettings[0], simulinkSettings[1])
     turbine = Windturbine(4)
     simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
 
@@ -96,13 +104,13 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         # Reverse engineer de Power Graph
         NPindex = np.where(group_values == best[0])
         index = NPindex[0][0]
-        sending2 = energy_array[index].tolist()
-        sending = str(sending2)
+        # sending2 = energy_array[index].tolist()
+        # sending = str(sending2)
 
         saver.save_best(best)
 
-        if EnergyArray is not None:
-            EnergyArray.value = sending
+        # if EnergyArray is not None:
+            # EnergyArray.value = sending
         if directory is not None:
             directory.value = saver.path
         if counter is not None:
@@ -126,3 +134,4 @@ if __name__ == '__main__':
     storage_price_1 = 0
 
     train(100, 100, 10000, 10000000, 0, 90, 0, 359, solar_price=sp_price_1, storage_price=storage_price_1, tr_rating=0.12)
+
