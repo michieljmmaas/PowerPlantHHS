@@ -158,6 +158,7 @@ def clearGraph(GUI):
 
 # Als er een nieuwe generatie is roept hij dit aan
 def updateGraph(directory, gen, PowerArraySting, GUI):
+    print("Update Graph")
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"  # Pak het goede CSV bestand
     fr.loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
@@ -258,6 +259,8 @@ def SaveValues(GUI):
 
 
 def fullChart(GUI):
-    loadChart(GUI, fullChart=GUI.fullGraph)
-    GUI.fullGraph = not GUI.fullGraph
+    if len(GUI.gens) > 1:
+        print("fullChart call")
+        loadChart(GUI, fullChart=GUI.fullGraph)
+        GUI.fullGraph = not GUI.fullGraph
 

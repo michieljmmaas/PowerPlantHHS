@@ -276,19 +276,19 @@ class Application(Frame):
             self.manager = Manager()  # Dit is een manager die the Process waarden kan geven die je dan kan uitlezen.
             self.counter = Value('i',
                                  0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
-            self.Directory = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
+            self.Directory = self.manager.Value(c_char_p, "first")  # Geef de manager een String die ik kan uitlezen
             self.PowerArray = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             CostCalulator = self.getCostCalculator()
             surface_min = self.getValueFromSettingsByName("surface_min")
             surface_max = self.getValueFromSettingsByName("surface_max")
             windTurbineType = self.getValueFromSettingsByName("windturbine_type")
-            solar_eff = "[" + str(int(self.getValueFromSettingsByName("solar_efficiency"))) + "]"
-            terrain_value = str(self.getValueFromSettingsByName("terrain"))
+            solar_eff = int(self.getValueFromSettingsByName("solar_efficiency"))
+            terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
 
             self.p1 = Process(target=runTrain, args=(
                 self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
-                windTurbineType, windTurbineMax))  # Maak een thread aan die runTrain aanroept.
+                windTurbineType, windTurbineMax, terrain_value, solar_eff))  # Maak een thread aan die runTrain aanroept.
 
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
@@ -310,8 +310,8 @@ class Application(Frame):
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
-            self.counterCheck = self.counter.value
-            fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,
+            if self.running == 1:
+                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,
                            self)  # Update de grafieken
             print("Klaar")
             self.endSimulation()
@@ -343,12 +343,11 @@ class Application(Frame):
 
 # Run de trainfunctie met mijn eigen waarden
 def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, windturbineType,
-             windturbineMax):
+             windturbineMax, tr_rating, sp_eff):
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
-          directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
+          directory=directory, mutationPercentage=array[2], target_kw=array[3],
           cost_calculator=CostCalculator, windturbineType=windturbineType,
-          N_WIND_MAX=windturbineMax)
-
+          N_WIND_MAX=windturbineMax, tr_rating=tr_rating, sp_efficiency=sp_eff, EnergyArray=PowerArray)
 
 # Maak en open een interface window
 def main():
