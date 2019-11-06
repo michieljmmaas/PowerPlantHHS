@@ -8,7 +8,6 @@ textPreSpace = "  "
 
 # Dit bestand laad het loggin bestand in
 def loadLoggingFile(GUI, first=None, filename=None):
-    print("kaas")
     try:
         if filename is None:
             filename = askopenfilename() #Dit gebeurd als je de knop indrukt, laat hij hem pakken
@@ -53,7 +52,6 @@ def loadLoggingFile(GUI, first=None, filename=None):
 
 # Deze functie leest een CSV file in
 def loadCsvFile(GUI, filename=None):
-    print("kaas")
     try:
         if filename is None:
             filename = askopenfilename() # Als je direct op de knop drukt laat hij je kiezen

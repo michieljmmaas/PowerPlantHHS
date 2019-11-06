@@ -6,6 +6,7 @@ import GUI.GUIFileReader as fr
 import numpy as np
 import ast
 from scipy.signal import savgol_filter
+from matplotlib import ticker
 
 NUMBEROFGRAPHS = 2
 
@@ -96,6 +97,8 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
             GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+        xticks = ticker.MaxNLocator(20)
+        GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
@@ -112,6 +115,8 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
             GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+        xticks = ticker.MaxNLocator(20)
+        GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de derde grafiek: Energie Productie
@@ -158,7 +163,6 @@ def clearGraph(GUI):
 
 # Als er een nieuwe generatie is roept hij dit aan
 def updateGraph(directory, gen, PowerArraySting, GUI):
-    print("Update Graph")
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"  # Pak het goede CSV bestand
     fr.loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
@@ -260,7 +264,6 @@ def SaveValues(GUI):
 
 def fullChart(GUI):
     if len(GUI.gens) > 1:
-        print("fullChart call")
-        loadChart(GUI, fullChart=GUI.fullGraph)
         GUI.fullGraph = not GUI.fullGraph
+        loadChart(GUI, starting=False, fullChart=GUI.fullGraph)
 
