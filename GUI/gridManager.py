@@ -45,7 +45,7 @@ class Application(Frame):
         SettingsLabels = ["name", "text", "value"]
 
         InfoSets = [["gens", "Generaties", 100],
-                    ["pool", "Pool", 200],
+                    ["pool", "Pool", 100],
                     ["mutate_percentage", "Mutatie Percentage (%)", 50],
                     ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
                     ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],

@@ -8,7 +8,7 @@ import ast
 from scipy.signal import savgol_filter
 from matplotlib import ticker
 
-NUMBEROFGRAPHS = 2
+NUMBEROFGRAPHS = 5
 
 
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
@@ -168,7 +168,8 @@ def updateGraph(directory, gen, PowerArraySting, GUI):
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
     fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
-    # setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
+    # print(PowerArraySting)
+    setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
 # Maak alle velden leeg
 def clearFields(GUI):
