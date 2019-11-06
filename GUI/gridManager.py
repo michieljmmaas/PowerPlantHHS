@@ -45,7 +45,7 @@ class Application(Frame):
         SettingsLabels = ["name", "text", "value"]
 
         InfoSets = [["gens", "Generaties", 100],
-                    ["pool", "Pool", 100],
+                    ["pool", "Pool", 200],
                     ["mutate_percentage", "Mutatie Percentage (%)", 50],
                     ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
                     ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
@@ -285,7 +285,6 @@ class Application(Frame):
             solar_eff = int(self.getValueFromSettingsByName("solar_efficiency"))
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
-
             self.p1 = Process(target=runTrain, args=(
                 self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
                 windTurbineType, windTurbineMax, terrain_value, solar_eff))  # Maak een thread aan die runTrain aanroept.
@@ -305,14 +304,12 @@ class Application(Frame):
         if self.p1.is_alive():  # Zolang het proces draait
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
                 self.counterCheck = self.counter.value
-                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,
-                               self)  # Update de grafieken
+                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             if self.running == 1:
-                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value,
-                           self)  # Update de grafieken
+                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
             print("Klaar")
             self.endSimulation()
 
@@ -345,9 +342,9 @@ class Application(Frame):
 def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, windturbineType,
              windturbineMax, tr_rating, sp_eff):
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
-          directory=directory, mutationPercentage=array[2], target_kw=array[3],
+          directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
           cost_calculator=CostCalculator, windturbineType=windturbineType,
-          N_WIND_MAX=windturbineMax, tr_rating=tr_rating, sp_efficiency=sp_eff, EnergyArray=PowerArray)
+          N_WIND_MAX=windturbineMax, tr_rating=tr_rating, sp_efficiency=sp_eff)
 
 # Maak en open een interface window
 def main():

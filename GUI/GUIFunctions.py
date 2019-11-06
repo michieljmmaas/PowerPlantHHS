@@ -97,8 +97,8 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
             GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
-        xticks = ticker.MaxNLocator(20)
-        GUI.a.xaxis.set_major_locator(xticks)
+            xticks = ticker.MaxNLocator(20)
+            GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
@@ -115,8 +115,8 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
             GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
-        xticks = ticker.MaxNLocator(20)
-        GUI.a.xaxis.set_major_locator(xticks)
+            xticks = ticker.MaxNLocator(20)
+            GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de derde grafiek: Energie Productie
@@ -168,7 +168,6 @@ def updateGraph(directory, gen, PowerArraySting, GUI):
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
     fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
-    # print(PowerArraySting)
     setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
 # Maak alle velden leeg
@@ -201,9 +200,9 @@ def clearFields(GUI):
 # Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
 def setUpPower(MultiListString, GUI):
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
-    WindArray = [item[1] for item in MultiList]  # Haal wind eruit
-    SolarArray = [item[2] for item in MultiList]  # Haal Solar eruit
-    PowerArrayPre = [sum(x) for x in zip(*[WindArray, SolarArray])]  # Voeg samen voor de sum
+    WindArray = MultiList[0]  # Haal wind eruit
+    SolarArray = MultiList[1]  # Haal Solar eruit
+    PowerArrayPre = [x + y for x, y in zip(WindArray, SolarArray)]  # Voeg samen voor de sum
     GUI.WindSum = sum(WindArray)
     GUI.SolarSum = sum(SolarArray)
 
