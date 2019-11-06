@@ -32,9 +32,9 @@ class Simulink():
         inclanation = str(list(angle_features)).replace(' ', '')
         surface = str(list(surface_features)).replace(' ', '')
 
-        power = curve
+        #power = curve
         
-        terrain_rating = '0.15'
+        #terrain_rating = '0.15'
         windTurbine = WindTurbine(n_turbines=str(n_Turbine), wm_type=wm_type)
 
         self.engine.load_system(self.model_name)
