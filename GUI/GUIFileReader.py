@@ -74,6 +74,7 @@ def loadCsvFile(GUI, filename=None):
 
                 #Gegevens voor de windturbines
                 windData = round(float(data[-2]))
+                print('Winddata:' + str(windData))
                 wm_cost, windTurbineTotalCost = fn.defWindTurbineCost(int(4), windData)
 
                 entry = GUI.WTHeightTuple[1]
