@@ -88,8 +88,9 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             n_Turbines = int(current_row[-2])
             turbine_height = int(current_row[-1])
             # run simulink
-            # energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], 0.19, wm_type, n_Turbines, turbine_height)  # add turbine later
-            energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, turbine_height]), sp_efficiency)
+            energy_production, energy_split = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, turbine_height]), sp_efficiency)
+            # energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, turbine_height]), sp_efficiency)
+            energy_array.append(energy_split)
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
             cost_array[i] = cost_calculator.calculate_cost(energy_production, sp_sm, wm_type, n_Turbines)  # add turbine later
@@ -107,13 +108,13 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         # Reverse engineer de Power Graph
         NPindex = np.where(group_values == best[0])
         index = NPindex[0][0]
-        # sending2 = energy_array[index].tolist()
-        # sending = str(sending2)
+        sending2 = energy_array[index]
+        sending = str(sending2)
 
         saver.save_best(best)
 
-        # if EnergyArray is not None:
-            # EnergyArray.value = sending
+        if EnergyArray is not None:
+            EnergyArray.value = sending
         if directory is not None:
             directory.value = saver.path
         if counter is not None:

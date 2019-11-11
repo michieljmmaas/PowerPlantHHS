@@ -205,7 +205,7 @@ class Simulator():
 
         total_power = wind + solar
 
-        return total_power
+        return total_power, [wind.tolist(), solar.tolist()]
 
 if __name__ == '__main__':
 

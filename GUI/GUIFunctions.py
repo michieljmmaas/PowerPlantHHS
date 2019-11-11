@@ -6,8 +6,9 @@ import GUI.GUIFileReader as fr
 import numpy as np
 import ast
 from scipy.signal import savgol_filter
+from matplotlib import ticker
 
-NUMBEROFGRAPHS = 2
+NUMBEROFGRAPHS = 5
 
 
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
@@ -96,6 +97,8 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
             GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+            xticks = ticker.MaxNLocator(20)
+            GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
@@ -112,6 +115,8 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
             GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+            xticks = ticker.MaxNLocator(20)
+            GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de derde grafiek: Energie Productie
@@ -158,13 +163,12 @@ def clearGraph(GUI):
 
 # Als er een nieuwe generatie is roept hij dit aan
 def updateGraph(directory, gen, PowerArraySting, GUI):
-    print("Update Graph")
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"  # Pak het goede CSV bestand
     fr.loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
     fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
-    # setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
+    setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
 # Maak alle velden leeg
 def clearFields(GUI):
@@ -196,9 +200,9 @@ def clearFields(GUI):
 # Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
 def setUpPower(MultiListString, GUI):
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
-    WindArray = [item[1] for item in MultiList]  # Haal wind eruit
-    SolarArray = [item[2] for item in MultiList]  # Haal Solar eruit
-    PowerArrayPre = [sum(x) for x in zip(*[WindArray, SolarArray])]  # Voeg samen voor de sum
+    WindArray = MultiList[0]  # Haal wind eruit
+    SolarArray = MultiList[1]  # Haal Solar eruit
+    PowerArrayPre = [x + y for x, y in zip(WindArray, SolarArray)]  # Voeg samen voor de sum
     GUI.WindSum = sum(WindArray)
     GUI.SolarSum = sum(SolarArray)
 
@@ -260,7 +264,6 @@ def SaveValues(GUI):
 
 def fullChart(GUI):
     if len(GUI.gens) > 1:
-        print("fullChart call")
-        loadChart(GUI, fullChart=GUI.fullGraph)
         GUI.fullGraph = not GUI.fullGraph
+        loadChart(GUI, starting=False, fullChart=GUI.fullGraph)
 
