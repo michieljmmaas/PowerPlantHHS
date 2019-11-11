@@ -125,6 +125,7 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
         deficit * deficit_cost +\
         cb_cost * cb_length
     return cost
+    
 
 class CostCalculator():
     """
@@ -199,7 +200,7 @@ class CostCalculator():
         cable_cost = cb_cost * self.cb_length
 
         cost = solar_cost + \
-        wind_cost * n_Turbines + \
+        wind_cost + \
         storage_cost +\
         cable_cost + \
         deficit_cost
