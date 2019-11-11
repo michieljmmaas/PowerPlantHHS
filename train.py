@@ -71,6 +71,12 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
     last_generation = n_generations - 1
     for generation in range(saver.generation, n_generations):
+
+        if generation == n_generations-20:
+            genetic_algorithm.set_mutation(mutationPercentage/2)
+        elif generation == n_generations-10:
+            genetic_algorithm.set_mutation(mutationPercentage/4)
+
         cost_array = np.zeros(group_size)
         energy_array = []
         print('finished simulation 0 of {}'.format(group_size), end='\r')

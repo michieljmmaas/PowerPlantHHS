@@ -14,7 +14,7 @@ TURBINETYPE = 4
 loc_name = 'volkel'
 
 energy_demand = 6000
-mutationrate = 50
+mutationrate = 150
 def_cost = 1000000
 
 solar_costs  = np.array([160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160, 160])
@@ -81,10 +81,6 @@ for i in range(0,len(solar_costs)):
     best_solar = best_pick[:12]
     best_wind = best_pick[-2:]
     best_pick_power = sim.calc_total_power(best_solar, best_wind, 16)
-    print(best_pick)
-
-    df = pd.DataFrame(best_pick_power)
-    df.to_excel('energy_array_2.xlsx')
     total_solar_sm = np.sum(best_solar[0::3])
     costings = cost_calc.calculate_cost(best_pick_power, total_solar_sm, TURBINETYPE, int(best_wind[0]))
     stats = cost_calc.get_stats(best_pick_power, total_solar_sm, TURBINETYPE, int(best_wind[0]))
@@ -115,6 +111,8 @@ for i in range(0,len(solar_costs)):
 
     stats.update(inputs)
     all_stats = all_stats.append(stats, ignore_index=True)
+
+    break
 
 #Uncomment this to store all the best stats from training
 # all_stats.to_excel('Trainingstats.xlsx')
