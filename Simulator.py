@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from generators import Windturbine
-# from location import Location
+from location import Location
 import time
+import os
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -16,7 +17,7 @@ LSM = 15  # local standard time meridian
 class Simulator():
     """Class for calculating irradiation"""
 
-    def __init__(self, file_name, sheet_name, Windturbine, skiprows=None, index_col=None, latitude=51.95,
+    def __init__(self, file_name, sheet_name, Windturbine, skiprows=None, index_col=0, latitude=51.95,
                  longitude=4.45, lsm=15, terrain_factor=0.19):
         # variables from arguments
         self.latitude = latitude
@@ -26,14 +27,13 @@ class Simulator():
 
         # variables from data file
         self.import_data = pd.read_excel(file_name, sheet_name, skiprows=skiprows, index_col=index_col)
-        self.ghi = self.import_data.iloc[:, 4].values
+        self.ghi = self.import_data.iloc[:, 5].values
         self.dni = self.import_data.iloc[:, 7].values
-        self.dates = self.import_data.iloc[:, 18].values
-        # self.doy = np.array([datetime.utcfromtimestamp(self.dates[i].astype(int) * NANO).timetuple().tm_yday for i in range(0,len(self.dates))])
-        self.doy = self.dates
-        self.time = self.import_data.iloc[:, 3].values
-        self.wind_speed = self.import_data.iloc[:, 20].values
-        self.temperature = self.import_data.iloc[:, 19].values
+        self.dates = self.import_data.iloc[:, 1].values
+        self.doy = np.array([datetime.utcfromtimestamp(self.dates[i].astype(int) * NANO).timetuple().tm_yday for i in range(0,len(self.dates))])
+        self.time = self.import_data.iloc[:, 2].values.astype(int)
+        self.wind_speed = (self.import_data.iloc[:, 3].values)/10
+        self.temperature = (self.import_data.iloc[:, 4].values)/10
 
     def calc_solar(self, Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100], sp_eff=16, gref=0):
         gamma = np.array(Az)
@@ -70,7 +70,14 @@ class Simulator():
 
         # determination of bin with eps
         s_bin = np.ones(len(self.time))  # bin 1 is overcast sky , bin 8 is clear sky
+        Kzen3 = KAPPA*Zen**3
+
         eps = ((DHI + self.dni) / DHI + KAPPA * Zen ** 3) / (1 + KAPPA * Zen ** 3)
+
+        eps2 = (DHI + self.dni) / (DHI * 1 + DHI * Kzen3 + Kzen3 + Kzen3 * Kzen3)
+
+        # print(np.unique(eps))
+        # print(np.unique(eps2))
 
         s_bin[np.logical_and(eps >= 1.065, eps < 1.23)] = 2
         s_bin[np.logical_and(eps >= 1.23, eps < 1.5)] = 3
@@ -156,8 +163,11 @@ class Simulator():
 
         return P_out, E_out
 
-    def calc_wind(self, n_turbines):
-        external_factors = (self.Windturbine.rotor_height / 10) ** self.terrain_factor
+    def calc_wind(self, wind_features):
+
+        n_turbines = int(wind_features[0])
+        rotor_height = int(wind_features[1])
+        external_factors = (rotor_height / 10) ** self.terrain_factor
 
         in_values = self.wind_speed * external_factors
 
@@ -190,37 +200,31 @@ class Simulator():
         angle_features = solar_features[1::3]
         orientation_features = solar_features[2::3]
 
-
-        self.terrain_factor = wind_features[1]
-        wind,_ = self.calc_wind(wind_features[0])
+        wind,_ = self.calc_wind(wind_features)
         solar,_ =self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features, sp_eff=sp_eff)
 
         total_power = wind + solar
 
         return total_power
 
-
 if __name__ == '__main__':
-    file = 'formatted_data.xls'
-    sheet = '1%overschrijding-B.2'
 
-    start_time = time.time()
+    loc_name ='nen'
+
+    loc_data = Location(loc_name)
+    file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
+    year = str(loc_data.end_year)
 
     turbine = Windturbine(4)
 
-    sim = Simulator(file, sheet, turbine, skiprows=[0, 1, 2, 3])
+    sim = Simulator(file_name, year, turbine, index_col=0, latitude=loc_data.latitude, longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
 
-    p_wind, e_wind = sim.calc_wind(7)
+    sim.calc_total_power([100, 15, 0, 100, 15, 0, 100, 15, 0, 100, 15, 0],[10, 135], 16)
+
+    p_wind, e_wind = sim.calc_wind([7, 135])
     p_solar, e_solar = sim.calc_solar(Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100])
 
     df = pd.DataFrame({'p_wind': p_wind, 'e_wind': e_wind, 'p_solar': p_solar, 'e_solar': e_solar})
     df.index = df.index + 1
 
-    #df.to_excel('Simulator_out.xlsx')
-
-    end_time = time.time()
-
-    duration = end_time - start_time
-
-    print('Time elapsed: ' + str(duration))
-
+    df.to_excel('Simulator_out.xlsx')
