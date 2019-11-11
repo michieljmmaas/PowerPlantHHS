@@ -4,10 +4,8 @@ import numpy as np
 import pandas as pd
 from calculate_cost import CostCalculator
 from genetic_algorith import GeneticAlgorith
-from run_sim import Simulink
 from save_and_load import PopulationSaver
 from multiprocessing import Process, Value
-
 from generators import Windturbine
 from Simulator import Simulator
 
@@ -15,15 +13,14 @@ N_PANELS = 4
 N_SOLAR_FEATURES = N_PANELS * 3
 
 N_WIND_FEATURES = 2
-N_WIND_MAX = 7
+N_WIND_MAX = 10
 WIND_HEIGHT_MAX = 135
 WIND_HEIGHT_MIN = 85
 N_FEATURES = N_SOLAR_FEATURES + N_WIND_FEATURES 
 
-
 def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max, orientation_min, orientation_max,
           model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000,
-          EnergyArray=None, cost_calculator=None, simulinkSettings=None, windturbineType=4, N_WIND_MAX=1000):
+          EnergyArray=None, cost_calculator=None, windturbineType=4, N_WIND_MAX=20, tr_rating=0.12, sp_efficiency=16):
     """train genetic algorithm"""
 
     genetic_algorithm = GeneticAlgorith(mutationPercentage, 150, 6, 2, 2, True)
@@ -32,12 +29,9 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     # parameter 2 kosten voor accu per kWh
     if cost_calculator is None:
         cost_calculator = CostCalculator(190, 400, target_kw, 1000000, cb_cost_table, 1000, 230)
-    # simulink = Simulink('WT_SP_model_vs1total')
-    if simulinkSettings is None:
-        simulink = Simulink('WT_SP_model_vs1total')
-    else:
-        simulink= Simulink('WT_SP_model_vs1total', simulinkSettings[0], simulinkSettings[1])
     turbine = Windturbine(4)
+
+    # def __init__(self, n_turbines="", curve="", rotor_height="", wind_velocity="", wm_type=4):
     simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
 
     saver = PopulationSaver(model_name, load)
@@ -58,7 +52,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         wind_values[1] *= (WIND_HEIGHT_MAX - WIND_HEIGHT_MIN)
         wind_values[1] += WIND_HEIGHT_MIN
         group_values = np.concatenate((solar_values, wind_values), axis=1)  # concatenate on features
-        
+
 
     # prepare min and max arrays to truncate values later
     highest_allowed = np.zeros_like(group_values)
@@ -73,7 +67,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     lowest_allowed[:, -2] = 0
     highest_allowed[:, -1] = WIND_HEIGHT_MAX
     lowest_allowed[:, -1] = WIND_HEIGHT_MIN
-        
+
 
     last_generation = n_generations - 1
     for generation in range(saver.generation, n_generations):
@@ -88,9 +82,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             n_Turbines = int(current_row[-2])
             turbine_height = int(current_row[-1])
             # run simulink
-            # energy_production, _ = simulink.run_simulation(current_row[:N_SOLAR_FEATURES], 0.19, wm_type, n_Turbines, turbine_height)  # add turbine later
-            energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES],n_Turbines)
-
+            energy_production, energy_split = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, tr_rating]), sp_efficiency)
+            energy_array.append(energy_split)
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
             cost_array[i] = cost_calculator.calculate_cost(energy_production, sp_sm, wm_type, n_Turbines)  # add turbine later
@@ -108,13 +101,13 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
         # Reverse engineer de Power Graph
         NPindex = np.where(group_values == best[0])
         index = NPindex[0][0]
-        # sending2 = energy_array[index].tolist()
-        # sending = str(sending2)
+        sending2 = energy_array[index]
+        sending = str(sending2)
 
         saver.save_best(best)
 
-        # if EnergyArray is not None:
-            # EnergyArray.value = sending
+        if EnergyArray is not None:
+            EnergyArray.value = sending
         if directory is not None:
             directory.value = saver.path
         if counter is not None:
@@ -133,9 +126,13 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
 if __name__ == '__main__':
-    train(100, 100, 0, 10000000, 0, 90, 0, 359, model_name=None, load=False)
 
+    cb_cost_table = pd.DataFrame({'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400,
+                                           600, 1000, 1250, 1600, 2000, 3000, 5000, 8000, 10000, 12000, 15000, 18000,
+                                           22000, 25000, 30000, 40000, 50000],
+                                  'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15,
+                                           0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13,
+                                           17.5, 20, 30, 40, 50, 60, 72]})
+    cost_calculator = CostCalculator(190, 400, 6000000, 1000000, cb_cost_table, 1000, 230)
+    train(100, 100, 10000, 10000000, 0, 90, 0, 359, tr_rating=0.12, cost_calculator=cost_calculator, sp_efficiency=15)
 
-# def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_max, orientation_min, orientation_max,
-#           model_name=None, load=False, counter=None, directory=None, mutationPercentage=50, target_kw=6000,
-#           EnergyArray=None, cost_calculator=None, simulinkSettings=None, windturbineType=4, N_WIND_MAX=20):

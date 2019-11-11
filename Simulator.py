@@ -185,16 +185,19 @@ class Simulator():
 
         return P_out, E_out
 
-    def calc_total_power(self, solar_features, wind_features):
+    def calc_total_power(self, solar_features, wind_features, sp_eff):
         surface_features = solar_features[0::3]
         angle_features = solar_features[1::3]
         orientation_features = solar_features[2::3]
 
-        wind, _ = self.calc_wind(wind_features)
-        solar, _ = self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features)
+
+        self.terrain_factor = wind_features[1]
+        wind,_ = self.calc_wind(wind_features[0])
+        solar,_ =self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features, sp_eff=sp_eff)
+
         total_power = wind + solar
 
-        return total_power
+        return total_power, [wind.tolist(), solar.tolist()]
 
 
 if __name__ == '__main__':
@@ -206,16 +209,18 @@ if __name__ == '__main__':
     turbine = Windturbine(4)
 
     sim = Simulator(file, sheet, turbine, skiprows=[0, 1, 2, 3])
+
     p_wind, e_wind = sim.calc_wind(7)
     p_solar, e_solar = sim.calc_solar(Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100])
 
     df = pd.DataFrame({'p_wind': p_wind, 'e_wind': e_wind, 'p_solar': p_solar, 'e_solar': e_solar})
     df.index = df.index + 1
 
-    df.to_excel('Simulator_out.xlsx')
+    #df.to_excel('Simulator_out.xlsx')
 
     end_time = time.time()
 
     duration = end_time - start_time
 
     print('Time elapsed: ' + str(duration))
+
