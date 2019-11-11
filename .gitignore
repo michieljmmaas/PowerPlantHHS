@@ -2,6 +2,7 @@
 data_file.csv
 total_wind_year_135m.csv
 *.csv
+*.pyc
 total_df.csv
 formatted_data2.xls
 saved_runs/.DS_Store
