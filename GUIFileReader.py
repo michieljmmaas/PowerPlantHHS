@@ -1,6 +1,6 @@
 from tkinter.filedialog import askopenfilename
 import csv
-import GUI.GUIFunctions as fn
+import GUIFunctions as fn
 import babel.numbers as bb
 
 # Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
@@ -11,7 +11,6 @@ def loadLoggingFile(GUI, first=None, filename=None):
     try:
         if filename is None:
             filename = askopenfilename() #Dit gebeurd als je de knop indrukt, laat hij hem pakken
-        print("Filename: " + filename)
         if filename != '': # Zolang het een normaal bestand is
             f = open(filename, "r")
             f1 = f.readlines() # Lees het bestand
@@ -22,7 +21,8 @@ def loadLoggingFile(GUI, first=None, filename=None):
             for x in f1: #Voor elke regel in het bestand, vul de arrays aan
                 info = x.split(" ")
                 info[5] = info[5].replace('\n', '')
-                genArray.append(str(info[1]))
+                gen = int(info[1]) + 1
+                genArray.append(str(gen))
                 mean = round(float(info[3]), 2)
                 minCost = round(float(info[5]), 2)
                 meanCostArray.append(mean)
@@ -39,9 +39,10 @@ def loadLoggingFile(GUI, first=None, filename=None):
 
             #Zolang er meer dan twee waarden zijn, laat hij je naar de volgende grafiek gaan
             if not first:
-                fn.nextChart(GUI)
+                fn.loadChart(GUI, False, GUI.fullGraph)
                 GUI.nextButton.config(state="normal")
                 GUI.previousButton.config(state="normal")
+                GUI.chartButton.config(state="normal")
 
     except Exception as e:
         print(e)
@@ -72,7 +73,7 @@ def loadCsvFile(GUI, filename=None):
                         counter += 1
 
                 #Gegevens voor de windturbines
-                windData = round(float(data[-1]))
+                windData = round(float(data[-2]))
                 wm_cost, windTurbineTotalCost = fn.defWindTurbineCost(int(4), windData)
 
                 entry = GUI.WTHeightTuple[1]

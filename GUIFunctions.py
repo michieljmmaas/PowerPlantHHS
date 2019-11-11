@@ -1,19 +1,22 @@
 from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
-import GUI.GUIWidgetMaker as wm
-import GUI.GUIFileReader as fr
+import GUIWidgetMaker as wm
+import GUIFileReader as fr
 import numpy as np
 import ast
 from scipy.signal import savgol_filter
+from matplotlib import ticker
+
+NUMBEROFGRAPHS = 5
 
 
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
 # Geef een limit aan het aantal generaties die de grafiek laat zien
 def x_limit(array):
     a = len(array)
-    if a > 21:
-        a = 21
+    if a > 101:
+        a = 101
     return a - 1
 
 
@@ -55,20 +58,24 @@ def previousChart(GUI, starting=True):
     if GUI.graphNumber != 0:
         GUI.graphNumber = GUI.graphNumber - 1
     else:
-        GUI.graphNumber = 4
-    loadChart(GUI, starting)
+        GUI.graphNumber = (NUMBEROFGRAPHS-1)
+    loadChart(GUI, starting, GUI.fullGraph)
 
 # Ga naar de vorige Grafiek. True wordt gebruikt om het overzicht te resetten
 def nextChart(GUI, starting=True):
-    if GUI.graphNumber != 4:
+    if GUI.graphNumber != (NUMBEROFGRAPHS-1):
         GUI.graphNumber = GUI.graphNumber + 1
     else:
         GUI.graphNumber = 0
-    loadChart(GUI, starting)
+    loadChart(GUI, starting, GUI.fullGraph)
 
 
 # Laat de volgende grafiek zien
-def loadChart(GUI, starting=True):
+def loadChart(GUI, starting=True, fullChart=False):
+    if fullChart:
+        GrafiekLengte = len(GUI.gens)
+    else:
+        GrafiekLengte = int(GUI.getValueFromSettingsByName("tickLimit"))
     GUI.a.clear()
     GUI.a.axis('auto')
     GUI.a.axis('on')
@@ -77,20 +84,39 @@ def loadChart(GUI, starting=True):
 
     # Instellingen voor de eerste grafiek: Minium Kosten
     if GUI.graphNumber == 0:
-        GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
+        Length = len(GUI.gens)
+        if Length < GrafiekLengte:
+            GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
+        else:
+            GUI.a.plot(GUI.gens[Length-GrafiekLengte:Length], GUI.minCost[Length-GrafiekLengte:Length], color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
         limit = x_limit(GUI.gens)
-        GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+
+        if Length < GrafiekLengte:
+            GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+        else:
+            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+            xticks = ticker.MaxNLocator(20)
+            GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
     elif GUI.graphNumber == 1:
-        GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
+        Length = len(GUI.gens)
+        if(Length < GrafiekLengte):
+            GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
+        else:
+            GUI.a.plot(GUI.gens[Length-GrafiekLengte:Length], GUI.meanCost[Length-GrafiekLengte:Length], color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
         limit = x_limit(GUI.gens)
-        GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+        if Length < GrafiekLengte:
+            GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
+        else:
+            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+            xticks = ticker.MaxNLocator(20)
+            GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
 
     # Instellingen voor de derde grafiek: Energie Productie
@@ -132,6 +158,7 @@ def clearGraph(GUI):
     GUI.canvas.draw()
     GUI.nextButton.config(state="disabled")
     GUI.previousButton.config(state="disabled")
+    GUI.chartButton.config(state="disabled")
 
 
 # Als er een nieuwe generatie is roept hij dit aan
@@ -173,9 +200,9 @@ def clearFields(GUI):
 # Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
 def setUpPower(MultiListString, GUI):
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
-    WindArray = [item[1] for item in MultiList]  # Haal wind eruit
-    SolarArray = [item[2] for item in MultiList]  # Haal Solar eruit
-    PowerArrayPre = [sum(x) for x in zip(*[WindArray, SolarArray])]  # Voeg samen voor de sum
+    WindArray = MultiList[0]  # Haal wind eruit
+    SolarArray = MultiList[1]  # Haal Solar eruit
+    PowerArrayPre = [x + y for x, y in zip(WindArray, SolarArray)]  # Voeg samen voor de sum
     GUI.WindSum = sum(WindArray)
     GUI.SolarSum = sum(SolarArray)
 
@@ -233,4 +260,10 @@ def SaveValues(GUI):
     for x in range(len(EntryArray)):
         GUI.settingsDataFrame.loc[x, 'value'] = float(EntryArray[x].get())
     GUI.NewWindow.destroy()
+
+
+def fullChart(GUI):
+    if len(GUI.gens) > 1:
+        GUI.fullGraph = not GUI.fullGraph
+        loadChart(GUI, starting=False, fullChart=GUI.fullGraph)
 
