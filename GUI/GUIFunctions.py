@@ -139,6 +139,9 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 4:
         WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        print("Wind Perc:" + str(WindPerc))
+        print("Solar Perc:" + str(SolarPerc))
+        print()
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
         colors = ['gold', 'dodgerblue']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)

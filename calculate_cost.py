@@ -4,7 +4,8 @@ import numpy as np
 from copy import copy
 from Simulator import Simulator
 from generators import Windturbine
-#from numba import njit
+
+# from numba import njit
 
 """
 @njit
@@ -74,10 +75,12 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
         deficit * deficit_cost
     return cost
 """
-#@njit
+
+
+# @njit
 def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
-        target_kw, sp_cost_per_sm, st_cost_per_kwh, deficit_cost,
-        cb_cost_table, cb_length, cb_voltage):
+                         target_kw, sp_cost_per_sm, st_cost_per_kwh, deficit_cost,
+                         cb_cost_table, cb_length, cb_voltage):
     surplus_array = kwh_array - target_kw
     cumulative_array = np.cumsum(surplus_array)
     storage = 0
@@ -111,21 +114,21 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
 
     # Cable calculation
     kwh_max = kwh_array.max()
-    cable_area = (0.01989 * cb_length * (kwh_max / cb_voltage))/0.3 # Formula for minimum cable area
+    cable_area = (0.01989 * cb_length * (kwh_max / cb_voltage)) / 0.3  # Formula for minimum cable area
     usable_cables = cb_cost_table[cb_cost_table['area'] > cable_area]
-    if(len(usable_cables) > 0):
+    if (len(usable_cables) > 0):
         cb_cost = int(usable_cables['cost'].iloc[0])
     else:
         cb_cost = 100000 * kwh_max
 
     # calculate the final cost
     cost = sp_sm * sp_cost_per_sm + \
-        wm_cost * n_Turbines + \
-        storage * st_cost_per_kwh +\
-        deficit * deficit_cost +\
-        cb_cost * cb_length
+           wm_cost * n_Turbines + \
+           storage * st_cost_per_kwh + \
+           deficit * deficit_cost + \
+           cb_cost * cb_length
     return cost
-    
+
 
 class CostCalculator():
     """
@@ -148,9 +151,9 @@ class CostCalculator():
         # make a copy of the input array so we don't alter the original one
         kwh_array = copy(kwh_array)
         return _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
-            self.target_kw, self.sp_cost_per_sm, self.st_cost_per_kwh, self.deficit_cost,
-            self.cb_cost_table, self.cb_length, self.cb_voltage)
-    
+                                    self.target_kw, self.sp_cost_per_sm, self.st_cost_per_kwh, self.deficit_cost,
+                                    self.cb_cost_table, self.cb_length, self.cb_voltage)
+
     def get_stats(self, kwh_array, sp_sm, wm_type, n_Turbines):
         surplus_array = kwh_array - self.target_kw
         cumulative_array = np.cumsum(surplus_array)
@@ -171,7 +174,7 @@ class CostCalculator():
                 storage = max(storage, np.max(cumulative_array[:new_start]))
                 cumulative_array = cumulative_array[new_start:]
                 declining = declining[new_start:]
-        #windturbine shit
+        # windturbine shit
         if (wm_type == 2):
             wm_cost = 1605000
         elif (wm_type == 3):
@@ -185,9 +188,9 @@ class CostCalculator():
 
         # Cable calculation
         kwh_max = kwh_array.max()
-        cable_area = (0.01989 * self.cb_length * (kwh_max / self.cb_voltage))/0.3 # Formula for minimum cable area
+        cable_area = (0.01989 * self.cb_length * (kwh_max / self.cb_voltage)) / 0.3  # Formula for minimum cable area
         usable_cables = self.cb_cost_table[self.cb_cost_table['area'] > cable_area]
-        if(len(usable_cables) > 0):
+        if (len(usable_cables) > 0):
             cb_cost = usable_cables['cost'].iloc[0]
         else:
             cb_cost = 100000 * kwh_max
@@ -200,10 +203,10 @@ class CostCalculator():
         cable_cost = cb_cost * self.cb_length
 
         cost = solar_cost + \
-        wind_cost + \
-        storage_cost +\
-        cable_cost + \
-        deficit_cost
+               wind_cost + \
+               storage_cost + \
+               cable_cost + \
+               deficit_cost
         stat_dict = {
             'cost': cost,
             'solar_cost': solar_cost,
@@ -229,10 +232,9 @@ if __name__ == '__main__':
     print('Training: 1')
     cost_calculator = CostCalculator(sp_price_1, storage_price_1, 6000, 1000000)
     n_turb = 10
-    solar_feat = list([107806,0,0,24175,0,0,19751,0,0,10000,0,0,])
+    solar_feat = list([107806, 0, 0, 24175, 0, 0, 19751, 0, 0, 10000, 0, 0, ])
     wind_feat = list([n_turb, 0.12])
     output = sim.calc_total_power(solar_feat, wind_feat)
-    stats = cost_calculator.get_stats(output,np.sum(solar_feat[0::3]), 4, n_turb)
+    stats = cost_calculator.get_stats(output, np.sum(solar_feat[0::3]), 4, n_turb)
     print('Stats: ')
     print(stats)
-
