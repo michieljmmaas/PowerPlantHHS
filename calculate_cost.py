@@ -183,7 +183,7 @@ class CostCalculator():
 
         # Cable calculation
         kwh_max = kwh_array.max()
-        cable_area = (0.01989 * self.cb_length * (kwh_max / self.cb_voltage))/0.3 # Formula for minimum cable area
+        cable_area = (0.01989 * self.cb_length * (kwh_max * 1000 / self.cb_voltage))/0.3 # Formula for minimum cable area if the enviorment is 50℃
         usable_cables = self.cb_cost_table[self.cb_cost_table['area'] > cable_area]
         if(len(usable_cables) > 0):
             cb_cost = usable_cables['cost'].iloc[0]
@@ -198,7 +198,7 @@ class CostCalculator():
         cable_cost = cb_cost * self.cb_length
 
         cost = solar_cost + \
-        wind_cost * n_Turbines + \
+        wind_cost +\
         storage_cost +\
         cable_cost + \
         deficit_cost

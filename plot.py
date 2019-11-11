@@ -11,21 +11,20 @@ from calculate_cost import CostCalculator
 from Simulator import Simulator
 import os
 
-def plot(model_name, generation_number, load2=True):
-    turbine = Windturbine(4)
-    simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3], terrain_factor=0.15)
+def plot(model_name, generation_number, cb_cost_table, load2=True, sp_cost_per_sm=190, st_cost_per_kwh=400, target_kw=6000, 
+        deficit_cost=1000000, cb_length=1000, cb_voltage=230, terrain_factor=0.15, turbine_number=4) :
+    turbine = Windturbine(turbine_number)
+    simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3], terrain_factor=terrain_factor)
     generation = load(model_name=model_name, generation_number=generation_number, load2 = True)
     total_power = simulator.calc_total_power(generation[0][0:-2], generation[0][-2])
     wind_power, wind_energy = simulator.calc_wind(generation[0][-2])
     oppervlakte = [generation[0][0],generation[0][3],generation[0][6],generation[0][9]]
     angle = [generation[0][1],generation[0][4],generation[0][7],generation[0][10]]
     orientation = [generation[0][2],generation[0][5],generation[0][8],generation[0][11]]
-    solar_power, solar_energy = simulator.calc_solar(Az=orientation, Inc=angle, sp_area=oppervlakte, sp_eff=16, gref=0) #todo arrays maken voor orientatie, angle en oppervlakte
+    solar_power, solar_energy = simulator.calc_solar(Az=orientation, Inc=angle, sp_area=oppervlakte) #todo arrays maken voor orientatie, angle en oppervlakte
     max_power = total_power.max()
     # table of the diffrent cable cost
-    cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
-        'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
-    calculatecost = CostCalculator(190, 50, 6000, 1000000, cb_cost_table, 1000, 230)
+    calculatecost = CostCalculator(sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_cost_table, cb_length, cb_voltage)
     # get the dictionary of a configuration that has the stats of the generation
     dic = calculatecost.get_stats(total_power,319650,4,int(generation[0][-2]))
     # creating an array of the mean values from the power output of the simulation
@@ -38,12 +37,13 @@ def draw_energy(consumption, total_power, solar_power, wind_power, dic, generati
     # Creating mutiple text variables to display in the graph
     total_power = np.mean(np.reshape(total_power[:8760], (365,24)), axis=1)
     power_generated = total_power.sum()
-    t1 = "Storage capacity: \nAmount of windturbines: \nCable area: \nMaximum Power Output: \nTotal Power Generated: "
+    t1 = "Storage capacity: \nAmount of windturbines: \nCable area: \nMaximum Power Output: \nTotal Power Generated: \nTotal costs: "
     t2 = str(int(dic['total_storage'])) + " kWh\n" + \
         str(int(generation[0][-2])) + "\n" + \
         str(int(dic['cable_area'])) + " mm²\n" + \
         str(int(max_power)) + " kW\n" + \
-        str(int(power_generated)) + " kWh"
+        str(int(power_generated)) + " kWh\n" +\
+        '€' + str(int(dic['cost']))
     # Creating the solar stats text variables to display in the graph
     t3 = ""
     for I in range(4):
@@ -53,13 +53,13 @@ def draw_energy(consumption, total_power, solar_power, wind_power, dic, generati
                 "° - Orientation: " + str(int(generation[0][2 + I*3])) + "°\n"
 
     plt.subplot(2, 1, 1)
-    plt.text(330, total_power.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
-    plt.text(330, total_power.max() * 1.04, t1, ha='right', va='top', wrap=False)
-    plt.text(362, total_power.max() * 0.78, t3, ha='right', va='top', wrap=False)
     plt.plot(total_power, color='green', alpha=0.5, label='Total energy production')
     plt.plot(solar_power, color='yellow', alpha=0.5, label='Solar energy')
     plt.plot(wind_power, color='blue', alpha=0.5, label='Wind energy')
     plt.plot(consumption, color='red', label='Energy demand')
+    plt.text(330, total_power.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
+    plt.text(330, total_power.max() * 1.04, t1, ha='right', va='top', wrap=False)
+    plt.text(362, total_power.max() * 0.725, t3, ha='right', va='top', wrap=False)
     plt.legend()
     plt.title("Power Average per Day")
     plt.xlabel('Days')
@@ -73,12 +73,13 @@ def draw_Battery_Use(consumption, total_power, solar_power, wind_power, dic, gen
     power_generated = total_power.sum()
     power = total_power
     total_power = np.mean(np.reshape(total_power[:8760], (365,24)), axis=1)
-    t1 = "Storage capacity: \nAmount of windturbines: \nCable area: \nMaximum Power Output: \nTotal Power Generated: "
+    t1 = "Storage capacity: \nAmount of windturbines: \nCable area: \nMaximum Power Output: \nTotal Power Generated: \nTotal costs: "
     t2 = str(int(dic['total_storage'])) + " kWh\n" + \
         str(int(generation[0][-2])) + "\n" + \
         str(int(dic['cable_area'])) + " mm²\n" + \
         str(int(max_power)) + " kW\n" + \
-        str(int(power_generated)) + " kWh"
+        str(int(power_generated)) + " kWh\n" +\
+        '€' + str(int(dic['cost']))
     # Creating the solar stats text variables to display in the graph
     t3 = ""
     for I in range(4):
@@ -88,13 +89,13 @@ def draw_Battery_Use(consumption, total_power, solar_power, wind_power, dic, gen
                 "° - Orientation: " + str(int(generation[0][2 + I*3])) + "°\n"
 
     plt.subplot(2, 1, 1)
-    plt.text(330, total_power.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
-    plt.text(330, total_power.max() * 1.04, t1, ha='right', va='top', wrap=False)
-    plt.text(362, total_power.max() * 0.78, t3, ha='right', va='top', wrap=False)
     plt.plot(total_power, color='green', alpha=0.5, label='Total energy production')
     plt.plot(solar_power, color='yellow', alpha=0.5, label='Solar energy')
     plt.plot(wind_power, color='blue', alpha=0.5, label='Wind energy')
     plt.plot(consumption, color='red', label='Energy demand')
+    plt.text(330, total_power.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
+    plt.text(330, total_power.max() * 1.04, t1, ha='right', va='top', wrap=False)
+    plt.text(362, total_power.max() * 0.725, t3, ha='right', va='top', wrap=False)
     plt.legend()
     plt.title("Power Average per Day")
     plt.xlabel('Days')
@@ -102,15 +103,19 @@ def draw_Battery_Use(consumption, total_power, solar_power, wind_power, dic, gen
     plt.xlim(0,365)
     plt.subplot(2, 1, 2)
     power = power - 6000
-    batterycharge = [int(dic['total_storage'])/2]
-    Powershortage = []
-    for I in power :
-        batterycharge.append(batterycharge[-1] + I)
-        if(int(dic['total_storage']) < batterycharge[-1]) : 
-            batterycharge[-1] = int(dic['total_storage'])
-        elif(0 > batterycharge[-1]) :
-            batterycharge[-1] = 0
-            Powershortage.append(len(batterycharge)-1)
+    for x in range(2) :
+        if x == 0 :
+            batterycharge = [int(dic['total_storage'])]
+        else:
+            batterycharge = [batterycharge[-1]]
+        Powershortage = []
+        for I in power :
+            batterycharge.append(batterycharge[-1] + I)
+            if(int(dic['total_storage']) < batterycharge[-1]) : 
+                batterycharge[-1] = int(dic['total_storage'])
+            elif(0 > batterycharge[-1]) :
+                batterycharge[-1] = 0
+                Powershortage.append(len(batterycharge)-1)
     plt.plot(batterycharge, color='green', alpha=0.5)
     if len(Powershortage) == 0:
         plt.scatter(np.zeros(len(Powershortage)), Powershortage, color='red')
@@ -150,6 +155,7 @@ def load(model_name, generation_number, takebest=True, load2=True):
     
 
 if __name__ == '__main__':
-    consumption, total_power, solar_power, wind_power, dic, generation, max_power = plot('20191105_112838', 99)
+    cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
+        'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
+    consumption, total_power, solar_power, wind_power, dic, generation, max_power = plot('Simulation_1_Accukosten_400', 99, cb_cost_table=cb_cost_table)
     draw_Battery_Use(consumption, total_power, solar_power, wind_power, dic, generation, max_power)
-
