@@ -88,7 +88,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             n_Turbines = int(current_row[-2])
             turbine_height = int(current_row[-1])
             # run simulink
-            energy_production, energy_split = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, tr_rating]), sp_efficiency)
+            energy_production, energy_split = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, turbine_height]), sp_efficiency)
+            # energy_production = simulator.calc_total_power(current_row[:N_SOLAR_FEATURES], list([n_Turbines, turbine_height]), sp_efficiency)
             energy_array.append(energy_split)
             # run cost calculator
             sp_sm = np.sum(current_row[0:N_SOLAR_FEATURES:3])
