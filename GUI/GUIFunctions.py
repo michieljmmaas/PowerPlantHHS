@@ -303,7 +303,7 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
         generationLabel.pack(padx=10, pady=10)
         continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
         continueLabel.pack(padx=10, pady=10)
-        JumpButton = wm.makeButton(GUI, "GUI/icons/previous.png", NewWindow, NewWindow, "Terug", loadPreviousGen, True)
+        JumpButton = wm.makeButton(GUI, "GUI/icons/previous.png", NewWindow, NewWindow, "   Terug", loadPreviousGen, True)
         JumpButton.pack(padx=10, pady=10)
     else:
         textCorrect = "Het algoritme is klaar met berekenen. De gevenes op het scherm geven de de goedkoopste opstelling aan."
