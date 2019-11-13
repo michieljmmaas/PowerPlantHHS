@@ -140,7 +140,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
-        colors = ['gold', 'dodgerblue']
+        colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
         GUI.a.legend(patches, Labels, loc="best")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is

@@ -40,7 +40,8 @@ class Application(Frame):
         self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
-    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe. Als je iets toevoegd aan InfoSet komt er ook een invul set van
+    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe. Als je iets toevoegd aan
+    # InfoSet komt er ook een invul set van
     def SetSettings(self):
         SettingsLabels = ["name", "text", "value"]
 
