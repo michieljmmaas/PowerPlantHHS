@@ -40,33 +40,11 @@ class Application(Frame):
         self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
-    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe. Als je iets toevoegd aan
+    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje GUI/settings.csv staat. Als je iets toevoegd aan
     # InfoSet komt er ook een invul set van
     def SetSettings(self):
-        SettingsLabels = ["name", "text", "value"]
-
-        InfoSets = [["gens", "Generaties", 10],
-                    ["pool", "Pool", 25],
-                    ["mutate_percentage", "Mutatie Percentage (%)", 100],
-                    ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
-                    ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
-                    ["storage_costs", "Kosten per Opslag (kWh)", 400],
-                    ["deficit_cost", "Kosten voor tekort (kWh)", 1000000],
-                    ["cable_length", "Lengte van de kabel (m)", 1000],
-                    ["cable_voltage", "Spanning over de kabel (V)", 230],
-                    ["solar_efficiency", "Efficienty van zonnenpanelen (%)", 15],
-                    ["terrain", "Terreingesteldheid", 0.12],
-                    ["windturbine_type", "Windturbine Type", 4],
-                    ["windturbine_max", "Maximaal aantal windturbines", 20],
-                    ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
-                    ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000],
-                    ["tickLimit", "Maximum aantal ticks in de grafiek", 5]]
-
-        df = pd.DataFrame.from_records(InfoSets, columns=SettingsLabels)
-
-        # Maximum opslag
-        # Minimum opslag
-
+        self.fileName = "GUI/settings.csv"
+        df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
 
     def defineValues(self):
@@ -74,6 +52,7 @@ class Application(Frame):
         self.gens = []  # X-as met de genertaties
         self.minCost = []  # Y-as met de minium cost
         self.meanCost = []  # Y-as met de mean cost
+        self.settingsMenuOpen = False
 
         self.days = []  # Dagen in het jaar
         self.Uren = []  # Uren in het jaar
@@ -288,7 +267,8 @@ class Application(Frame):
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
             self.p1 = Process(target=runTrain, args=(
                 self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
-                windTurbineType, windTurbineMax, terrain_value, solar_eff))  # Maak een thread aan die runTrain aanroept.
+                windTurbineType, windTurbineMax, terrain_value,
+                solar_eff))  # Maak een thread aan die runTrain aanroept.
 
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
@@ -349,6 +329,7 @@ def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, 
           directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
           cost_calculator=CostCalculator, windturbineType=windturbineType,
           N_WIND_MAX=windturbineMax, tr_rating=tr_rating, sp_efficiency=sp_eff)
+
 
 # Maak en open een interface window
 def main():

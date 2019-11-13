@@ -231,10 +231,14 @@ def exitProgram(GUI):
 
 # Deze methode opent het popup scherm met de instellingen
 def openCostFunctionSettingWindow(GUI):
-    GUI.NewWindow = Toplevel(GUI.parent)
-    font = GUI.InfoFont
-    settings = GUI.settingsDataFrame
-    displayCostFunction(GUI.NewWindow, font, settings, GUI)
+    if GUI.settingsMenuOpen:
+        print("is al open")
+    else:
+        GUI.NewWindow = Toplevel(GUI.parent)
+        font = GUI.InfoFont
+        settings = GUI.settingsDataFrame
+        displayCostFunction(GUI.NewWindow, font, settings, GUI)
+        GUI.settingsMenuOpen = not GUI.settingsMenuOpen
 
 
 # Deze methode voegt de widgets toe aan het popup scherm
@@ -269,7 +273,9 @@ def SaveValues(GUI):
     EntryArray = GUI.preSave
     for x in range(len(EntryArray)):
         GUI.settingsDataFrame.loc[x, 'value'] = float(EntryArray[x].get())
+    GUI.settingsDataFrame.to_csv(GUI.fileName, index=None, header=True)
     GUI.NewWindow.destroy()
+    GUI.settingsMenuOpen = False
 
 
 def fullChart(GUI):
