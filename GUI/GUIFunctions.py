@@ -53,17 +53,19 @@ def format_e(n):
 def ShowErrorBox(title, message):
     messagebox.showerror(title, message)
 
+
 # Ga naar de vorige Grafiek. True wordt gebruikt om het overzicht te resetten
 def previousChart(GUI, starting=True):
     if GUI.graphNumber != 0:
         GUI.graphNumber = GUI.graphNumber - 1
     else:
-        GUI.graphNumber = (NUMBEROFGRAPHS-1)
+        GUI.graphNumber = (NUMBEROFGRAPHS - 1)
     loadChart(GUI, starting, GUI.fullGraph)
+
 
 # Ga naar de vorige Grafiek. True wordt gebruikt om het overzicht te resetten
 def nextChart(GUI, starting=True):
-    if GUI.graphNumber != (NUMBEROFGRAPHS-1):
+    if GUI.graphNumber != (NUMBEROFGRAPHS - 1):
         GUI.graphNumber = GUI.graphNumber + 1
     else:
         GUI.graphNumber = 0
@@ -88,7 +90,8 @@ def loadChart(GUI, starting=True, fullChart=False):
         if Length < GrafiekLengte:
             GUI.a.plot(GUI.gens, GUI.minCost, color='blue', label="Laagste Kosten")
         else:
-            GUI.a.plot(GUI.gens[Length-GrafiekLengte:Length], GUI.minCost[Length-GrafiekLengte:Length], color='blue', label="Laagste Kosten")
+            GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.minCost[Length - GrafiekLengte:Length],
+                       color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
         limit = x_limit(GUI.gens)
@@ -96,7 +99,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
-            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+            GUI.a.set_xlim(GUI.gens[limit - GrafiekLengte + 1], GUI.gens[limit])
             xticks = ticker.MaxNLocator(20)
             GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
@@ -104,17 +107,18 @@ def loadChart(GUI, starting=True, fullChart=False):
     # Instellingen voor de tweede grafiek: Gemiddelde Kosten
     elif GUI.graphNumber == 1:
         Length = len(GUI.gens)
-        if(Length < GrafiekLengte):
+        if (Length < GrafiekLengte):
             GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
         else:
-            GUI.a.plot(GUI.gens[Length-GrafiekLengte:Length], GUI.meanCost[Length-GrafiekLengte:Length], color='red', label="Gemiddelde kosten")
+            GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.meanCost[Length - GrafiekLengte:Length],
+                       color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
         limit = x_limit(GUI.gens)
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
-            GUI.a.set_xlim(GUI.gens[limit-GrafiekLengte+1], GUI.gens[limit])
+            GUI.a.set_xlim(GUI.gens[limit - GrafiekLengte + 1], GUI.gens[limit])
             xticks = ticker.MaxNLocator(20)
             GUI.a.xaxis.set_major_locator(xticks)
         GUI.a.legend()
@@ -170,6 +174,7 @@ def updateGraph(directory, gen, PowerArraySting, GUI):
     fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
     setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
+
 # Maak alle velden leeg
 def clearFields(GUI):
     counter = 0
@@ -197,6 +202,7 @@ def clearFields(GUI):
 
     GUI.TotalCost.config(text="  €0,00")
 
+
 # Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
 def setUpPower(MultiListString, GUI):
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
@@ -222,12 +228,14 @@ def exitProgram(GUI):
     except AttributeError as e:
         print("Nog niet gestart")
 
+
 # Deze methode opent het popup scherm met de instellingen
 def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
     font = GUI.InfoFont
     settings = GUI.settingsDataFrame
     displayCostFunction(GUI.NewWindow, font, settings, GUI)
+
 
 # Deze methode voegt de widgets toe aan het popup scherm
 def displayCostFunction(NewWindow, font, settings, GUI):
@@ -245,6 +253,7 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
     GUI.preSave = preSaveEntries
 
+
 # Deze methode maakt een paar van de widgets voor item in de instellingen list
 def createCostFunctionPair(NewWindow, textValue, startingValue, font):
     LabelWidth = 30
@@ -253,6 +262,7 @@ def createCostFunctionPair(NewWindow, textValue, startingValue, font):
     ItemEntry.insert(0, str(startingValue))
     Tuple = (ItemLabel, ItemEntry)
     return Tuple
+
 
 # Deze methode slaat de gegeven van het popupscherm op
 def SaveValues(GUI):
@@ -267,3 +277,47 @@ def fullChart(GUI):
         GUI.fullGraph = not GUI.fullGraph
         loadChart(GUI, starting=False, fullChart=GUI.fullGraph)
 
+
+# Deze methode opent het popup scherm met de instellingen
+def displayLowestFindWindow(GUI):
+    GUI.lowestFind = Toplevel(GUI.parent)
+    font = GUI.InfoFont
+    settings = GUI.settingsDataFrame
+    fillLowestFindWindow(GUI.lowestFind, font, settings, GUI)
+
+
+# Deze methode voegt de widgets toe aan het popup scherm
+def fillLowestFindWindow(NewWindow, font, settings, GUI):
+    lowestGen = GUI.minCost.index(min(GUI.minCost))
+    print("Lowest Gen: " + str(lowestGen))
+    if lowestGen != len(GUI.minCost) - 1:
+        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + str(lowestGen + 1)  +"e generatie"
+        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien? (Dit werkt nog niet)"
+        generationLabel = Label(NewWindow, text=generationText, anchor=W, font=font)
+        generationLabel.pack(padx=10, pady=10)
+        continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
+        continueLabel.pack(padx=10, pady=10)
+        JumpButton = wm.makeButton(GUI, "GUI/icons/previous.png", NewWindow, NewWindow, "Terug", loadPreviousGen, True)
+        JumpButton.pack(padx=10, pady=10)
+    else:
+        textCorrect = "Het algeritme is klaar met berekeen. De gegevens die nu geven de goedkoopste opstelling aan."
+        textCorrectLabel = Label(NewWindow, text=textCorrect, anchor=W, font=font)
+        textCorrectLabel.pack(padx=10, pady=10)
+        CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "Akkoord", closeFinishedPopup, True)
+        CloseButton.pack(padx=10, pady=10)
+
+
+    # JumpButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", loadPreviousGen, True)
+    # JumpButton.pack()
+    # SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
+
+
+def loadPreviousGen(GUI):
+    print("Previous loaded")
+    # Haal het goede bestand op
+    # Run de simulatie nog een keer om om de waarden terug te krijgen zodat ik ze kan invullen
+    closeFinishedPopup(GUI)
+
+
+def closeFinishedPopup(GUI):
+    GUI.lowestFind.destroy()

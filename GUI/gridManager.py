@@ -45,9 +45,9 @@ class Application(Frame):
     def SetSettings(self):
         SettingsLabels = ["name", "text", "value"]
 
-        InfoSets = [["gens", "Generaties", 100],
-                    ["pool", "Pool", 200],
-                    ["mutate_percentage", "Mutatie Percentage (%)", 50],
+        InfoSets = [["gens", "Generaties", 10],
+                    ["pool", "Pool", 25],
+                    ["mutate_percentage", "Mutatie Percentage (%)", 100],
                     ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
                     ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
                     ["storage_costs", "Kosten per Opslag (kWh)", 400],
@@ -60,7 +60,7 @@ class Application(Frame):
                     ["windturbine_max", "Maximaal aantal windturbines", 20],
                     ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
                     ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000],
-                    ["tickLimit", "Maximum aantal ticks in de grafiek", 30]]
+                    ["tickLimit", "Maximum aantal ticks in de grafiek", 5]]
 
         df = pd.DataFrame.from_records(InfoSets, columns=SettingsLabels)
 
@@ -337,6 +337,9 @@ class Application(Frame):
             self.nextButton.config(state="normal")
             self.previousButton.config(state="normal")
             self.chartButton.config(state="normal")
+
+        if len(self.gens) == self.getValueFromSettingsByName("gens"):
+            fn.displayLowestFindWindow(self)
 
 
 # Run de trainfunctie met mijn eigen waarden
