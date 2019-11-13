@@ -38,6 +38,7 @@ class Application(Frame):
         self.ButtonFont = fontMaker.Font(family=fontFamily, size=15, weight='bold')
         self.InfoFont = fontMaker.Font(family=fontFamily, size=10)
         self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
+        self.GenerationFont = fontMaker.Font(family=fontFamily, size=25, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
     # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje GUI/settings.csv staat. Als je iets toevoegd aan
@@ -113,11 +114,31 @@ class Application(Frame):
                                             fn.fullChart, True)
         self.chartButton.config(state='disabled')
 
+        self.generationTextVariable = StringVar()
+        self.generationTextVariable.set(self.setGenString(0))
+        CurrentGenerationLabel = Label(FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W, font=self.GenerationFont)
+        CurrentGenerationNumber = Label(FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W, font=self.GenerationFont)
+
+
         # Voeg de knoppen toe
-        settingButton.grid(row=0, column=0)
-        self.previousButton.grid(row=0, column=1)
-        self.nextButton.grid(row=0, column=2, pady=5)
-        self.chartButton.grid(row=0, column=3, pady=5)
+        # settingButton.grid(row=0, column=0)
+        # self.previousButton.grid(row=0, column=1)
+        # self.nextButton.grid(row=0, column=2, pady=5)
+        # self.chartButton.grid(row=0, column=3, pady=5)
+        # CurrentGenerationLabel.grid(row=0, column=4, pady=5)
+        # CurrentGenerationNumber.grid(row=0, column=5, pady=5)
+
+
+        CurrentGenerationLabel.grid(row=0, column=0, pady=5)
+        CurrentGenerationNumber.grid(row=0, column=1, pady=5)
+        settingButton.grid(row=0, column=5)
+        self.previousButton.grid(row=0, column=3)
+        self.nextButton.grid(row=0, column=4, pady=5)
+        self.chartButton.grid(row=0, column=2, pady=5)
+
+
+
+
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -265,6 +286,7 @@ class Application(Frame):
             solar_eff = int(self.getValueFromSettingsByName("solar_efficiency"))
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
+            self.generationTextVariable.set(self.setGenString(0))
             self.p1 = Process(target=runTrain, args=(
                 self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
                 windTurbineType, windTurbineMax, terrain_value,
@@ -285,6 +307,7 @@ class Application(Frame):
         if self.p1.is_alive():  # Zolang het proces draait
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
                 self.counterCheck = self.counter.value
+                self.generationTextVariable.set(self.setGenString(self.counterCheck))
                 fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
@@ -320,6 +343,12 @@ class Application(Frame):
 
         if len(self.gens) == self.getValueFromSettingsByName("gens"):
             fn.displayLowestFindWindow(self)
+
+    def setGenString(self, value):
+        spacedToAdd = 3 - len(str(value))
+        textString = str(value) + (2 * spacedToAdd * " ")
+        finalString = textString + "             "
+        return finalString
 
 
 # Run de trainfunctie met mijn eigen waarden

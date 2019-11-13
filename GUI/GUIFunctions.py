@@ -306,10 +306,10 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
         JumpButton = wm.makeButton(GUI, "GUI/icons/previous.png", NewWindow, NewWindow, "Terug", loadPreviousGen, True)
         JumpButton.pack(padx=10, pady=10)
     else:
-        textCorrect = "Het algeritme is klaar met berekeen. De gegevens die nu geven de goedkoopste opstelling aan."
+        textCorrect = "Het algoritme is klaar met berekenen. De gevenes op het scherm geven de de goedkoopste opstelling aan."
         textCorrectLabel = Label(NewWindow, text=textCorrect, anchor=W, font=font)
         textCorrectLabel.pack(padx=10, pady=10)
-        CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "Akkoord", closeFinishedPopup, True)
+        CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "   Akkoord", closeFinishedPopup, True)
         CloseButton.pack(padx=10, pady=10)
 
 
