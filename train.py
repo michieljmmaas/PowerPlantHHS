@@ -70,6 +70,9 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
 
     last_generation = n_generations - 1
+    best_gen = 0
+    cost_temp = 1e20
+
     for generation in range(saver.generation, n_generations):
 
         if generation == n_generations-20:
@@ -79,6 +82,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
         cost_array = np.zeros(group_size)
         energy_array = []
+
         print('finished simulation 0 of {}'.format(group_size), end='\r')
         for i in range(group_size):
             current_row = group_values[i]
@@ -103,6 +107,10 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             to_screen=True)
         # store intermediate result
         best = genetic_algorithm.get_best(group_values, cost_array)
+        
+        if np.min(cost_array) < cost_temp:
+            cost_temp = np.min(cost_array)
+            best_gen = best
 
         # Reverse engineer de Power Graph
         NPindex = np.where(group_values == best[0])
@@ -121,7 +129,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
         # quit when done
         if generation == last_generation:
-            return best
+            return best_gen
         # run genetic algorithm
         group_values = genetic_algorithm.generate_new_population(group_values, cost_array)
         # remove illegal values
