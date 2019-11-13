@@ -322,6 +322,7 @@ def loadPreviousGen(GUI):
     print("Previous loaded")
     # Haal het goede bestand op
     # Run de simulatie nog een keer om om de waarden terug te krijgen zodat ik ze kan invullen
+    # ToDo Functies
     closeFinishedPopup(GUI)
 
 
