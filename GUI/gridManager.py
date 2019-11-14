@@ -57,7 +57,8 @@ class Application(Frame):
 
         self.days = []  # Dagen in het jaar
         self.Uren = []  # Uren in het jaar
-        self.kW_distribution = []  # Power opgewekt
+        self.BatteryPower = []  # Power opgewekt puur
+        self.kW_distribution = []  # Power opgewekt uit gesmooth
         self.consumption = []  # Hoeveel de consumptie is van de fabriek
         self.consumptionGrade = 0  # Constante Vraag aan consumptie
         self.KW_sum = []  # Som van de KW Overproductie
@@ -116,9 +117,10 @@ class Application(Frame):
 
         self.generationTextVariable = StringVar()
         self.generationTextVariable.set(self.setGenString(0))
-        CurrentGenerationLabel = Label(FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W, font=self.GenerationFont)
-        CurrentGenerationNumber = Label(FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W, font=self.GenerationFont)
-
+        CurrentGenerationLabel = Label(FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
+                                       font=self.GenerationFont)
+        CurrentGenerationNumber = Label(FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W,
+                                        font=self.GenerationFont)
 
         # Voeg de knoppen toe
         # settingButton.grid(row=0, column=0)
@@ -128,17 +130,12 @@ class Application(Frame):
         # CurrentGenerationLabel.grid(row=0, column=4, pady=5)
         # CurrentGenerationNumber.grid(row=0, column=5, pady=5)
 
-
         CurrentGenerationLabel.grid(row=0, column=0, pady=5)
         CurrentGenerationNumber.grid(row=0, column=1, pady=5)
         settingButton.grid(row=0, column=5)
         self.previousButton.grid(row=0, column=3)
         self.nextButton.grid(row=0, column=4, pady=5)
         self.chartButton.grid(row=0, column=2, pady=5)
-
-
-
-
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken

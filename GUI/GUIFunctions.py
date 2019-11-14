@@ -139,7 +139,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
-    # Instellingen voor de 5de grafiek: Pie chart met verdeling van de energie productie
+    # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
     elif GUI.graphNumber == 4:
         WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
@@ -149,6 +149,13 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.legend(patches, Labels, loc="best")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
+
+    # Instellingen voor de zesde grafiek: Gebruik van de accu's.
+    # elif GUI.graphNumber == 5:
+        # GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Niveau van de accu")
+        # GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Accu gebruik over het jaar")
+        # GUI.a.set_xlim(0, 365)
+        # GUI.a.legend()
 
     GUI.canvas.draw()
 
@@ -205,6 +212,7 @@ def clearFields(GUI):
 
 # Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
 def setUpPower(MultiListString, GUI):
+    #Uitrekenen waarden
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
     WindArray = MultiList[0]  # Haal wind eruit
     SolarArray = MultiList[1]  # Haal Solar eruit
@@ -212,12 +220,20 @@ def setUpPower(MultiListString, GUI):
     GUI.WindSum = sum(WindArray)
     GUI.SolarSum = sum(SolarArray)
 
+    #omzetten Array naar dag
     PowerArray = np.mean(np.reshape(PowerArrayPre[:8760], (365, 24)), axis=1)  # Zet gegevens om naar dag
+
+    # Geproducueerd vs gebrijkte lijn
     PowerArray = savgol_filter(PowerArray, 51, 3)  # Smooth out line
     GUI.consumption = np.full(len(PowerArray), GUI.consumptionGrade)  # Maak de consumptie lijn
     GUI.kW_distribution = PowerArray
+
+    # Sum of Overproduced Power
     GUI.KW_sum = np.cumsum(PowerArray - GUI.consumptionGrade)  # Maak de som van de energie
     GUI.zeros = np.zeros(len(PowerArray))  # Maak nul lijn
+
+    # Batterij gebruik
+    GUI.BatteryPower = PowerArray - 6000
 
 
 # Sluit het programma af en sluit de thread als hij runt
