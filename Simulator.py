@@ -6,6 +6,7 @@ from location import Location
 import time
 import os
 import warnings
+
 warnings.filterwarnings("ignore")
 
 KAPPA = 1.041  # for calculations in radians
@@ -30,10 +31,11 @@ class Simulator():
         self.ghi = self.import_data.iloc[:, 5].values
         self.dni = self.import_data.iloc[:, 7].values
         self.dates = self.import_data.iloc[:, 1].values
-        self.doy = np.array([datetime.utcfromtimestamp(self.dates[i].astype(int) * NANO).timetuple().tm_yday for i in range(0,len(self.dates))])
+        self.doy = np.array([datetime.utcfromtimestamp(self.dates[i].astype(int) * NANO).timetuple().tm_yday for i in
+                             range(0, len(self.dates))])
         self.time = self.import_data.iloc[:, 2].values.astype(int)
-        self.wind_speed = (self.import_data.iloc[:, 3].values)/10
-        self.temperature = (self.import_data.iloc[:, 4].values)/10
+        self.wind_speed = (self.import_data.iloc[:, 3].values) / 10
+        self.temperature = (self.import_data.iloc[:, 4].values) / 10
 
     def calc_solar(self, Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100], sp_eff=16, gref=0):
         gamma = np.array(Az)
@@ -70,7 +72,7 @@ class Simulator():
 
         # determination of bin with eps
         s_bin = np.ones(len(self.time))  # bin 1 is overcast sky , bin 8 is clear sky
-        Kzen3 = KAPPA*Zen**3
+        Kzen3 = KAPPA * Zen ** 3
 
         eps = ((DHI + self.dni) / DHI + KAPPA * Zen ** 3) / (1 + KAPPA * Zen ** 3)
 
@@ -110,13 +112,13 @@ class Simulator():
 
         cai = np.array(np.sin(np.deg2rad(decl_dim)) * np.sin(np.deg2rad(self.latitude)) * np.cos(np.deg2rad(beta_dim))
                        - np.sin(np.deg2rad(decl_dim)) * np.cos(np.deg2rad(self.latitude)) * (
-                                   np.sin(np.deg2rad(beta_dim)) * np.cos(np.deg2rad(gamma_dim)))
+                               np.sin(np.deg2rad(beta_dim)) * np.cos(np.deg2rad(gamma_dim)))
                        + (np.cos(np.deg2rad(decl_dim)) * np.cos(np.deg2rad(h_dim))) * np.cos(
             np.deg2rad(self.latitude)) * np.cos(np.deg2rad(beta_dim))
                        + (np.cos(np.deg2rad(decl_dim)) * np.cos(np.deg2rad(h_dim))) * np.sin(
             np.deg2rad(self.latitude)) * (np.sin(np.deg2rad(beta_dim)) * np.cos(np.deg2rad(gamma_dim)))
                        + np.cos(np.deg2rad(decl_dim)) * np.sin(np.deg2rad(h_dim)) * (
-                                   np.sin(np.deg2rad(beta_dim)) * np.sin(np.deg2rad(gamma_dim))))
+                               np.sin(np.deg2rad(beta_dim)) * np.sin(np.deg2rad(gamma_dim))))
 
         # determination of the diffuse radiation on a tilted surface DTI, Perez 1990
         a = cai
@@ -164,7 +166,6 @@ class Simulator():
         return P_out, E_out
 
     def calc_wind(self, wind_features):
-
         n_turbines = int(wind_features[0])
         rotor_height = int(wind_features[1])
         external_factors = (rotor_height / 10) ** self.terrain_factor
@@ -200,16 +201,16 @@ class Simulator():
         angle_features = solar_features[1::3]
         orientation_features = solar_features[2::3]
 
-        wind,_ = self.calc_wind(wind_features)
-        solar,_ =self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features, sp_eff=sp_eff)
+        wind, _ = self.calc_wind(wind_features)
+        solar, _ = self.calc_solar(Az=orientation_features, Inc=angle_features, sp_area=surface_features, sp_eff=sp_eff)
 
         total_power = wind + solar
 
         return total_power, [wind.tolist(), solar.tolist()]
 
-if __name__ == '__main__':
 
-    loc_name ='nen'
+if __name__ == '__main__':
+    loc_name = 'nen'
 
     loc_data = Location(loc_name)
     file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
@@ -217,9 +218,10 @@ if __name__ == '__main__':
 
     turbine = Windturbine(4)
 
-    sim = Simulator(file_name, year, turbine, index_col=0, latitude=loc_data.latitude, longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
+    sim = Simulator(file_name, year, turbine, index_col=0, latitude=loc_data.latitude, longitude=loc_data.longitude,
+                    terrain_factor=loc_data.terrain)
 
-    sim.calc_total_power([100, 15, 0, 100, 15, 0, 100, 15, 0, 100, 15, 0],[10, 135], 16)
+    sim.calc_total_power([100, 15, 0, 100, 15, 0, 100, 15, 0, 100, 15, 0], [10, 135], 16)
 
     p_wind, e_wind = sim.calc_wind([7, 135])
     p_solar, e_solar = sim.calc_solar(Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100])

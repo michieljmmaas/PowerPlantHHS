@@ -7,6 +7,7 @@ import numpy as np
 import ast
 from scipy.signal import savgol_filter
 from matplotlib import ticker
+from generators import Windturbine
 
 NUMBEROFGRAPHS = 5
 
@@ -152,10 +153,10 @@ def loadChart(GUI, starting=True, fullChart=False):
 
     # Instellingen voor de zesde grafiek: Gebruik van de accu's.
     # elif GUI.graphNumber == 5:
-        # GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Niveau van de accu")
-        # GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Accu gebruik over het jaar")
-        # GUI.a.set_xlim(0, 365)
-        # GUI.a.legend()
+    # GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Niveau van de accu")
+    # GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Accu gebruik over het jaar")
+    # GUI.a.set_xlim(0, 365)
+    # GUI.a.legend()
 
     GUI.canvas.draw()
 
@@ -212,7 +213,7 @@ def clearFields(GUI):
 
 # Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
 def setUpPower(MultiListString, GUI):
-    #Uitrekenen waarden
+    # Uitrekenen waarden
     MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
     WindArray = MultiList[0]  # Haal wind eruit
     SolarArray = MultiList[1]  # Haal Solar eruit
@@ -220,7 +221,7 @@ def setUpPower(MultiListString, GUI):
     GUI.WindSum = sum(WindArray)
     GUI.SolarSum = sum(SolarArray)
 
-    #omzetten Array naar dag
+    # omzetten Array naar dag
     PowerArray = np.mean(np.reshape(PowerArrayPre[:8760], (365, 24)), axis=1)  # Zet gegevens om naar dag
 
     # Geproducueerd vs gebrijkte lijn
@@ -313,21 +314,22 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
     lowestGen = GUI.minCost.index(min(GUI.minCost))
     print("Lowest Gen: " + str(lowestGen))
     if lowestGen != len(GUI.minCost) - 1:
-        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + str(lowestGen + 1)  +"e generatie"
+        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + str(lowestGen + 1) + "e generatie"
         continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien? (Dit werkt nog niet)"
         generationLabel = Label(NewWindow, text=generationText, anchor=W, font=font)
         generationLabel.pack(padx=10, pady=10)
         continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
         continueLabel.pack(padx=10, pady=10)
-        JumpButton = wm.makeButton(GUI, "GUI/icons/previous.png", NewWindow, NewWindow, "   Terug", loadPreviousGen, True)
+        JumpButton = wm.makeButton(GUI, "GUI/icons/previous.png", NewWindow, NewWindow, "   Terug", loadPreviousGen,
+                                   True)
         JumpButton.pack(padx=10, pady=10)
     else:
         textCorrect = "Het algoritme is klaar met berekenen. De gevenes op het scherm geven de de goedkoopste opstelling aan."
         textCorrectLabel = Label(NewWindow, text=textCorrect, anchor=W, font=font)
         textCorrectLabel.pack(padx=10, pady=10)
-        CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "   Akkoord", closeFinishedPopup, True)
+        CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "   Akkoord", closeFinishedPopup,
+                                    True)
         CloseButton.pack(padx=10, pady=10)
-
 
     # JumpButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", loadPreviousGen, True)
     # JumpButton.pack()
@@ -344,3 +346,21 @@ def loadPreviousGen(GUI):
 
 def closeFinishedPopup(GUI):
     GUI.lowestFind.destroy()
+
+
+def RunSimulation(GUI):
+    # print("poep")
+    N_PANELS = 4
+    N_SOLAR_FEATURES = N_PANELS * 3
+    n_Turbines = round(float(GUI.csvData[-2]))
+    turbine_height = round(float(GUI.csvData[-1]))
+    sp_efficiency = 15
+    # print(GUI.csvData)
+
+    for i in range(len(GUI.csvData)):
+        GUI.csvData[i] = float(GUI.csvData[i])
+
+    # simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+    energy_production, energy_split = GUI.simulator.calc_total_power(GUI.csvData[:N_SOLAR_FEATURES],
+                                                                 list([n_Turbines, turbine_height]), sp_efficiency)
+    # print(energy_production)

@@ -12,6 +12,8 @@ from tkinter import font as fontMaker
 import GUI.GUIWidgetMaker as wm
 import calculate_cost as cc
 import pandas as pd
+from Simulator import Simulator
+from generators import Windturbine
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -54,7 +56,6 @@ class Application(Frame):
         self.minCost = []  # Y-as met de minium cost
         self.meanCost = []  # Y-as met de mean cost
         self.settingsMenuOpen = False
-
         self.days = []  # Dagen in het jaar
         self.Uren = []  # Uren in het jaar
         self.BatteryPower = []  # Power opgewekt puur
@@ -65,6 +66,11 @@ class Application(Frame):
         self.zeros = []  # Nul lijn
         self.SolarSum = 0  # Som van alle Solar Energie productie
         self.WindSum = 0  # Som van alle Wind Energie productie
+
+        #Eigen Simulator
+        self.csvData = []  # CSV data van item
+        turbine = Windturbine(self.getValueFromSettingsByName("windturbine_type"))
+        self.simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
 
         # Deze drie waarden zijn er om de grafiek te updaten
         self.counter = 0
@@ -306,6 +312,7 @@ class Application(Frame):
                 self.counterCheck = self.counter.value
                 self.generationTextVariable.set(self.setGenString(self.counterCheck))
                 fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
+                fn.RunSimulation(self)
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.

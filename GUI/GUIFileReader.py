@@ -59,7 +59,7 @@ def loadCsvFile(GUI, filename=None):
         if filename != '':
             with open(filename, newline='') as csvfile:  # Lees het bestand in, in een array
                 dataList = list(csv.reader(csvfile))
-                data = dataList[0]
+                GUI.csvData = dataList[0]
                 counter = 0
 
                 # Voor de zonnenpanelen moet wil je er doorheen loopen om het in te vullen
@@ -69,12 +69,12 @@ def loadCsvFile(GUI, filename=None):
                     iterTuple = iter(tupleItem)  # Sla de eerste over want dat is text
                     next(iterTuple)
                     for item in iterTuple:  # Vul de waarden en
-                        info = round(float(data[counter]), 2)
+                        info = round(float(GUI.csvData[counter]), 2)
                         item.config(text=textPreSpace + str(info))
                         counter += 1
 
                 # Gegevens voor de windturbines
-                windData = round(float(data[-2]))
+                windData = round(float(GUI.csvData[-2]))
                 wm_cost, windTurbineTotalCost = fn.defWindTurbineCost(int(4), windData)
 
                 entry = GUI.WTHeightTuple[1]
