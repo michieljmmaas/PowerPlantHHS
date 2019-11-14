@@ -174,13 +174,12 @@ def clearGraph(GUI):
 
 
 # Als er een nieuwe generatie is roept hij dit aan
-def updateGraph(directory, gen, PowerArraySting, GUI):
+def ReadLogging(directory, gen, GUI):
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"  # Pak het goede CSV bestand
     fr.loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
     fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
-    setUpPower(PowerArraySting, GUI)  # Setup voor de derde grafiek
 
 
 # Maak alle velden leeg
@@ -212,11 +211,9 @@ def clearFields(GUI):
 
 
 # Deze methode wordt gebruikt om de grafiek te maken met het energie productie/verbruik
-def setUpPower(MultiListString, GUI):
-    # Uitrekenen waarden
-    MultiList = ast.literal_eval(MultiListString)  # Verander string van list naar list
-    WindArray = MultiList[0]  # Haal wind eruit
-    SolarArray = MultiList[1]  # Haal Solar eruit
+def setUpPower(GUI):
+    WindArray = GUI.Wind_Solar_Array[0]  # Haal wind eruit
+    SolarArray = GUI.Wind_Solar_Array[1]  # Haal Solar eruit
     PowerArrayPre = [x + y for x, y in zip(WindArray, SolarArray)]  # Voeg samen voor de sum
     GUI.WindSum = sum(WindArray)
     GUI.SolarSum = sum(SolarArray)
@@ -349,18 +346,15 @@ def closeFinishedPopup(GUI):
 
 
 def RunSimulation(GUI):
-    # print("poep")
     N_PANELS = 4
     N_SOLAR_FEATURES = N_PANELS * 3
     n_Turbines = round(float(GUI.csvData[-2]))
     turbine_height = round(float(GUI.csvData[-1]))
-    sp_efficiency = 15
-    # print(GUI.csvData)
+    sp_efficiency = GUI.getValueFromSettingsByName("solar_efficiency")
 
     for i in range(len(GUI.csvData)):
         GUI.csvData[i] = float(GUI.csvData[i])
 
-    # simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
     energy_production, energy_split = GUI.simulator.calc_total_power(GUI.csvData[:N_SOLAR_FEATURES],
                                                                  list([n_Turbines, turbine_height]), sp_efficiency)
-    # print(energy_production)
+    GUI.Wind_Solar_Array = energy_split

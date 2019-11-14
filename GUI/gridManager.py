@@ -25,8 +25,8 @@ class Application(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
-        self.defineValues()
         self.SetSettings()
+        self.defineValues()
         self.makeFonts()
         self.initUI()  # Maak de UI
         self.grid()  # Het is een grid field
@@ -55,7 +55,7 @@ class Application(Frame):
         self.gens = []  # X-as met de genertaties
         self.minCost = []  # Y-as met de minium cost
         self.meanCost = []  # Y-as met de mean cost
-        self.settingsMenuOpen = False
+        self.settingsMenuOpen = False #Instelling voor het settings menu
         self.days = []  # Dagen in het jaar
         self.Uren = []  # Uren in het jaar
         self.BatteryPower = []  # Power opgewekt puur
@@ -71,6 +71,7 @@ class Application(Frame):
         self.csvData = []  # CSV data van item
         turbine = Windturbine(self.getValueFromSettingsByName("windturbine_type"))
         self.simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+        self.Wind_Solar_Array = []
 
         # Deze drie waarden zijn er om de grafiek te updaten
         self.counter = 0
@@ -129,13 +130,6 @@ class Application(Frame):
                                         font=self.GenerationFont)
 
         # Voeg de knoppen toe
-        # settingButton.grid(row=0, column=0)
-        # self.previousButton.grid(row=0, column=1)
-        # self.nextButton.grid(row=0, column=2, pady=5)
-        # self.chartButton.grid(row=0, column=3, pady=5)
-        # CurrentGenerationLabel.grid(row=0, column=4, pady=5)
-        # CurrentGenerationNumber.grid(row=0, column=5, pady=5)
-
         CurrentGenerationLabel.grid(row=0, column=0, pady=5)
         CurrentGenerationNumber.grid(row=0, column=1, pady=5)
         settingButton.grid(row=0, column=5)
@@ -281,7 +275,6 @@ class Application(Frame):
             self.counter = Value('i',
                                  0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "first")  # Geef de manager een String die ik kan uitlezen
-            self.PowerArray = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
             CostCalulator = self.getCostCalculator()
             surface_min = self.getValueFromSettingsByName("surface_min")
             surface_max = self.getValueFromSettingsByName("surface_max")
@@ -291,7 +284,7 @@ class Application(Frame):
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
             self.generationTextVariable.set(self.setGenString(0))
             self.p1 = Process(target=runTrain, args=(
-                self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
+                self.counter, self.Directory, infoArray, CostCalulator, surface_min, surface_max,
                 windTurbineType, windTurbineMax, terrain_value,
                 solar_eff))  # Maak een thread aan die runTrain aanroept.
 
@@ -311,13 +304,14 @@ class Application(Frame):
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
                 self.counterCheck = self.counter.value
                 self.generationTextVariable.set(self.setGenString(self.counterCheck))
-                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
+                fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
                 fn.RunSimulation(self)
+                fn.setUpPower(self)
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             if self.running == 1:
-                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
+                fn.updateGraph(self.Directory.value, self.counterCheck, self)  # Update
             print("Klaar")
             self.endSimulation()
 
@@ -356,10 +350,10 @@ class Application(Frame):
 
 
 # Run de trainfunctie met mijn eigen waarden
-def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, windturbineType,
+def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, windturbineType,
              windturbineMax, tr_rating, sp_eff):
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
-          directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
+          directory=directory, mutationPercentage=array[2], target_kw=array[3],
           cost_calculator=CostCalculator, windturbineType=windturbineType,
           N_WIND_MAX=windturbineMax, tr_rating=tr_rating, sp_efficiency=sp_eff)
 
