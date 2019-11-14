@@ -9,7 +9,7 @@ from scipy.signal import savgol_filter
 from matplotlib import ticker
 from generators import Windturbine
 
-NUMBEROFGRAPHS = 5
+NUMBEROFGRAPHS = 6
 
 
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
@@ -152,13 +152,53 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
 
     # Instellingen voor de zesde grafiek: Gebruik van de accu's.
-    # elif GUI.graphNumber == 5:
-    # GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Niveau van de accu")
-    # GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Accu gebruik over het jaar")
-    # GUI.a.set_xlim(0, 365)
-    # GUI.a.legend()
+    elif GUI.graphNumber == 5:
+        batteryCharge = []
+        for x in range(2):
+            if x == 0:
+                batteryCharge = [int(GUI.cost_stats['total_storage'])]
+            else:
+                batteryCharge = [batteryCharge[-1]]
+            PowerShortage = []
+            for I in GUI.BatteryPower:
+                batteryCharge.append(batteryCharge[-1] + I)
+                if int(GUI.cost_stats['total_storage']) < batteryCharge[-1]:
+                    batteryCharge[-1] = int(GUI.cost_stats['total_storage'])
+                elif 0 > batteryCharge[-1]:
+                    batteryCharge[-1] = 0
+                    PowerShortage.append(len(batteryCharge) - 1)
+        batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)), axis=1)/1000  # Zet gegevens om naar dag
+        GUI.a.plot(batteryChargePlot, color='green', alpha=0.5, label="Niveau van de accu")
+        GUI.a.set(ylabel="MWh", xlabel="Uren", title="Accu gebruik over het jaar")
+        GUI.a.set_ylim(0, max(batteryChargePlot) * 1.1)
+        GUI.a.set_xlim(0, 365)
+        GUI.a.legend()
 
     GUI.canvas.draw()
+
+
+def RunSimulation(GUI):
+    N_PANELS = 4
+    N_SOLAR_FEATURES = N_PANELS * 3
+    n_Turbines = round(float(GUI.csvData[-2]))
+    turbine_height = round(float(GUI.csvData[-1]))
+    sp_efficiency = GUI.getValueFromSettingsByName("solar_efficiency")
+
+    for i in range(len(GUI.csvData)):
+        GUI.csvData[i] = float(GUI.csvData[i])
+
+    energy_production, energy_split = \
+        GUI.simulator.calc_total_power(
+            GUI.csvData[:N_SOLAR_FEATURES],
+            list([n_Turbines, turbine_height]),
+            sp_efficiency)
+    GUI.Wind_Solar_Array = energy_split
+    BatteryPowerPreShape = energy_production - 6000
+    GUI.BatteryPower = BatteryPowerPreShape
+    # GUI.BatteryPower = np.mean(np.reshape(BatteryPowerPreShape[:8760], (365, 24)), axis=1)
+    sp_sm = GUI.getValueFromSettingsByName("surface_area_costs")
+    wm_type = GUI.getValueFromSettingsByName("windturbine_type")
+    GUI.cost_stats = GUI.CostCalulator.get_stats(energy_production, sp_sm, wm_type, n_Turbines)
 
 
 # Haal de bestaande grafiek weg om verwarring te voorkomen, en laat een wit vlak zien met "Gegevens ophalen"
@@ -231,7 +271,7 @@ def setUpPower(GUI):
     GUI.zeros = np.zeros(len(PowerArray))  # Maak nul lijn
 
     # Batterij gebruik
-    GUI.BatteryPower = PowerArray - 6000
+    # GUI.BatteryPower = PowerArray - 6000
 
 
 # Sluit het programma af en sluit de thread als hij runt
@@ -245,14 +285,11 @@ def exitProgram(GUI):
 
 # Deze methode opent het popup scherm met de instellingen
 def openCostFunctionSettingWindow(GUI):
-    if GUI.settingsMenuOpen:
-        print("is al open")
-    else:
-        GUI.NewWindow = Toplevel(GUI.parent)
-        font = GUI.InfoFont
-        settings = GUI.settingsDataFrame
-        displayCostFunction(GUI.NewWindow, font, settings, GUI)
-        GUI.settingsMenuOpen = not GUI.settingsMenuOpen
+    GUI.NewWindow = Toplevel(GUI.parent)
+    font = GUI.InfoFont
+    settings = GUI.settingsDataFrame
+    GUI.NewWindow.grab_set()
+    displayCostFunction(GUI.NewWindow, font, settings, GUI)
 
 
 # Deze methode voegt de widgets toe aan het popup scherm
@@ -309,7 +346,6 @@ def displayLowestFindWindow(GUI):
 # Deze methode voegt de widgets toe aan het popup scherm
 def fillLowestFindWindow(NewWindow, font, settings, GUI):
     lowestGen = GUI.minCost.index(min(GUI.minCost))
-    print("Lowest Gen: " + str(lowestGen))
     if lowestGen != len(GUI.minCost) - 1:
         generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + str(lowestGen + 1) + "e generatie"
         continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien? (Dit werkt nog niet)"
@@ -343,18 +379,3 @@ def loadPreviousGen(GUI):
 
 def closeFinishedPopup(GUI):
     GUI.lowestFind.destroy()
-
-
-def RunSimulation(GUI):
-    N_PANELS = 4
-    N_SOLAR_FEATURES = N_PANELS * 3
-    n_Turbines = round(float(GUI.csvData[-2]))
-    turbine_height = round(float(GUI.csvData[-1]))
-    sp_efficiency = GUI.getValueFromSettingsByName("solar_efficiency")
-
-    for i in range(len(GUI.csvData)):
-        GUI.csvData[i] = float(GUI.csvData[i])
-
-    energy_production, energy_split = GUI.simulator.calc_total_power(GUI.csvData[:N_SOLAR_FEATURES],
-                                                                 list([n_Turbines, turbine_height]), sp_efficiency)
-    GUI.Wind_Solar_Array = energy_split
