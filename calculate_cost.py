@@ -1,6 +1,7 @@
 """calculate the cost of panels, windmills and storage"""
 
 import numpy as np
+import pandas as pd
 from copy import copy
 from Simulator import Simulator
 from generators import Windturbine
@@ -138,12 +139,15 @@ class CostCalculator():
         st_cost_per_kwh = Storage Cost per KWH
     """
 
-    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_cost_table, cb_length, cb_voltage):
+    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_length, cb_voltage):
         self.sp_cost_per_sm = sp_cost_per_sm
         self.st_cost_per_kwh = st_cost_per_kwh
         self.target_kw = target_kw
         self.deficit_cost = deficit_cost
-        self.cb_cost_table = cb_cost_table
+        self.cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000,1250, 1600, 2000, 3000, 5000, 
+                                    8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 200000],
+                                  'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 
+                                  0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72, 84, 96, 110, 124, 140, 280]})
         self.cb_length = cb_length
         self.cb_voltage = cb_voltage
 
