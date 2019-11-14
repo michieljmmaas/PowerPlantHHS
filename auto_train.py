@@ -33,9 +33,6 @@ loc_array = np.array(['VALKENBURG','DEKOOY', 'SCHIPHOL', 'HOORNTERSCHELLING', 'D
 
 turbine = Windturbine(TURBINETYPE)
 
-cb_cost_table = pd.DataFrame({'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000, 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
-                              'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
-
 all_stats = pd.DataFrame(columns=['Name',
                                   'Lat',
                                   'Lon',
@@ -75,12 +72,12 @@ all_stats = pd.DataFrame(columns=['Name',
 for i in range(len(loc_array)):
     loc_data = Location(loc_array[i])
     file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
-    year = str(loc_data.end_year-1)
+    year = str(loc_data.end_year)
 
     sim = Simulator(file_name, year, turbine, index_col=0, latitude=loc_data.latitude, longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
 
-    cost_calc = CostCalculator(160, 400, energy_demand, def_cost, cb_cost_table, 1000, 230)
-    best_array = train(100, 300, 0, 10000000, 0, 90, 0, 359, mutationPercentage=mutationrate, target_kw=energy_demand, cost_calculator=cost_calc, simulator=sim, windturbineType=TURBINETYPE, N_WIND_MAX=7, tr_rating=loc_data.terrain, sp_efficiency=16)
+    cost_calc = CostCalculator(160, 400, energy_demand, def_cost, 1000, 230)
+    best_array = train(100, 300, 0, 10000000, 0, 90, -45, 45, mutationPercentage=mutationrate, target_kw=energy_demand, cost_calculator=cost_calc, simulator=sim, windturbineType=TURBINETYPE, N_WIND_MAX=7, tr_rating=loc_data.terrain, sp_efficiency=16)
     best_pick = best_array[0]
     best_solar = best_pick[:12]
     best_wind = best_pick[-2:]
@@ -131,11 +128,3 @@ for i in range(len(loc_array)):
 #Uncomment this to store all the best stats from training
 all_stats.to_excel('Trainingstats.xlsx')
 
-# ind = np.array([i for i in range(len(win_power))])
-
-# wind_stats = pd.DataFrame(sol_power, index=ind)
-
-# sol_stats = pd.DataFrame(win_power, index =ind)
-
-# wind_stats.to_csv('Train_wind_stats.csv')
-# sol_stats.to_csv('Train_sol_stats.csv')
