@@ -80,13 +80,6 @@ class Application(Frame):
         self.fullGraph = False
 
         self.preSave = []  # Deze wordt gebruikt om de Entry velden voor de instellingen in op te slaan.
-        self.cb_cost_table = pd.DataFrame(
-            {'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400,
-                      600, 1000, 1250, 1600, 2000, 3000, 5000, 8000, 10000, 12000, 15000,
-                      18000, 22000, 25000, 30000, 40000, 50000],
-             'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15,
-                      0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11,
-                      13, 17.5, 20, 30, 40, 50, 60, 72]})
 
     def initUI(self):
         # Maakt de drie Frames aan van de GUI
@@ -320,7 +313,7 @@ class Application(Frame):
         CostCalculator = cc.CostCalculator(self.getValueFromSettingsByName("surface_area_costs"),
                                            self.getValueFromSettingsByName("storage_costs"),
                                            self.getValueFromSettingsByName("powerplant_power"),
-                                           self.getValueFromSettingsByName("deficit_cost"), self.cb_cost_table,
+                                           self.getValueFromSettingsByName("deficit_cost"),
                                            self.getValueFromSettingsByName("cable_length"),
                                            self.getValueFromSettingsByName("cable_voltage"))
         return CostCalculator
