@@ -76,11 +76,6 @@ class Simulator():
 
         eps = ((DHI + self.dni) / DHI + KAPPA * Zen ** 3) / (1 + KAPPA * Zen ** 3)
 
-        eps2 = (DHI + self.dni) / (DHI * 1 + DHI * Kzen3 + Kzen3 + Kzen3 * Kzen3)
-
-        # print(np.unique(eps))
-        # print(np.unique(eps2))
-
         s_bin[np.logical_and(eps >= 1.065, eps < 1.23)] = 2
         s_bin[np.logical_and(eps >= 1.23, eps < 1.5)] = 3
         s_bin[np.logical_and(eps >= 1.5, eps < 1.95)] = 4

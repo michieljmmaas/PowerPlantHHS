@@ -24,17 +24,11 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
           cost_calculator=None, simulator=None, windturbineType=4, N_WIND_MAX=100, tr_rating=0.12, sp_efficiency=16):
     """train genetic algorithm"""
     genetic_algorithm = GeneticAlgorith(mutationPercentage, 150, 6, 2, 2, True)
-    cb_cost_table = pd.DataFrame({'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400,
-                                           600, 1000, 1250, 1600, 2000, 3000, 5000,
-                                           8000, 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000, 60000,
-                                           70000, 80000, 90000, 100000, 200000],
-                                  'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15,
-                                           0.22, 0.3, 0.39, 0.49, 0.5,
-                                           0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60,
-                                           72, 84, 96, 110, 124, 140, 280]})
+
     # parameter 2 kosten voor accu per kWh
     if cost_calculator is None:
-        cost_calculator = CostCalculator(190, 400, target_kw, 1000000, cb_cost_table, 1000, 100000)
+        cost_calculator = CostCalculator(190, 400, target_kw, 1000000, 1000, 230)
+
     turbine = Windturbine(windturbineType)
 
     if simulator is None:
@@ -74,6 +68,9 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     lowest_allowed[:, -1] = WIND_HEIGHT_MIN
 
     last_generation = n_generations - 1
+    best_gen = 0
+    cost_temp = 1e20
+
     for generation in range(saver.generation, n_generations):
 
         if generation == n_generations - 20:
@@ -82,7 +79,6 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             genetic_algorithm.set_mutation(mutationPercentage / 4)
 
         cost_array = np.zeros(group_size)
-
 
         print('finished simulation 0 of {}'.format(group_size), end='\r')
         for i in range(group_size):
@@ -111,6 +107,10 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
             to_screen=True)
         # store intermediate result
         best = genetic_algorithm.get_best(group_values, cost_array)
+        
+        if np.min(cost_array) < cost_temp:
+            cost_temp = np.min(cost_array)
+            best_gen = best
 
         saver.save_best(best)
 
@@ -121,7 +121,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
         # quit when done
         if generation == last_generation:
-            return best
+            return best_gen
         # run genetic algorithm
         group_values = genetic_algorithm.generate_new_population(group_values, cost_array)
         # remove illegal values
