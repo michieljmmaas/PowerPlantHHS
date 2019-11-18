@@ -12,6 +12,8 @@ from tkinter import font as fontMaker
 import GUI.GUIWidgetMaker as wm
 import calculate_cost as cc
 import pandas as pd
+from Simulator import Simulator
+from generators import Windturbine
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -23,8 +25,8 @@ class Application(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
-        self.defineValues()
         self.SetSettings()
+        self.defineValues()
         self.makeFonts()
         self.initUI()  # Maak de UI
         self.grid()  # Het is een grid field
@@ -38,34 +40,14 @@ class Application(Frame):
         self.ButtonFont = fontMaker.Font(family=fontFamily, size=15, weight='bold')
         self.InfoFont = fontMaker.Font(family=fontFamily, size=10)
         self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
+        self.GenerationFont = fontMaker.Font(family=fontFamily, size=25, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
-    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe. Als je iets toevoegd aan InfoSet komt er ook een invul set van
+    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje GUI/settings.csv staat. Als je iets toevoegd aan
+    # InfoSet komt er ook een invul set van
     def SetSettings(self):
-        SettingsLabels = ["name", "text", "value"]
-
-        InfoSets = [["gens", "Generaties", 100],
-                    ["pool", "Pool", 200],
-                    ["mutate_percentage", "Mutatie Percentage (%)", 50],
-                    ["powerplant_power", "Powerplant Vermogen vraag (kW)", 6000],
-                    ["surface_area_costs", "Kosten per m\u00b2 Zonnepanneel", 190],
-                    ["storage_costs", "Kosten per Opslag (kWh)", 400],
-                    ["deficit_cost", "Kosten voor tekort (kWh)", 1000000],
-                    ["cable_length", "Lengte van de kabel (m)", 1000],
-                    ["cable_voltage", "Spanning over de kabel (V)", 230],
-                    ["solar_efficiency", "Efficienty van zonnenpanelen (%)", 15],
-                    ["terrain", "Terreingesteldheid", 0.12],
-                    ["windturbine_type", "Windturbine Type", 4],
-                    ["windturbine_max", "Maximaal aantal windturbines", 20],
-                    ["surface_min", "Minimaal zonnenpaneel oppervlakte (m\u00b2)", 0],
-                    ["surface_max", "Maximaal zonnenpaneel oppervlakte (m\u00b2)", 10000000],
-                    ["tickLimit", "Maximum aantal ticks in de grafiek", 30]]
-
-        df = pd.DataFrame.from_records(InfoSets, columns=SettingsLabels)
-
-        # Maximum opslag
-        # Minimum opslag
-
+        self.fileName = "GUI/settings.csv"
+        df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
 
     def defineValues(self):
@@ -73,16 +55,23 @@ class Application(Frame):
         self.gens = []  # X-as met de genertaties
         self.minCost = []  # Y-as met de minium cost
         self.meanCost = []  # Y-as met de mean cost
-
         self.days = []  # Dagen in het jaar
         self.Uren = []  # Uren in het jaar
-        self.kW_distribution = []  # Power opgewekt
+        self.BatteryPower = []  # Power voor Battery grafiek
+        self.kW_distribution = []  # Power opgewekt uit gesmooth
         self.consumption = []  # Hoeveel de consumptie is van de fabriek
         self.consumptionGrade = 0  # Constante Vraag aan consumptie
         self.KW_sum = []  # Som van de KW Overproductie
         self.zeros = []  # Nul lijn
         self.SolarSum = 0  # Som van alle Solar Energie productie
         self.WindSum = 0  # Som van alle Wind Energie productie
+        self.cost_stats = []
+
+        # Eigen Simulator
+        self.csvData = []  # CSV data van item
+        turbine = Windturbine(self.getValueFromSettingsByName("windturbine_type"))
+        self.simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+        self.Wind_Solar_Array = []
 
         # Deze drie waarden zijn er om de grafiek te updaten
         self.counter = 0
@@ -91,13 +80,6 @@ class Application(Frame):
         self.fullGraph = False
 
         self.preSave = []  # Deze wordt gebruikt om de Entry velden voor de instellingen in op te slaan.
-        self.cb_cost_table = pd.DataFrame(
-            {'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400,
-                      600, 1000, 1250, 1600, 2000, 3000, 5000, 8000, 10000, 12000, 15000,
-                      18000, 22000, 25000, 30000, 40000, 50000],
-             'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15,
-                      0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11,
-                      13, 17.5, 20, 30, 40, 50, 60, 72]})
 
     def initUI(self):
         # Maakt de drie Frames aan van de GUI
@@ -133,11 +115,20 @@ class Application(Frame):
                                             fn.fullChart, True)
         self.chartButton.config(state='disabled')
 
+        self.generationTextVariable = StringVar()
+        self.generationTextVariable.set(self.setGenString(0))
+        CurrentGenerationLabel = Label(FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
+                                       font=self.GenerationFont)
+        CurrentGenerationNumber = Label(FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W,
+                                        font=self.GenerationFont)
+
         # Voeg de knoppen toe
-        settingButton.grid(row=0, column=0)
-        self.previousButton.grid(row=0, column=1)
-        self.nextButton.grid(row=0, column=2, pady=5)
-        self.chartButton.grid(row=0, column=3, pady=5)
+        CurrentGenerationLabel.grid(row=0, column=0, pady=5)
+        CurrentGenerationNumber.grid(row=0, column=1, pady=5)
+        settingButton.grid(row=0, column=5)
+        self.previousButton.grid(row=0, column=3)
+        self.nextButton.grid(row=0, column=4, pady=5)
+        self.chartButton.grid(row=0, column=2, pady=5)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -277,17 +268,18 @@ class Application(Frame):
             self.counter = Value('i',
                                  0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "first")  # Geef de manager een String die ik kan uitlezen
-            self.PowerArray = self.manager.Value(c_char_p, "test")  # Geef de manager een String die ik kan uitlezen
-            CostCalulator = self.getCostCalculator()
+            self.CostCalulator = self.getCostCalculator()
             surface_min = self.getValueFromSettingsByName("surface_min")
             surface_max = self.getValueFromSettingsByName("surface_max")
             windTurbineType = self.getValueFromSettingsByName("windturbine_type")
             solar_eff = int(self.getValueFromSettingsByName("solar_efficiency"))
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
+            self.generationTextVariable.set(self.setGenString(0))
             self.p1 = Process(target=runTrain, args=(
-                self.counter, self.Directory, infoArray, self.PowerArray, CostCalulator, surface_min, surface_max,
-                windTurbineType, windTurbineMax, terrain_value, solar_eff))  # Maak een thread aan die runTrain aanroept.
+                self.counter, self.Directory, infoArray, self.CostCalulator, surface_min, surface_max,
+                windTurbineType, windTurbineMax, terrain_value,
+                solar_eff))  # Maak een thread aan die runTrain aanroept.
 
             self.p1.start()  # Start de thread
             self.pbar.start(DELAY1)  # Wacht even voor lag
@@ -304,12 +296,15 @@ class Application(Frame):
         if self.p1.is_alive():  # Zolang het proces draait
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
                 self.counterCheck = self.counter.value
-                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
+                self.generationTextVariable.set(self.setGenString(self.counterCheck))
+                fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
+                fn.RunSimulation(self)
+                fn.setUpPower(self)
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             if self.running == 1:
-                fn.updateGraph(self.Directory.value, self.counterCheck, self.PowerArray.value, self)  # Update
+                fn.updateGraph(self.Directory.value, self.counterCheck, self)  # Update
             print("Klaar")
             self.endSimulation()
 
@@ -318,7 +313,7 @@ class Application(Frame):
         CostCalculator = cc.CostCalculator(self.getValueFromSettingsByName("surface_area_costs"),
                                            self.getValueFromSettingsByName("storage_costs"),
                                            self.getValueFromSettingsByName("powerplant_power"),
-                                           self.getValueFromSettingsByName("deficit_cost"), self.cb_cost_table,
+                                           self.getValueFromSettingsByName("deficit_cost"),
                                            self.getValueFromSettingsByName("cable_length"),
                                            self.getValueFromSettingsByName("cable_voltage"))
         return CostCalculator
@@ -337,14 +332,24 @@ class Application(Frame):
             self.previousButton.config(state="normal")
             self.chartButton.config(state="normal")
 
+        if len(self.gens) == self.getValueFromSettingsByName("gens"):
+            fn.displayLowestFindWindow(self)
+
+    def setGenString(self, value):
+        spacedToAdd = 3 - len(str(value))
+        textString = str(value) + (2 * spacedToAdd * " ")
+        finalString = textString + "             "
+        return finalString
+
 
 # Run de trainfunctie met mijn eigen waarden
-def runTrain(counter, directory, array, PowerArray, CostCalculator, minSurface, maxSurface, windturbineType,
+def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, windturbineType,
              windturbineMax, tr_rating, sp_eff):
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
-          directory=directory, mutationPercentage=array[2], target_kw=array[3], EnergyArray=PowerArray,
+          directory=directory, mutationPercentage=array[2], target_kw=array[3],
           cost_calculator=CostCalculator, windturbineType=windturbineType,
           N_WIND_MAX=windturbineMax, tr_rating=tr_rating, sp_efficiency=sp_eff)
+
 
 # Maak en open een interface window
 def main():

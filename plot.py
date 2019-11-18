@@ -12,12 +12,12 @@ from Simulator import Simulator
 import os
 
 def plot(model_name, generation_number, cb_cost_table, load2=True, sp_cost_per_sm=190, st_cost_per_kwh=400, target_kw=6000, 
-        deficit_cost=1000000, cb_length=1000, cb_voltage=230, terrain_factor=0.15, turbine_number=4) :
+        deficit_cost=1000000, cb_length=1000, cb_voltage=100000, terrain_factor=0.15, turbine_number=4, sp_eff=16) :
     turbine = Windturbine(turbine_number)
     simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3], terrain_factor=terrain_factor)
     generation = load(model_name=model_name, generation_number=generation_number, load2 = True)
-    total_power = simulator.calc_total_power(generation[0][0:-2], generation[0][-2])
-    wind_power, wind_energy = simulator.calc_wind(generation[0][-2])
+    total_power, _ = simulator.calc_total_power(generation[0][0:-2], [generation[0][-2], generation[0][-1]], sp_eff)
+    wind_power, wind_energy = simulator.calc_wind([generation[0][-2], generation[0][-1]])
     oppervlakte = [generation[0][0],generation[0][3],generation[0][6],generation[0][9]]
     angle = [generation[0][1],generation[0][4],generation[0][7],generation[0][10]]
     orientation = [generation[0][2],generation[0][5],generation[0][8],generation[0][11]]
@@ -60,7 +60,7 @@ def draw_energy(consumption, total_power, solar_power, wind_power, dic, generati
     plt.text(330, total_power.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
     plt.text(330, total_power.max() * 1.04, t1, ha='right', va='top', wrap=False)
     plt.text(362, total_power.max() * 0.725, t3, ha='right', va='top', wrap=False)
-    plt.legend()
+    plt.legend(loc='upper center')
     plt.title("Power Average per Day")
     plt.xlabel('Days')
     plt.ylabel('kW')
@@ -96,7 +96,7 @@ def draw_Battery_Use(consumption, total_power, solar_power, wind_power, dic, gen
     plt.text(330, total_power.max() * 1.04, t2, ha='left', va='top', style='italic', wrap=False)
     plt.text(330, total_power.max() * 1.04, t1, ha='right', va='top', wrap=False)
     plt.text(362, total_power.max() * 0.725, t3, ha='right', va='top', wrap=False)
-    plt.legend()
+    plt.legend(loc='upper center')
     plt.title("Power Average per Day")
     plt.xlabel('Days')
     plt.ylabel('kW')
@@ -155,7 +155,9 @@ def load(model_name, generation_number, takebest=True, load2=True):
     
 
 if __name__ == '__main__':
-    cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000, 1250, 1600, 2000, 3000, 5000, 8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000],
-        'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72]})
-    consumption, total_power, solar_power, wind_power, dic, generation, max_power = plot('Simulation_1_Accukosten_400', 99, cb_cost_table=cb_cost_table)
+    cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000,1250, 1600, 2000, 3000, 5000, 
+                                    8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 200000],
+                                  'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 
+                                  0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72, 84, 96, 110, 124, 140, 280]})
+    consumption, total_power, solar_power, wind_power, dic, generation, max_power = plot('20191112_095020', 99, cb_cost_table=cb_cost_table)
     draw_Battery_Use(consumption, total_power, solar_power, wind_power, dic, generation, max_power)

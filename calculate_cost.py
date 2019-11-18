@@ -115,7 +115,7 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
 
     # Cable calculation
     kwh_max = kwh_array.max()
-    cable_area = (0.01989 * cb_length * (kwh_max / cb_voltage)) / 0.3  # Formula for minimum cable area
+    cable_area = (0.01989 * cb_length * (kwh_max * 1000 / cb_voltage)) / 0.3  # Formula for minimum cable area
     usable_cables = cb_cost_table[cb_cost_table['area'] > cable_area]
     if (len(usable_cables) > 0):
         cb_cost = int(usable_cables['cost'].iloc[0])

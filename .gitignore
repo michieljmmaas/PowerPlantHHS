@@ -8,3 +8,6 @@ formatted_data2.xls
 saved_runs/.DS_Store
 .DS_Store
 saved_runs/
+__pycache__/
+GUI/__pycache__/
+GUI/settings.csv
