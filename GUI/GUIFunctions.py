@@ -9,7 +9,7 @@ from scipy.signal import savgol_filter
 from matplotlib import ticker
 from generators import Windturbine
 
-NUMBEROFGRAPHS = 6
+NUMBEROFGRAPHS = 7
 
 
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
@@ -140,19 +140,8 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
-    # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
-    elif GUI.graphNumber == 4:
-        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
-        colors = ['dodgerblue', 'gold']
-        patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
-        GUI.a.legend(patches, Labels, loc="best")
-        GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
-        GUI.a.axis('off')  # Zet de assen uit voor een plaatje
-
     # Instellingen voor de zesde grafiek: Gebruik van de accu's.
-    elif GUI.graphNumber == 5:
+    elif GUI.graphNumber == 4:
         batteryCharge = []
         for x in range(2):
             if x == 0:
@@ -167,12 +156,36 @@ def loadChart(GUI, starting=True, fullChart=False):
                 elif 0 > batteryCharge[-1]:
                     batteryCharge[-1] = 0
                     PowerShortage.append(len(batteryCharge) - 1)
-        batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)), axis=1)/1000  # Zet gegevens om naar dag
+        batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)),
+                                    axis=1) / 1000  # Zet gegevens om naar dag
         GUI.a.plot(batteryChargePlot, color='green', alpha=0.5, label="Niveau van de accu")
         GUI.a.set(ylabel="MWh", xlabel="Uren", title="Accu gebruik over het jaar")
         GUI.a.set_ylim(0, max(batteryChargePlot) * 1.1)
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
+
+        # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
+    elif GUI.graphNumber == 5:
+        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
+        colors = ['dodgerblue', 'gold']
+        patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
+        GUI.a.legend(patches, Labels, loc="best")
+        GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
+        GUI.a.axis('off')  # Zet de assen uit voor een plaatje
+
+        # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
+    elif GUI.graphNumber == 6:
+        # TODO Cost Function erbij zetten
+        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
+        colors = ['dodgerblue', 'gold']
+        patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
+        GUI.a.legend(patches, Labels, loc="best")
+        GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
+        GUI.a.axis('off')  # Zet de assen uit voor een plaatje
 
     GUI.canvas.draw()
 
@@ -199,6 +212,23 @@ def RunSimulation(GUI):
     sp_sm = GUI.getValueFromSettingsByName("surface_area_costs")
     wm_type = GUI.getValueFromSettingsByName("windturbine_type")
     GUI.cost_stats = GUI.CostCalulator.get_stats(energy_production, sp_sm, wm_type, n_Turbines)
+    # calTotalCosts(GUI.cost_stats)
+
+
+def calTotalCosts(cost_stats):
+    print(cost_stats)
+
+    total_cost = cost_stats['cost']
+    wind_cost = cost_stats['wind_cost']
+    solar_cost = cost_stats['solar_cost']
+    cable_cost = cost_stats['cable_cost']
+    storage_cost = cost_stats['storage_cost']
+    deficit_cost = cost_stats['deficit_cost']
+    sumOthers = wind_cost + solar_cost + cable_cost + storage_cost + deficit_cost;
+    if total_cost == sumOthers:
+        print("Equals")
+    else:
+        print("Not equals: - Total Costs: " + str(total_cost) + " - sumOthers: " + str(sumOthers))
 
 
 # Haal de bestaande grafiek weg om verwarring te voorkomen, en laat een wit vlak zien met "Gegevens ophalen"
@@ -269,9 +299,6 @@ def setUpPower(GUI):
     # Sum of Overproduced Power
     GUI.KW_sum = np.cumsum(PowerArray - GUI.consumptionGrade)  # Maak de som van de energie
     GUI.zeros = np.zeros(len(PowerArray))  # Maak nul lijn
-
-    # Batterij gebruik
-    # GUI.BatteryPower = PowerArray - 6000
 
 
 # Sluit het programma af en sluit de thread als hij runt

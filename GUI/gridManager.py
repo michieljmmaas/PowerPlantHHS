@@ -65,7 +65,7 @@ class Application(Frame):
         self.zeros = []  # Nul lijn
         self.SolarSum = 0  # Som van alle Solar Energie productie
         self.WindSum = 0  # Som van alle Wind Energie productie
-        self.cost_stats = []
+        self.cost_stats = []  # Gegevens van de kostenberekening van de huidige generatie
 
         # Eigen Simulator
         self.csvData = []  # CSV data van item
@@ -176,16 +176,10 @@ class Application(Frame):
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
         # Colom namen
-        headerTuple = wm.HeaderRow("Onderwerp", "Aantal", "Factor", "Kosten", ItemFrame, self.HFont)
-
-        # Energie Surplus: TO DO
-        PWDSurplusTuple = wm.LabelRow("Energie Overschot", ItemFrame, self.HFont, self.ColFont)
-
-        # Energie Deficit: TO DO
-        PWDeficitTuple = wm.LabelRow("Energie Tekort", ItemFrame, self.HFont, self.ColFont)
+        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte", "Type", ItemFrame, self.HFont)
 
         # Windturbine aantal
-        self.WTHeightTuple = wm.LabelRow("Wind Turbine - Aantal", ItemFrame, self.HFont, self.ColFont)
+        self.WTHeightTuple = wm.LabelRow("Wind Turbine", ItemFrame, self.HFont, self.ColFont)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
         # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
@@ -291,7 +285,8 @@ class Application(Frame):
         row = self.settingsDataFrame.loc[self.settingsDataFrame['name'] == name]
         return row.iloc[0, 2]
 
-    # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt de grafiek aangepast en de waarden ingevuld
+    # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt
+    # de grafiek aangepast en de waarden ingevuld
     def onGetValue(self):
         if self.p1.is_alive():  # Zolang het proces draait
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie

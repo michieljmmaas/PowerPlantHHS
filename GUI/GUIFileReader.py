@@ -74,17 +74,18 @@ def loadCsvFile(GUI, filename=None):
                         counter += 1
 
                 # Gegevens voor de windturbines
-                windData = round(float(GUI.csvData[-2]))
-                wm_cost, windTurbineTotalCost = fn.defWindTurbineCost(int(4), windData)
+                n_WindTurbines = round(float(GUI.csvData[-2]))
+                h_WindTurbines = round(float(GUI.csvData[-1]))
+                t_WindTurbines = round(float(GUI.getValueFromSettingsByName("windturbine_type")))
 
                 entry = GUI.WTHeightTuple[1]
-                entry.config(text=textPreSpace + str(windData))
+                entry.config(text=textPreSpace + str(n_WindTurbines))
 
                 cost = GUI.WTHeightTuple[2]
-                cost.config(text=textPreSpace + str(wm_cost))
+                cost.config(text=textPreSpace + str(h_WindTurbines))
 
                 total = GUI.WTHeightTuple[3]
-                total.config(text=textPreSpace + str(windTurbineTotalCost))
+                total.config(text=textPreSpace + str(t_WindTurbines))
     except Exception as e:
         print(e)
         fn.ShowErrorBox("Foutmelding verkeerd bestand",
