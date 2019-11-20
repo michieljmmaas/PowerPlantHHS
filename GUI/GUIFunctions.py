@@ -8,6 +8,7 @@ import ast
 from scipy.signal import savgol_filter
 from matplotlib import ticker
 from generators import Windturbine
+import babel.numbers as bb
 
 NUMBEROFGRAPHS = 7
 
@@ -171,19 +172,15 @@ def loadChart(GUI, starting=True, fullChart=False):
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
-        GUI.a.legend(patches, Labels, loc="best")
+        GUI.a.legend(patches, Labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
 
         # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
     elif GUI.graphNumber == 6:
-        # TODO Cost Function erbij zetten
-        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
-        colors = ['dodgerblue', 'gold']
-        patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
-        GUI.a.legend(patches, Labels, loc="best")
+        data, labels = calTotalCosts(GUI.cost_stats)
+        patches, _ = GUI.a.pie([data], startangle=90, frame=True)
+        GUI.a.legend(patches, labels=labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
 
@@ -216,19 +213,22 @@ def RunSimulation(GUI):
 
 
 def calTotalCosts(cost_stats):
-    print(cost_stats)
-
-    total_cost = cost_stats['cost']
     wind_cost = cost_stats['wind_cost']
     solar_cost = cost_stats['solar_cost']
     cable_cost = cost_stats['cable_cost']
-    storage_cost = cost_stats['storage_cost']
+    storage_cost = round(cost_stats['storage_cost'])
     deficit_cost = cost_stats['deficit_cost']
-    sumOthers = wind_cost + solar_cost + cable_cost + storage_cost + deficit_cost;
-    if total_cost == sumOthers:
-        print("Equals")
-    else:
-        print("Not equals: - Total Costs: " + str(total_cost) + " - sumOthers: " + str(sumOthers))
+    sumOthers = wind_cost + solar_cost + cable_cost + storage_cost + deficit_cost
+    print("Sum others:" + bb.format_currency(sumOthers, 'EUR', locale='en_US'))
+    data = [wind_cost, solar_cost, cable_cost, storage_cost, deficit_cost]
+    labels = ["Windmolens", "Zonnepanelen", "Kabel", "Opslag", "Te kort"]
+    for i in range(len(data)):
+        percentage = (data[i] / sumOthers) * 100
+        rounded_percentage = round(percentage, ndigits=2)
+        euro_string = bb.format_currency(data[i], 'EUR', locale='en_US')
+        labels[i] = labels[i] + ": " + euro_string + " - (" + str(rounded_percentage) + "%)"
+
+    return data, labels
 
 
 # Haal de bestaande grafiek weg om verwarring te voorkomen, en laat een wit vlak zien met "Gegevens ophalen"

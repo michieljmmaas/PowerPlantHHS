@@ -36,6 +36,7 @@ def loadLoggingFile(GUI, first=None, filename=None):
 
             # Geef total cost in euro
             totalCostNumber = bb.format_currency(minCostArray[-1], 'EUR', locale='en_US')
+            print("Total cost Number: " + str(totalCostNumber))
             GUI.TotalCost.config(text=textPreSpace + str(totalCostNumber))
 
             # Zolang er meer dan twee waarden zijn, laat hij je naar de volgende grafiek gaan

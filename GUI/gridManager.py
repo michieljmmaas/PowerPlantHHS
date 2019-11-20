@@ -179,7 +179,7 @@ class Application(Frame):
         headerTuple = wm.HeaderRow("", "Aantal", "Hoogte", "Type", ItemFrame, self.HFont)
 
         # Windturbine aantal
-        self.WTHeightTuple = wm.LabelRow("Wind Turbine", ItemFrame, self.HFont, self.ColFont)
+        self.WTHeightTuple = wm.LabelRow("Windmolens", ItemFrame, self.HFont, self.ColFont)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
         # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
@@ -197,10 +197,10 @@ class Application(Frame):
                                      "Oriëntatie t.o.v. Zuiden", ItemFrame, self.HFont)
 
         # Solar Panel 1
-        SP1HeaderTuple = wm.LabelRow("Zonnepaneel 1", ItemFrame, self.HFont, self.ColFont)
-        SP2HeaderTuple = wm.LabelRow("Zonnepaneel 2", ItemFrame, self.HFont, self.ColFont)
-        SP3HeaderTuple = wm.LabelRow("Zonnepaneel 3", ItemFrame, self.HFont, self.ColFont)
-        SP4HeaderTuple = wm.LabelRow("Zonnepaneel 4", ItemFrame, self.HFont, self.ColFont)
+        SP1HeaderTuple = wm.LabelRow("Zonnepanelen veld 1", ItemFrame, self.HFont, self.ColFont)
+        SP2HeaderTuple = wm.LabelRow("Zonnepanelen veld 2", ItemFrame, self.HFont, self.ColFont)
+        SP3HeaderTuple = wm.LabelRow("Zonnepanelen veld 3", ItemFrame, self.HFont, self.ColFont)
+        SP4HeaderTuple = wm.LabelRow("Zonnepanelen veld 4", ItemFrame, self.HFont, self.ColFont)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -290,18 +290,21 @@ class Application(Frame):
     def onGetValue(self):
         if self.p1.is_alive():  # Zolang het proces draait
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
-                self.counterCheck = self.counter.value
-                self.generationTextVariable.set(self.setGenString(self.counterCheck))
-                fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
-                fn.RunSimulation(self)
-                fn.setUpPower(self)
+                self.updateGraph()
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             if self.running == 1:
-                fn.updateGraph(self.Directory.value, self.counterCheck, self)  # Update
+                self.updateGraph()
             print("Klaar")
             self.endSimulation()
+
+    def updateGraph(self):
+        self.counterCheck = self.counter.value
+        self.generationTextVariable.set(self.setGenString(self.counterCheck))
+        fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
+        fn.RunSimulation(self)
+        fn.setUpPower(self)
 
     # Deze methode maakt een Cost Calculator met de waarden die ingesteld zijn op het scherm
     def getCostCalculator(self):
