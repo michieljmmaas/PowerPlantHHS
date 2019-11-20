@@ -77,8 +77,9 @@ for i in range(len(loc_array)):
                                       'Total_power'])
 
     for j in range(len(years)):
+        for z in range()
         sim = Simulator(file_name, years[j], turbine, index_col=0, latitude=loc_data.latitude, longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
-        cost_calc = CostCalculator(160, 400, energy_demand, def_cost, 0, 230)
+        cost_calc = CostCalculator(160, 400, energy_demand, def_cost, 0)
         best_array = train(1, 300, 0, 10000000, 0, 90, -45, 45, mutationPercentage=mutationrate, target_kw=energy_demand, cost_calculator=cost_calc, simulator=sim, windturbineType=TURBINETYPE, N_WIND_MAX=7, tr_rating=loc_data.terrain, sp_efficiency=16)
 
         best_pick = best_array[0]
