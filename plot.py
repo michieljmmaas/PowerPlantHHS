@@ -24,7 +24,7 @@ def plot(model_name, generation_number, cb_cost_table, load2=True, sp_cost_per_s
     solar_power, solar_energy = simulator.calc_solar(Az=orientation, Inc=angle, sp_area=oppervlakte) #todo arrays maken voor orientatie, angle en oppervlakte
     max_power = total_power.max()
     # table of the diffrent cable cost
-    calculatecost = CostCalculator(sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_cost_table, cb_length, cb_voltage)
+    calculatecost = CostCalculator(sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_length)
     # get the dictionary of a configuration that has the stats of the generation
     dic = calculatecost.get_stats(total_power,319650,4,int(generation[0][-2]))
     # creating an array of the mean values from the power output of the simulation
@@ -159,5 +159,5 @@ if __name__ == '__main__':
                                     8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 200000],
                                   'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 
                                   0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72, 84, 96, 110, 124, 140, 280]})
-    consumption, total_power, solar_power, wind_power, dic, generation, max_power = plot('20191112_095020', 99, cb_cost_table=cb_cost_table)
+    consumption, total_power, solar_power, wind_power, dic, generation, max_power = plot('20191120_100344', 26, cb_cost_table=cb_cost_table)
     draw_Battery_Use(consumption, total_power, solar_power, wind_power, dic, generation, max_power)
