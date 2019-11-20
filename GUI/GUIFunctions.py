@@ -205,11 +205,9 @@ def RunSimulation(GUI):
     GUI.Wind_Solar_Array = energy_split
     BatteryPowerPreShape = energy_production - 6000
     GUI.BatteryPower = BatteryPowerPreShape
-    # GUI.BatteryPower = np.mean(np.reshape(BatteryPowerPreShape[:8760], (365, 24)), axis=1)
-    sp_sm = GUI.getValueFromSettingsByName("surface_area_costs")
+    sp_sm = np.sum(GUI.csvData[0:N_SOLAR_FEATURES:3])
     wm_type = GUI.getValueFromSettingsByName("windturbine_type")
     GUI.cost_stats = GUI.CostCalulator.get_stats(energy_production, sp_sm, wm_type, n_Turbines)
-    # calTotalCosts(GUI.cost_stats)
 
 
 def calTotalCosts(cost_stats):
