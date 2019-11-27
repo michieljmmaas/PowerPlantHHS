@@ -139,7 +139,7 @@ class CostCalculator():
         st_cost_per_kwh = Storage Cost per KWH
     """
 
-    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_length, cb_voltage):
+    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_length, cb_voltage=100000):
         self.sp_cost_per_sm = sp_cost_per_sm
         self.st_cost_per_kwh = st_cost_per_kwh
         self.target_kw = target_kw
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     storage_price_1 = 1
 
     print('Training: 1')
-    cost_calculator = CostCalculator(sp_price_1, storage_price_1, 6000, 1000000)
+    cost_calculator = CostCalculator(sp_price_1, storage_price_1, 6000, 1000000, 1000)
     n_turb = 10
     solar_feat = list([107806, 0, 0, 24175, 0, 0, 19751, 0, 0, 10000, 0, 0, ])
     wind_feat = list([n_turb, 0.12])

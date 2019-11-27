@@ -27,7 +27,7 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
 
     # parameter 2 kosten voor accu per kWh
     if cost_calculator is None:
-        cost_calculator = CostCalculator(190, 400, target_kw, 1000000, 1000, 230)
+        cost_calculator = CostCalculator(190, 400, target_kw, 1000000, 1000)
 
     turbine = Windturbine(windturbineType)
 
@@ -140,5 +140,5 @@ if __name__ == '__main__':
                                            0.22, 0.3, 0.39, 0.49, 0.5,
                                            0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60,
                                            72, 84, 96, 110, 124, 140, 280]})
-    cost_calculator = CostCalculator(190, 400, 6000, 1000000, 1000, 230)
+    cost_calculator = CostCalculator(190, 400, 6000, 1000000, 1000)
     train(100, 100, 0, 10000000, 0, 90, 0, 359, tr_rating=0.15, cost_calculator=cost_calculator)
