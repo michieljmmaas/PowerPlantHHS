@@ -43,12 +43,33 @@ class Application(Frame):
         self.GenerationFont = fontMaker.Font(family=fontFamily, size=25, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
-    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje GUI/settings.csv staat. Als je iets toevoegd aan
-    # InfoSet komt er ook een invul set van
+    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje
+    # GUI/settings.csv staat. Als je iets toevoegd aan InfoSet komt er ook een invul set van
     def SetSettings(self):
+        self.locations_csv_file = "Data/locations.csv"
+        self.locationsDataFrame = pd.read_csv(self.locations_csv_file)
+        self.locationsList = self.locationsDataFrame['NAME'].tolist()
+        self.savedLocation_txt_file_path = "GUI/savedlocation.txt"
+        self.savedLocation_file = open(self.savedLocation_txt_file_path, "r")
+        self.savedLocation = self.savedLocation_file.readline()
+        self.locationIndex = self.locationsList.index(self.savedLocation)
+        self.savedLocation_file.close()
+        self.setLocation(self.savedLocation)
         self.fileName = "GUI/settings.csv"
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
+
+    def setLocation(self, newLocation):
+        self.savedLocation = newLocation
+        self.savedLocation_file = open(self.savedLocation_txt_file_path, "w")
+        self.savedLocation_file.write(self.savedLocation)
+        self.locationIndex = self.locationsList.index(self.savedLocation)
+        self.currentRow = self.locationsDataFrame.loc[self.locationsDataFrame['NAME'] == self.savedLocation]
+        self.minYear = self.currentRow["BEGIN"].tolist()[0]
+        self.maxYear = int(self.currentRow["END"].tolist()[0]) + 1
+        self.yearList = list(range(self.minYear, self.maxYear))
+        print(self.yearList)
+        self.savedLocation_file.close()
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -241,17 +262,20 @@ class Application(Frame):
 
             if PoolInfo < 10:
                 fn.ShowErrorBox("Waarschuwing",
-                                "Voor een optimaal resultaat wordt het aangeraden om een Pool die groter is dan 10 mee te geven")
+                                "Voor een optimaal resultaat wordt het aangeraden om een Pool die groter is dan 10 "
+                                "mee te geven")
                 return
 
             if GenInfo < 5:
                 fn.ShowErrorBox("Waarschuwing",
-                                "Voor een optimaal resultaat wordt het aangeraden om voor meer dan 10 generaties te draaien")
+                                "Voor een optimaal resultaat wordt het aangeraden om voor meer dan 10 generaties te "
+                                "draaien")
                 return
 
             if MutationInfo > 100 or MutationInfo < 0:
                 fn.ShowErrorBox("Waarschuwing",
-                                "Het mutatie percentage moet tussen de 0 en de 100 liggen. Het wordt aangeraden om het het boven de 25% te houden.")
+                                "Het mutatie percentage moet tussen de 0 en de 100 liggen. Het wordt aangeraden om "
+                                "het het boven de 25% te houden.")
                 return
 
             # Verwijder de bestaande grafiek
@@ -259,8 +283,7 @@ class Application(Frame):
             fn.clearFields(self)
             self.RunButton.config(text="   Stop", image=self.StopIcon)  # Verander de tekst op de knop
             self.manager = Manager()  # Dit is een manager die the Process waarden kan geven die je dan kan uitlezen.
-            self.counter = Value('i',
-                                 0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
+            self.counter = Value('i', 0)  # Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "first")  # Geef de manager een String die ik kan uitlezen
             self.CostCalulator = self.getCostCalculator()
             surface_min = self.getValueFromSettingsByName("surface_min")

@@ -1,6 +1,7 @@
 from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
+from tkinter import ttk
 import GUI.GUIWidgetMaker as wm
 import GUI.GUIFileReader as fr
 import numpy as np
@@ -324,20 +325,38 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     padx = 10
     pady = 10
     preSaveEntries = []
+    LabelWidth = 30
     for index, row in settings.iterrows():
-        Tuple = createCostFunctionPair(NewWindow, row[1], row[2], font)
+        Tuple = createCostFunctionPair(NewWindow, row[1], row[2], font, LabelWidth)
         Tuple[0].grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
         Tuple[1].grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
         preSaveEntries.append(Tuple[1])
         RowCounter = RowCounter + 1
+
+    locationLabel = Label(NewWindow, text="Locatie", width=30, font=font, anchor=W)
+    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
+
+    locationDropDownBox = ttk.Combobox(NewWindow, values=GUI.locationsList, width=17)
+    locationDropDownBox.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
+    locationDropDownBox.current(GUI.locationIndex)
+    GUI.locationDropDownBox = locationDropDownBox
+    RowCounter = RowCounter + 1
+
+    locationLabel = Label(NewWindow, text="Jaar", width=30, font=font, anchor=W)
+    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
+    yearDropDownBox = ttk.Combobox(NewWindow, values=GUI.yearList, width=17)
+    yearDropDownBox.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
+    yearDropDownBox.current(0)
+    GUI.yearDropDownBox = yearDropDownBox
+    RowCounter = RowCounter + 1
+
     SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", SaveValues, True)
     SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
     GUI.preSave = preSaveEntries
 
 
 # Deze methode maakt een paar van de widgets voor item in de instellingen list
-def createCostFunctionPair(NewWindow, textValue, startingValue, font):
-    LabelWidth = 30
+def createCostFunctionPair(NewWindow, textValue, startingValue, font, LabelWidth):
     ItemLabel = Label(NewWindow, text=textValue, width=LabelWidth, font=font, anchor=W)
     ItemEntry = Entry(NewWindow)
     ItemEntry.insert(0, str(startingValue))
@@ -351,6 +370,8 @@ def SaveValues(GUI):
     for x in range(len(EntryArray)):
         GUI.settingsDataFrame.loc[x, 'value'] = float(EntryArray[x].get())
     GUI.settingsDataFrame.to_csv(GUI.fileName, index=None, header=True)
+    chosenLocation = GUI.locationDropDownBox.get()
+    GUI.setLocation(chosenLocation)
     GUI.NewWindow.destroy()
     GUI.settingsMenuOpen = False
 
