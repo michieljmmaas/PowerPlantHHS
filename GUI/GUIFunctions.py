@@ -172,6 +172,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
+        GUI.a.set_title("Verdeling van energie bron")
         GUI.a.legend(patches, Labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -180,6 +181,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 6:
         data, labels = calTotalCosts(GUI.cost_stats)
         patches, _ = GUI.a.pie([data], startangle=90, frame=True)
+        GUI.a.set_title("Kosten overzicht")
         GUI.a.legend(patches, labels=labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -217,7 +219,6 @@ def calTotalCosts(cost_stats):
     storage_cost = round(cost_stats['storage_cost'])
     deficit_cost = cost_stats['deficit_cost']
     sumOthers = wind_cost + solar_cost + cable_cost + storage_cost + deficit_cost
-    print("Sum others:" + bb.format_currency(sumOthers, 'EUR', locale='en_US'))
     data = [wind_cost, solar_cost, cable_cost, storage_cost, deficit_cost]
     labels = ["Windmolens", "Zonnepanelen", "Kabel", "Opslag", "Te kort"]
     for i in range(len(data)):
