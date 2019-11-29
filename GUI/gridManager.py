@@ -97,7 +97,6 @@ class Application(Frame):
         self.savedYear = newYear
         self.locationIndex = self.locationsList.index(newLocation)
         self.yearList = self.locationYearSheet[newLocation]
-        print(self.yearList)
         self.yearIndex = self.yearList.index(int(newYear))
 
     def defineValues(self):
@@ -323,7 +322,9 @@ class Application(Frame):
             self.generationTextVariable.set(self.setGenString(0))
             loc_data = Location(self.savedLocation)
             file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
-            self.simulator = Simulator(file_name, self.yearIndex, self.turbine, skiprows=[0, 1, 2, 3])
+            sheet = str(self.savedYear)
+            self.simulator = Simulator(file_name, sheet, self.turbine, index_col=0, latitude=loc_data.latitude,
+                                       longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
             self.p1 = Process(target=runTrain, args=(
                 self.counter, self.Directory, infoArray, self.CostCalulator, surface_min, surface_max,
                 windTurbineType, windTurbineMax, terrain_value,
