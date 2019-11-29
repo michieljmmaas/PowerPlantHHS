@@ -27,6 +27,7 @@ class Application(Frame):
         self.parent = parent
         self.SetSettings()
         self.defineValues()
+        self.setUpLocationYear()
         self.makeFonts()
         self.initUI()  # Maak de UI
         self.grid()  # Het is een grid field
@@ -48,28 +49,54 @@ class Application(Frame):
     def SetSettings(self):
         self.locations_csv_file = "Data/locations.csv"
         self.locationsDataFrame = pd.read_csv(self.locations_csv_file)
-        self.locationsList = self.locationsDataFrame['NAME'].tolist()
-        self.savedLocation_txt_file_path = "GUI/savedlocation.txt"
-        self.savedLocation_file = open(self.savedLocation_txt_file_path, "r")
-        self.savedLocation = self.savedLocation_file.readline()
+        self.locationYearSheet = {}
+        for index, row in self.locationsDataFrame.iterrows():
+            name = row["NAME"]
+            minYear = row["BEGIN"]
+            maxYear = row["END"] + 1
+            yearList = list(range(minYear, maxYear))
+            self.locationYearSheet[name] = yearList
+        self.locationsList = list(self.locationYearSheet.keys())
+        self.savedLocation_csv_file_path = "GUI/savedlocation.csv"
+        self.savedLocationYear = pd.read_csv(self.savedLocation_csv_file_path)
+        self.savedLocation = self.savedLocationYear.iloc[0]["NAAM"]
+        self.savedYear = self.savedLocationYear.iloc[0]["JAAR"]
         self.locationIndex = self.locationsList.index(self.savedLocation)
-        self.savedLocation_file.close()
-        self.setLocation(self.savedLocation)
+        self.yearList = self.locationYearSheet[self.savedLocation]
+        self.yearIndex = self.yearList.index(self.savedYear)
         self.fileName = "GUI/settings.csv"
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
 
-    def setLocation(self, newLocation):
+    def setUpLocationYear(self):
+        self.locationStringVar = StringVar(self)
+        self.yearStringVar = StringVar(self)
+
+        self.locationStringVar.trace('w', self.update_options)
+
+    def update_options(self, *args):
+        years = self.locationYearSheet[self.locationStringVar.get()]
+        self.yearStringVar.set(years[0])
+
+        menu = self.yearOptionMenu['menu']
+        menu.delete(0, 'end')
+
+        for year in years:
+            menu.add_command(label=year, command=lambda yearNumber=year: self.yearStringVar.set(yearNumber))
+
+
+    def getYearsByLocation(self, locationYearSheet, newLocation):
+        years = locationYearSheet[newLocation]
+        return years
+
+    def setLocationYear(self, newLocation, newYear):
+        self.savedLocationYear = pd.DataFrame({'NAAM': [newLocation], 'JAAR': [newYear]})
         self.savedLocation = newLocation
-        self.savedLocation_file = open(self.savedLocation_txt_file_path, "w")
-        self.savedLocation_file.write(self.savedLocation)
-        self.locationIndex = self.locationsList.index(self.savedLocation)
-        self.currentRow = self.locationsDataFrame.loc[self.locationsDataFrame['NAME'] == self.savedLocation]
-        self.minYear = self.currentRow["BEGIN"].tolist()[0]
-        self.maxYear = int(self.currentRow["END"].tolist()[0]) + 1
-        self.yearList = list(range(self.minYear, self.maxYear))
+        self.savedYear = newYear
+        self.locationIndex = self.locationsList.index(newLocation)
+        self.yearList = self.locationYearSheet[newLocation]
         print(self.yearList)
-        self.savedLocation_file.close()
+        self.yearIndex = self.yearList.index(int(newYear))
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
