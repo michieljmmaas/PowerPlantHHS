@@ -70,13 +70,17 @@ class Application(Frame):
 
     def setUpLocationYear(self):
         self.locationStringVar = StringVar(self)
+        self.locationStringVar.set(self.savedLocation)
         self.yearStringVar = StringVar(self)
 
         self.locationStringVar.trace('w', self.update_options)
 
     def update_options(self, *args):
         years = self.locationYearSheet[self.locationStringVar.get()]
-        self.yearStringVar.set(years[0])
+        if len(years) > self.yearIndex:
+            self.yearStringVar.set(years[self.yearIndex])
+        else:
+            self.yearStringVar.set(years[0])
 
         menu = self.yearOptionMenu['menu']
         menu.delete(0, 'end')
@@ -84,13 +88,9 @@ class Application(Frame):
         for year in years:
             menu.add_command(label=year, command=lambda yearNumber=year: self.yearStringVar.set(yearNumber))
 
-
-    def getYearsByLocation(self, locationYearSheet, newLocation):
-        years = locationYearSheet[newLocation]
-        return years
-
     def setLocationYear(self, newLocation, newYear):
         self.savedLocationYear = pd.DataFrame({'NAAM': [newLocation], 'JAAR': [newYear]})
+        self.savedLocationYear.to_csv(self.savedLocation_csv_file_path)
         self.savedLocation = newLocation
         self.savedYear = newYear
         self.locationIndex = self.locationsList.index(newLocation)

@@ -14,7 +14,6 @@ import babel.numbers as bb
 NUMBEROFGRAPHS = 7
 
 
-
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
 # Geef een limit aan het aantal generaties die de grafiek laat zien
 def x_limit(array):
@@ -334,26 +333,18 @@ def displayCostFunction(NewWindow, font, settings, GUI):
         preSaveEntries.append(Tuple[1])
         RowCounter = RowCounter + 1
 
+    GUI.yearOptionMenu = OptionMenu(NewWindow, GUI.yearStringVar, '')
+    GUI.locationOptionMenu = OptionMenu(NewWindow, GUI.locationStringVar, *GUI.locationYearSheet.keys())
+
     locationLabel = Label(NewWindow, text="Locatie", width=30, font=font, anchor=W)
     locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
-
-    GUI.locationOptionMenu = OptionMenu(NewWindow, GUI.locationStringVar, *GUI.locationYearSheet.keys())
-    GUI.yearOptionMenu = OptionMenu(NewWindow, GUI.yearStringVar, '')
-
     GUI.locationStringVar.set(GUI.savedLocation)
-
-    # locationDropDownBox = ttk.Combobox(NewWindow, values=GUI.locationsList, width=17)
-    GUI.locationOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
-    # locationDropDownBox.current(GUI.locationIndex)
-    # GUI.locationDropDownBox = locationDropDownBox
+    GUI.locationOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
     locationLabel = Label(NewWindow, text="Jaar", width=30, font=font, anchor=W)
     locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
-    # yearDropDownBox = ttk.Combobox(NewWindow, values=GUI.yearList, width=17)
-    GUI.yearOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
-    # yearDropDownBox.current(GUI.yearIndex)
-    # GUI.yearDropDownBox = yearDropDownBox
+    GUI.yearOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
     SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", SaveValues, True)
@@ -376,8 +367,8 @@ def SaveValues(GUI):
     for x in range(len(EntryArray)):
         GUI.settingsDataFrame.loc[x, 'value'] = float(EntryArray[x].get())
     GUI.settingsDataFrame.to_csv(GUI.fileName, index=None, header=True)
-    chosenLocation = GUI.locationDropDownBox.get()
-    chosenYear = GUI.yearDropDownBox.get()
+    chosenLocation = GUI.locationStringVar.get()
+    chosenYear = GUI.yearStringVar.get()
     GUI.setLocationYear(chosenLocation, chosenYear)
     GUI.NewWindow.destroy()
     GUI.settingsMenuOpen = False
