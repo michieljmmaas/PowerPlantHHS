@@ -311,6 +311,7 @@ class Application(Frame):
             # Verwijder de bestaande grafiek
             fn.clearGraph(self)
             fn.clearFields(self)
+            self.running = 1
             self.pbar.start(DELAY1)  # Wacht even voor lag
             self.manager = Manager()  # Dit is een manager die the Process waarden kan geven die je dan kan uitlezen.
             self.counter = Value('i', 0)  # Geeft aan welke generatie we zitten
