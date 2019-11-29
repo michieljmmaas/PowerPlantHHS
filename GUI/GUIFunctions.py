@@ -236,11 +236,12 @@ def clearGraph(GUI):
     GUI.a.clear()
     GUI.a.plot([0], [0])
     GUI.a.axis('off')
-    GUI.a.set_title("Gegevens ophalen")
-    GUI.canvas.draw()
+    GUI.a.set_title("Gegevens inladen")
+    GUI.RunButton.config(state="disabled", text="   Stop", image=GUI.StopIcon)  # Verander de tekst op de knop
     GUI.nextButton.config(state="disabled")
     GUI.previousButton.config(state="disabled")
     GUI.chartButton.config(state="disabled")
+    GUI.canvas.draw()
 
 
 # Als er een nieuwe generatie is roept hij dit aan

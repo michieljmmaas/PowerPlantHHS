@@ -49,6 +49,9 @@ class Application(Frame):
     # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje
     # GUI/settings.csv staat. Als je iets toevoegd aan InfoSet komt er ook een invul set van
     def SetSettings(self):
+        # self.locations_csv_file = "Data/locations.csv"
+        currentDirectory = os.getcwd()
+        os.chdir(os.path.abspath(os.path.join(currentDirectory, '..')))
         self.locations_csv_file = "Data/locations.csv"
         self.locationsDataFrame = pd.read_csv(self.locations_csv_file)
         self.locationYearSheet = {}
@@ -57,7 +60,7 @@ class Application(Frame):
             minYear = row["BEGIN"]
             maxYear = row["END"] + 1
             yearList = list(range(minYear, maxYear))
-            self.locationYearSheet[name] = yearList
+            self.locationYearSheet[name] = yearList  # TODO Kijken of je jaren kloppen met Location get years
         self.locationsList = list(self.locationYearSheet.keys())
         self.savedLocation_csv_file_path = "GUI/savedlocation.csv"
         self.savedLocationYear = pd.read_csv(self.savedLocation_csv_file_path)
@@ -308,7 +311,7 @@ class Application(Frame):
             # Verwijder de bestaande grafiek
             fn.clearGraph(self)
             fn.clearFields(self)
-            self.RunButton.config(text="   Stop", image=self.StopIcon)  # Verander de tekst op de knop
+            self.pbar.start(DELAY1)  # Wacht even voor lag
             self.manager = Manager()  # Dit is een manager die the Process waarden kan geven die je dan kan uitlezen.
             self.counter = Value('i', 0)  # Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "first")  # Geef de manager een String die ik kan uitlezen
@@ -320,19 +323,17 @@ class Application(Frame):
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
             self.generationTextVariable.set(self.setGenString(0))
-            loc_data = Location(self.savedLocation)
+            loc_data = Location(self.savedLocation, filePath="Data/locations.csv")
             file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
             sheet = str(self.savedYear)
             self.simulator = Simulator(file_name, sheet, self.turbine, index_col=0, latitude=loc_data.latitude,
                                        longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
-            self.p1 = Process(target=runTrain, args=(
-                self.counter, self.Directory, infoArray, self.CostCalulator, surface_min, surface_max,
-                windTurbineType, windTurbineMax, terrain_value,
-                solar_eff))  # Maak een thread aan die runTrain aanroept.
-
+            self.p1 = Process(target=runTrain, args=(self.counter, self.Directory, infoArray, self.CostCalulator,
+                                                     surface_min, surface_max, windTurbineType, windTurbineMax,
+                                                     terrain_value, solar_eff))  # Maak een thread voor runTrain
             self.p1.start()  # Start de thread
-            self.pbar.start(DELAY1)  # Wacht even voor lag
-            self.running = 1  # Zeg dat het algoritme aan het draaien is
+            self.a.set_title("Berekeningen worden uitgevoerd")
+            self.canvas.draw()
             self.after(DELAY2, self.onGetValue)  # Start met het pollen van de de thread
             return
 
@@ -384,6 +385,7 @@ class Application(Frame):
             self.nextButton.config(state="normal")
             self.previousButton.config(state="normal")
             self.chartButton.config(state="normal")
+            self.RunButton.config(state="normal")
 
         if len(self.gens) == self.getValueFromSettingsByName("gens"):
             fn.displayLowestFindWindow(self)

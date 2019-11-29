@@ -44,6 +44,7 @@ def loadLoggingFile(GUI, first=None, filename=None):
                 GUI.nextButton.config(state="normal")
                 GUI.previousButton.config(state="normal")
                 GUI.chartButton.config(state="normal")
+                GUI.RunButton.config(state="normal")
 
     except Exception as e:
         print(e)
