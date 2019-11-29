@@ -14,6 +14,8 @@ import calculate_cost as cc
 import pandas as pd
 from Simulator import Simulator
 from generators import Windturbine
+from location import Location
+import os
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -117,8 +119,7 @@ class Application(Frame):
 
         # Eigen Simulator
         self.csvData = []  # CSV data van item
-        turbine = Windturbine(self.getValueFromSettingsByName("windturbine_type"))
-        self.simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+        self.turbine = Windturbine(self.getValueFromSettingsByName("windturbine_type"))
         self.Wind_Solar_Array = []
 
         # Deze drie waarden zijn er om de grafiek te updaten
@@ -320,6 +321,9 @@ class Application(Frame):
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
             self.generationTextVariable.set(self.setGenString(0))
+            loc_data = Location(self.savedLocation)
+            file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
+            self.simulator = Simulator(file_name, self.yearIndex, self.turbine, skiprows=[0, 1, 2, 3])
             self.p1 = Process(target=runTrain, args=(
                 self.counter, self.Directory, infoArray, self.CostCalulator, surface_min, surface_max,
                 windTurbineType, windTurbineMax, terrain_value,
