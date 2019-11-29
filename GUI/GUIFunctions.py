@@ -10,6 +10,7 @@ from scipy.signal import savgol_filter
 from matplotlib import ticker
 from generators import Windturbine
 import babel.numbers as bb
+import pandas as pd
 
 NUMBEROFGRAPHS = 7
 
@@ -213,6 +214,17 @@ def RunSimulation(GUI):
     GUI.cost_stats = GUI.CostCalulator.get_stats(energy_production, sp_sm, wm_type, n_Turbines)
 
 
+def resetToDefaultSettings(GUI):
+    defaultDataFrame = pd.read_csv("GUI/default_settings.csv")
+    GUI.settingsDataFrame = defaultDataFrame
+    GUI.settingsDataFrame.to_csv(GUI.fileName, index=None, header=True)
+    chosenLocation = 'NEN'
+    chosenYear = 2018
+    GUI.setLocationYear(chosenLocation, chosenYear)
+    GUI.NewWindow.destroy()
+    GUI.settingsMenuOpen = False
+
+
 def calTotalCosts(cost_stats):
     wind_cost = cost_stats['wind_cost']
     solar_cost = cost_stats['solar_cost']
@@ -348,7 +360,11 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     GUI.yearOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
-    SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", SaveValues, True)
+    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default", resetToDefaultSettings, True)
+    ResetButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
+    RowCounter = RowCounter + 1
+
+    SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "   Opslaan", SaveValues, True)
     SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
     GUI.preSave = preSaveEntries
 
