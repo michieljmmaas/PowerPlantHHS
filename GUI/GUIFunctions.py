@@ -2,8 +2,7 @@ from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-import GUI.GUIWidgetMaker as wm
-import GUI.GUIFileReader as fr
+from . import GUIWidgetMaker as wm
 import numpy as np
 import ast
 from scipy.signal import savgol_filter
@@ -11,6 +10,11 @@ from matplotlib import ticker
 from generators import Windturbine
 import babel.numbers as bb
 import pandas as pd
+from tkinter.filedialog import askopenfilename
+import csv
+
+# Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
+textPreSpace = "  "
 
 NUMBEROFGRAPHS = 7
 
@@ -259,10 +263,10 @@ def clearGraph(GUI):
 # Als er een nieuwe generatie is roept hij dit aan
 def ReadLogging(directory, gen, GUI):
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"  # Pak het goede CSV bestand
-    fr.loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
+    loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
-    fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
+    loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
 
 
 # Maak alle velden leeg
@@ -441,3 +445,89 @@ def loadPreviousGen(GUI):
 
 def closeFinishedPopup(GUI):
     GUI.lowestFind.destroy()
+
+
+# Dit bestand laad het loggin bestand in
+def loadLoggingFile(GUI, first=None, filename=None):
+    try:
+        if filename is None:
+            filename = askopenfilename()  # Dit gebeurd als je de knop indrukt, laat hij hem pakken
+        if filename != '':  # Zolang het een normaal bestand is
+            f = open(filename, "r")
+            f1 = f.readlines()  # Lees het bestand
+            genArray = []
+            meanCostArray = []
+            minCostArray = []
+
+            for x in f1:  # Voor elke regel in het bestand, vul de arrays aan
+                info = x.split(" ")
+                info[5] = info[5].replace('\n', '')
+                gen = int(info[1]) + 1
+                genArray.append(str(gen))
+                mean = round(float(info[3]), 2)
+                minCost = round(float(info[5]), 2)
+                meanCostArray.append(mean)
+                minCostArray.append(minCost)
+
+            # Geef de arrays terug aan de UI
+            GUI.gens = genArray
+            GUI.meanCost = meanCostArray
+            GUI.minCost = minCostArray
+
+            # Geef total cost in euro
+            totalCostNumber = bb.format_currency(minCostArray[-1], 'EUR', locale='en_US')
+            GUI.TotalCost.config(text=textPreSpace + str(totalCostNumber))
+
+            # Zolang er meer dan twee waarden zijn, laat hij je naar de volgende grafiek gaan
+            if not first:
+                loadChart(GUI, False, GUI.fullGraph)
+                GUI.nextButton.config(state="normal")
+                GUI.previousButton.config(state="normal")
+                GUI.chartButton.config(state="normal")
+                GUI.RunButton.config(state="normal")
+
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                        "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
+# Deze functie leest een CSV file in
+def loadCsvFile(GUI, filename=None):
+    try:
+        if filename is None:
+            filename = askopenfilename()  # Als je direct op de knop drukt laat hij je kiezen
+        if filename != '':
+            with open(filename, newline='') as csvfile:  # Lees het bestand in, in een array
+                dataList = list(csv.reader(csvfile))
+                GUI.csvData = dataList[0]
+                counter = 0
+
+                # Voor de zonnenpanelen moet wil je er doorheen loopen om het in te vullen
+                iterSolar = iter(GUI.SolarTupleList)
+                next(iterSolar)
+                for tupleItem in iterSolar:
+                    iterTuple = iter(tupleItem)  # Sla de eerste over want dat is text
+                    next(iterTuple)
+                    for item in iterTuple:  # Vul de waarden en
+                        info = round(float(GUI.csvData[counter]), 2)
+                        item.config(text=textPreSpace + str(info))
+                        counter += 1
+
+                # Gegevens voor de windturbines
+                n_WindTurbines = round(float(GUI.csvData[-2]))
+                h_WindTurbines = round(float(GUI.csvData[-1]))
+                t_WindTurbines = round(float(GUI.getValueFromSettingsByName("windturbine_type")))
+
+                entry = GUI.WTHeightTuple[1]
+                entry.config(text=textPreSpace + str(n_WindTurbines))
+
+                cost = GUI.WTHeightTuple[2]
+                cost.config(text=textPreSpace + str(h_WindTurbines))
+
+                total = GUI.WTHeightTuple[3]
+                total.config(text=textPreSpace + str(t_WindTurbines))
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                        "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")

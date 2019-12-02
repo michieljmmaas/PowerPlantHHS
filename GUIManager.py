@@ -7,7 +7,6 @@ from multiprocessing import Process, Value, Manager
 import multiprocessing as mp
 from ctypes import c_char_p
 import GUI.GUIFunctions as fn
-import GUI.GUIFileReader as fr
 from tkinter import font as fontMaker
 import GUI.GUIWidgetMaker as wm
 import calculate_cost as cc
@@ -201,10 +200,10 @@ class Application(Frame):
                                        self.runSimulation,
                                        False)
         LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", FrameGrafiek, ItemFrame, " Laad CSV",
-                                      fr.loadCsvFile,
+                                      fn.loadCsvFile,
                                       True)
         LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", FrameGrafiek, ItemFrame, " Laad TXT",
-                                       fr.loadLoggingFile, True)
+                                       fn.loadLoggingFile, True)
         ExitButton = wm.makeButton(self, "GUI/icons/error.png", FrameGrafiek, ItemFrame, " Afsluiten", fn.exitProgram,
                                    True)
         ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
