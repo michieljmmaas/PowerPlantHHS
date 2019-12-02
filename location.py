@@ -1,10 +1,14 @@
 import pandas as pd
 import os
 
-class Location():
+
+class Location:
     """Class for getting location information"""
-    def __init__(self, name):
-        self.loc_data = pd.read_csv('Data' + os.sep + 'locations.csv', index_col=0, header=0)
+
+    def __init__(self, name, filePath=None):
+        if filePath is None:
+            filePath = 'Data' + os.sep + 'locations.csv';
+        self.loc_data = pd.read_csv(filePath, index_col=0, header=0)
         self.name = name.upper()
         self.latitude = self.loc_data.LAT[self.loc_data.NAME == self.name].values[0]
         self.longitude = self.loc_data.LON[self.loc_data.NAME == self.name].values[0]

@@ -1,6 +1,7 @@
 from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
+from tkinter import ttk
 import GUI.GUIWidgetMaker as wm
 import GUI.GUIFileReader as fr
 import numpy as np
@@ -8,8 +9,10 @@ import ast
 from scipy.signal import savgol_filter
 from matplotlib import ticker
 from generators import Windturbine
+import babel.numbers as bb
+import pandas as pd
 
-NUMBEROFGRAPHS = 6
+NUMBEROFGRAPHS = 7
 
 
 # Dit bestand houd alle functionaliteit die nodig is voor de GUI. Het zijn wat simpele functies meestal.
@@ -140,19 +143,8 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
-    # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
-    elif GUI.graphNumber == 4:
-        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
-        colors = ['dodgerblue', 'gold']
-        patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
-        GUI.a.legend(patches, Labels, loc="best")
-        GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
-        GUI.a.axis('off')  # Zet de assen uit voor een plaatje
-
     # Instellingen voor de zesde grafiek: Gebruik van de accu's.
-    elif GUI.graphNumber == 5:
+    elif GUI.graphNumber == 4:
         batteryCharge = []
         for x in range(2):
             if x == 0:
@@ -167,12 +159,34 @@ def loadChart(GUI, starting=True, fullChart=False):
                 elif 0 > batteryCharge[-1]:
                     batteryCharge[-1] = 0
                     PowerShortage.append(len(batteryCharge) - 1)
-        batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)), axis=1)/1000  # Zet gegevens om naar dag
+        batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)),
+                                    axis=1) / 1000  # Zet gegevens om naar dag
         GUI.a.plot(batteryChargePlot, color='green', alpha=0.5, label="Niveau van de accu")
         GUI.a.set(ylabel="MWh", xlabel="Uren", title="Accu gebruik over het jaar")
         GUI.a.set_ylim(0, max(batteryChargePlot) * 1.1)
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
+
+        # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
+    elif GUI.graphNumber == 5:
+        WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
+        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
+        colors = ['dodgerblue', 'gold']
+        patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
+        GUI.a.set_title("Verdeling van energie bron")
+        GUI.a.legend(patches, Labels, loc="upper right")
+        GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
+        GUI.a.axis('off')  # Zet de assen uit voor een plaatje
+
+        # Instellingen voor de vijfde grafiek: Pie chart met verdeling van de energie productie
+    elif GUI.graphNumber == 6:
+        data, labels = calTotalCosts(GUI.cost_stats)
+        patches, _ = GUI.a.pie([data], startangle=90, frame=True)
+        GUI.a.set_title("Kosten overzicht")
+        GUI.a.legend(patches, labels=labels, loc="upper right")
+        GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
+        GUI.a.axis('off')  # Zet de assen uit voor een plaatje
 
     GUI.canvas.draw()
 
@@ -195,10 +209,38 @@ def RunSimulation(GUI):
     GUI.Wind_Solar_Array = energy_split
     BatteryPowerPreShape = energy_production - 6000
     GUI.BatteryPower = BatteryPowerPreShape
-    # GUI.BatteryPower = np.mean(np.reshape(BatteryPowerPreShape[:8760], (365, 24)), axis=1)
-    sp_sm = GUI.getValueFromSettingsByName("surface_area_costs")
+    sp_sm = np.sum(GUI.csvData[0:N_SOLAR_FEATURES:3])
     wm_type = GUI.getValueFromSettingsByName("windturbine_type")
     GUI.cost_stats = GUI.CostCalulator.get_stats(energy_production, sp_sm, wm_type, n_Turbines)
+
+
+def resetToDefaultSettings(GUI):
+    defaultDataFrame = pd.read_csv("GUI/default_settings.csv")
+    GUI.settingsDataFrame = defaultDataFrame
+    GUI.settingsDataFrame.to_csv(GUI.fileName, index=None, header=True)
+    chosenLocation = 'NEN'
+    chosenYear = 2018
+    GUI.setLocationYear(chosenLocation, chosenYear)
+    GUI.NewWindow.destroy()
+    GUI.settingsMenuOpen = False
+
+
+def calTotalCosts(cost_stats):
+    wind_cost = cost_stats['wind_cost']
+    solar_cost = cost_stats['solar_cost']
+    cable_cost = cost_stats['cable_cost']
+    storage_cost = round(cost_stats['storage_cost'])
+    deficit_cost = cost_stats['deficit_cost']
+    sumOthers = wind_cost + solar_cost + cable_cost + storage_cost + deficit_cost
+    data = [wind_cost, solar_cost, cable_cost, storage_cost, deficit_cost]
+    labels = ["Windmolens", "Zonnepanelen", "Kabel", "Opslag", "Te kort"]
+    for i in range(len(data)):
+        percentage = (data[i] / sumOthers) * 100
+        rounded_percentage = round(percentage, ndigits=2)
+        euro_string = bb.format_currency(data[i], 'EUR', locale='en_US')
+        labels[i] = labels[i] + ": " + euro_string + " - (" + str(rounded_percentage) + "%)"
+
+    return data, labels
 
 
 # Haal de bestaande grafiek weg om verwarring te voorkomen, en laat een wit vlak zien met "Gegevens ophalen"
@@ -206,11 +248,12 @@ def clearGraph(GUI):
     GUI.a.clear()
     GUI.a.plot([0], [0])
     GUI.a.axis('off')
-    GUI.a.set_title("Gegevens ophalen")
-    GUI.canvas.draw()
+    GUI.a.set_title("Gegevens inladen")
+    GUI.RunButton.config(state="disabled", text="   Stop", image=GUI.StopIcon)  # Verander de tekst op de knop
     GUI.nextButton.config(state="disabled")
     GUI.previousButton.config(state="disabled")
     GUI.chartButton.config(state="disabled")
+    GUI.canvas.draw()
 
 
 # Als er een nieuwe generatie is roept hij dit aan
@@ -270,9 +313,6 @@ def setUpPower(GUI):
     GUI.KW_sum = np.cumsum(PowerArray - GUI.consumptionGrade)  # Maak de som van de energie
     GUI.zeros = np.zeros(len(PowerArray))  # Maak nul lijn
 
-    # Batterij gebruik
-    # GUI.BatteryPower = PowerArray - 6000
-
 
 # Sluit het programma af en sluit de thread als hij runt
 def exitProgram(GUI):
@@ -298,20 +338,39 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     padx = 10
     pady = 10
     preSaveEntries = []
+    LabelWidth = 30
     for index, row in settings.iterrows():
-        Tuple = createCostFunctionPair(NewWindow, row[1], row[2], font)
+        Tuple = createCostFunctionPair(NewWindow, row[1], row[2], font, LabelWidth)
         Tuple[0].grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
         Tuple[1].grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
         preSaveEntries.append(Tuple[1])
         RowCounter = RowCounter + 1
-    SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", SaveValues, True)
+
+    GUI.yearOptionMenu = OptionMenu(NewWindow, GUI.yearStringVar, '')
+    GUI.locationOptionMenu = OptionMenu(NewWindow, GUI.locationStringVar, *GUI.locationYearSheet.keys())
+
+    locationLabel = Label(NewWindow, text="Locatie", width=30, font=font, anchor=W)
+    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
+    GUI.locationStringVar.set(GUI.savedLocation)
+    GUI.locationOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
+    RowCounter = RowCounter + 1
+
+    locationLabel = Label(NewWindow, text="Jaar", width=30, font=font, anchor=W)
+    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
+    GUI.yearOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
+    RowCounter = RowCounter + 1
+
+    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default", resetToDefaultSettings, True)
+    ResetButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
+    RowCounter = RowCounter + 1
+
+    SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "   Opslaan", SaveValues, True)
     SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
     GUI.preSave = preSaveEntries
 
 
 # Deze methode maakt een paar van de widgets voor item in de instellingen list
-def createCostFunctionPair(NewWindow, textValue, startingValue, font):
-    LabelWidth = 30
+def createCostFunctionPair(NewWindow, textValue, startingValue, font, LabelWidth):
     ItemLabel = Label(NewWindow, text=textValue, width=LabelWidth, font=font, anchor=W)
     ItemEntry = Entry(NewWindow)
     ItemEntry.insert(0, str(startingValue))
@@ -325,6 +384,9 @@ def SaveValues(GUI):
     for x in range(len(EntryArray)):
         GUI.settingsDataFrame.loc[x, 'value'] = float(EntryArray[x].get())
     GUI.settingsDataFrame.to_csv(GUI.fileName, index=None, header=True)
+    chosenLocation = GUI.locationStringVar.get()
+    chosenYear = GUI.yearStringVar.get()
+    GUI.setLocationYear(chosenLocation, chosenYear)
     GUI.NewWindow.destroy()
     GUI.settingsMenuOpen = False
 
