@@ -14,6 +14,8 @@ import calculate_cost as cc
 import pandas as pd
 from Simulator import Simulator
 from generators import Windturbine
+from location import Location
+import os
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -27,6 +29,7 @@ class Application(Frame):
         self.parent = parent
         self.SetSettings()
         self.defineValues()
+        self.setUpLocationYear()
         self.makeFonts()
         self.initUI()  # Maak de UI
         self.grid()  # Het is een grid field
@@ -43,12 +46,61 @@ class Application(Frame):
         self.GenerationFont = fontMaker.Font(family=fontFamily, size=25, weight='bold')
         self.ColFont = fontMaker.Font(family=fontFamily, size=10)
 
-    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje GUI/settings.csv staat. Als je iets toevoegd aan
-    # InfoSet komt er ook een invul set van
+    # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje
+    # GUI/settings.csv staat. Als je iets toevoegd aan InfoSet komt er ook een invul set van
     def SetSettings(self):
+        # self.locations_csv_file = "Data/locations.csv"
+        currentDirectory = os.getcwd()
+        os.chdir(os.path.abspath(os.path.join(currentDirectory, '..')))
+        self.locations_csv_file = "Data/locations.csv"
+        self.locationsDataFrame = pd.read_csv(self.locations_csv_file)
+        self.locationYearSheet = {}
+        for index, row in self.locationsDataFrame.iterrows():
+            name = row["NAME"]
+            minYear = row["BEGIN"]
+            maxYear = row["END"] + 1
+            yearList = list(range(minYear, maxYear))
+            self.locationYearSheet[name] = yearList  # TODO Kijken of je jaren kloppen met Location get years
+        self.locationsList = list(self.locationYearSheet.keys())
+        self.savedLocation_csv_file_path = "GUI/savedlocation.csv"
+        self.savedLocationYear = pd.read_csv(self.savedLocation_csv_file_path)
+        self.savedLocation = self.savedLocationYear.iloc[0]["NAAM"]
+        self.savedYear = self.savedLocationYear.iloc[0]["JAAR"]
+        self.locationIndex = self.locationsList.index(self.savedLocation)
+        self.yearList = self.locationYearSheet[self.savedLocation]
+        self.yearIndex = self.yearList.index(self.savedYear)
         self.fileName = "GUI/settings.csv"
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
+
+    def setUpLocationYear(self):
+        self.locationStringVar = StringVar(self)
+        self.locationStringVar.set(self.savedLocation)
+        self.yearStringVar = StringVar(self)
+
+        self.locationStringVar.trace('w', self.update_options)
+
+    def update_options(self, *args):
+        years = self.locationYearSheet[self.locationStringVar.get()]
+        if len(years) > self.yearIndex:
+            self.yearStringVar.set(years[self.yearIndex])
+        else:
+            self.yearStringVar.set(years[0])
+
+        menu = self.yearOptionMenu['menu']
+        menu.delete(0, 'end')
+
+        for year in years:
+            menu.add_command(label=year, command=lambda yearNumber=year: self.yearStringVar.set(yearNumber))
+
+    def setLocationYear(self, newLocation, newYear):
+        self.savedLocationYear = pd.DataFrame({'NAAM': [newLocation], 'JAAR': [newYear]})
+        self.savedLocationYear.to_csv(self.savedLocation_csv_file_path)
+        self.savedLocation = newLocation
+        self.savedYear = newYear
+        self.locationIndex = self.locationsList.index(newLocation)
+        self.yearList = self.locationYearSheet[newLocation]
+        self.yearIndex = self.yearList.index(int(newYear))
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -65,12 +117,11 @@ class Application(Frame):
         self.zeros = []  # Nul lijn
         self.SolarSum = 0  # Som van alle Solar Energie productie
         self.WindSum = 0  # Som van alle Wind Energie productie
-        self.cost_stats = []
+        self.cost_stats = []  # Gegevens van de kostenberekening van de huidige generatie
 
         # Eigen Simulator
         self.csvData = []  # CSV data van item
-        turbine = Windturbine(self.getValueFromSettingsByName("windturbine_type"))
-        self.simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+        self.turbine = Windturbine(self.getValueFromSettingsByName("windturbine_type"))
         self.Wind_Solar_Array = []
 
         # Deze drie waarden zijn er om de grafiek te updaten
@@ -176,16 +227,10 @@ class Application(Frame):
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
         # Colom namen
-        headerTuple = wm.HeaderRow("Onderwerp", "Aantal", "Factor", "Kosten", ItemFrame, self.HFont)
-
-        # Energie Surplus: TO DO
-        PWDSurplusTuple = wm.LabelRow("Energie Overschot", ItemFrame, self.HFont, self.ColFont)
-
-        # Energie Deficit: TO DO
-        PWDeficitTuple = wm.LabelRow("Energie Tekort", ItemFrame, self.HFont, self.ColFont)
+        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte", "Type", ItemFrame, self.HFont)
 
         # Windturbine aantal
-        self.WTHeightTuple = wm.LabelRow("Wind Turbine - Aantal", ItemFrame, self.HFont, self.ColFont)
+        self.WTHeightTuple = wm.LabelRow("Windmolens", ItemFrame, self.HFont, self.ColFont)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
         # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
@@ -203,10 +248,10 @@ class Application(Frame):
                                      "Oriëntatie t.o.v. Zuiden", ItemFrame, self.HFont)
 
         # Solar Panel 1
-        SP1HeaderTuple = wm.LabelRow("Zonnepaneel 1", ItemFrame, self.HFont, self.ColFont)
-        SP2HeaderTuple = wm.LabelRow("Zonnepaneel 2", ItemFrame, self.HFont, self.ColFont)
-        SP3HeaderTuple = wm.LabelRow("Zonnepaneel 3", ItemFrame, self.HFont, self.ColFont)
-        SP4HeaderTuple = wm.LabelRow("Zonnepaneel 4", ItemFrame, self.HFont, self.ColFont)
+        SP1HeaderTuple = wm.LabelRow("Zonnepanelen veld 1", ItemFrame, self.HFont, self.ColFont)
+        SP2HeaderTuple = wm.LabelRow("Zonnepanelen veld 2", ItemFrame, self.HFont, self.ColFont)
+        SP3HeaderTuple = wm.LabelRow("Zonnepanelen veld 3", ItemFrame, self.HFont, self.ColFont)
+        SP4HeaderTuple = wm.LabelRow("Zonnepanelen veld 4", ItemFrame, self.HFont, self.ColFont)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -247,26 +292,29 @@ class Application(Frame):
 
             if PoolInfo < 10:
                 fn.ShowErrorBox("Waarschuwing",
-                                "Voor een optimaal resultaat wordt het aangeraden om een Pool die groter is dan 10 mee te geven")
+                                "Voor een optimaal resultaat wordt het aangeraden om een Pool die groter is dan 10 "
+                                "mee te geven")
                 return
 
             if GenInfo < 5:
                 fn.ShowErrorBox("Waarschuwing",
-                                "Voor een optimaal resultaat wordt het aangeraden om voor meer dan 10 generaties te draaien")
+                                "Voor een optimaal resultaat wordt het aangeraden om voor meer dan 10 generaties te "
+                                "draaien")
                 return
 
             if MutationInfo > 100 or MutationInfo < 0:
                 fn.ShowErrorBox("Waarschuwing",
-                                "Het mutatie percentage moet tussen de 0 en de 100 liggen. Het wordt aangeraden om het het boven de 25% te houden.")
+                                "Het mutatie percentage moet tussen de 0 en de 100 liggen. Het wordt aangeraden om "
+                                "het het boven de 25% te houden.")
                 return
 
             # Verwijder de bestaande grafiek
             fn.clearGraph(self)
             fn.clearFields(self)
-            self.RunButton.config(text="   Stop", image=self.StopIcon)  # Verander de tekst op de knop
+            self.running = 1
+            self.pbar.start(DELAY1)  # Wacht even voor lag
             self.manager = Manager()  # Dit is een manager die the Process waarden kan geven die je dan kan uitlezen.
-            self.counter = Value('i',
-                                 0)  # Dit is een waarde die ik van de andere thread kan uitlezen. Geeft aan welke generatie we zitten
+            self.counter = Value('i', 0)  # Geeft aan welke generatie we zitten
             self.Directory = self.manager.Value(c_char_p, "first")  # Geef de manager een String die ik kan uitlezen
             self.CostCalulator = self.getCostCalculator()
             surface_min = self.getValueFromSettingsByName("surface_min")
@@ -276,14 +324,17 @@ class Application(Frame):
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
             self.generationTextVariable.set(self.setGenString(0))
-            self.p1 = Process(target=runTrain, args=(
-                self.counter, self.Directory, infoArray, self.CostCalulator, surface_min, surface_max,
-                windTurbineType, windTurbineMax, terrain_value,
-                solar_eff))  # Maak een thread aan die runTrain aanroept.
-
+            loc_data = Location(self.savedLocation, filePath="Data/locations.csv")
+            file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
+            sheet = str(self.savedYear)
+            self.simulator = Simulator(file_name, sheet, self.turbine, index_col=0, latitude=loc_data.latitude,
+                                       longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
+            self.p1 = Process(target=runTrain, args=(self.counter, self.Directory, infoArray, self.CostCalulator,
+                                                     surface_min, surface_max, windTurbineType, windTurbineMax,
+                                                     terrain_value, solar_eff))  # Maak een thread voor runTrain
             self.p1.start()  # Start de thread
-            self.pbar.start(DELAY1)  # Wacht even voor lag
-            self.running = 1  # Zeg dat het algoritme aan het draaien is
+            self.a.set_title("Berekeningen worden uitgevoerd")
+            self.canvas.draw()
             self.after(DELAY2, self.onGetValue)  # Start met het pollen van de de thread
             return
 
@@ -291,22 +342,26 @@ class Application(Frame):
         row = self.settingsDataFrame.loc[self.settingsDataFrame['name'] == name]
         return row.iloc[0, 2]
 
-    # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt de grafiek aangepast en de waarden ingevuld
+    # Deze functie polt de Thread om te kijken of hij al een generatie verder is. Als het nieuwe waarden heeft wordt
+    # de grafiek aangepast en de waarden ingevuld
     def onGetValue(self):
         if self.p1.is_alive():  # Zolang het proces draait
             if self.counter.value != self.counterCheck:  # En er is een nieuwe generatie
-                self.counterCheck = self.counter.value
-                self.generationTextVariable.set(self.setGenString(self.counterCheck))
-                fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
-                fn.RunSimulation(self)
-                fn.setUpPower(self)
+                self.updateGraph()
             self.after(DELAY2, self.onGetValue)  # Check na een Delay nog een keer
             return
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             if self.running == 1:
-                fn.updateGraph(self.Directory.value, self.counterCheck, self)  # Update
+                self.updateGraph()
             print("Klaar")
             self.endSimulation()
+
+    def updateGraph(self):
+        self.counterCheck = self.counter.value
+        self.generationTextVariable.set(self.setGenString(self.counterCheck))
+        fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
+        fn.RunSimulation(self)
+        fn.setUpPower(self)
 
     # Deze methode maakt een Cost Calculator met de waarden die ingesteld zijn op het scherm
     def getCostCalculator(self):
@@ -331,6 +386,7 @@ class Application(Frame):
             self.nextButton.config(state="normal")
             self.previousButton.config(state="normal")
             self.chartButton.config(state="normal")
+            self.RunButton.config(state="normal")
 
         if len(self.gens) == self.getValueFromSettingsByName("gens"):
             fn.displayLowestFindWindow(self)
