@@ -1,6 +1,6 @@
 name,text,value
 gens,Generaties,100.0
-pool,Pool,50.0
+pool,Pool,200.0
 mutate_percentage,Mutatie Percentage (%),50.0
 powerplant_power,Powerplant Vermogen vraag (kW),6000.0
 surface_area_costs,Kosten per m² Zonnepanneel,160.0
