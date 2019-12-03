@@ -89,6 +89,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     GUI.a.clear()
     GUI.a.axis('auto')
     GUI.a.axis('on')
+    titlePretext = GUI.locationTextVariable.get() + " - " + GUI.yearTextVariable.get() + "\n"
     if starting:  # Start bij de eeste
         GUI.graphNumber = 0
 
@@ -101,7 +102,7 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.minCost[Length - GrafiekLengte:Length],
                        color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Laagste Kosten")
         limit = x_limit(GUI.gens)
 
         if Length < GrafiekLengte:
@@ -121,7 +122,7 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.meanCost[Length - GrafiekLengte:Length],
                        color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Gemiddelde kosten")
         limit = x_limit(GUI.gens)
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
@@ -135,7 +136,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 2:
         GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Geproduceerd")
         GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
@@ -143,7 +144,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 3:
         GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Som Energie surplus")
         GUI.a.plot(GUI.zeros, color='red', label="0 lijn")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Som van Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Som van Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
@@ -166,7 +167,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)),
                                     axis=1) / 1000  # Zet gegevens om naar dag
         GUI.a.plot(batteryChargePlot, color='green', alpha=0.5, label="Niveau van de accu")
-        GUI.a.set(ylabel="MWh", xlabel="Uren", title="Accu gebruik over het jaar")
+        GUI.a.set(ylabel="MWh", xlabel="Uren", title=titlePretext + "Accu gebruik over het jaar")
         GUI.a.set_ylim(0, max(batteryChargePlot) * 1.1)
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
@@ -178,7 +179,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
-        GUI.a.set_title("Verdeling van energie bron")
+        GUI.a.set_title(titlePretext + "Verdeling van energie bron")
         GUI.a.legend(patches, Labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -187,7 +188,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 6:
         data, labels = calTotalCosts(GUI.cost_stats)
         patches, _ = GUI.a.pie([data], startangle=90, frame=True)
-        GUI.a.set_title("Kosten overzicht")
+        GUI.a.set_title(titlePretext + "Kosten overzicht")
         GUI.a.legend(patches, labels=labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -392,6 +393,8 @@ def SaveValues(GUI):
     chosenYear = GUI.yearStringVar.get()
     GUI.setLocationYear(chosenLocation, chosenYear)
     GUI.NewWindow.destroy()
+    GUI.locationTextVariable.set(chosenLocation)
+    GUI.yearTextVariable.set(chosenYear)
     GUI.settingsMenuOpen = False
 
 

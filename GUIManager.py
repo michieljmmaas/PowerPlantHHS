@@ -164,6 +164,11 @@ class Application(Frame):
 
         self.generationTextVariable = StringVar()
         self.generationTextVariable.set(self.setGenString(0))
+        self.locationTextVariable = StringVar()
+        self.locationTextVariable.set(self.savedLocation)
+        self.yearTextVariable = StringVar()
+        self.yearTextVariable.set(self.savedYear)
+
         CurrentGenerationLabel = Label(FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
                                        font=self.GenerationFont)
         CurrentGenerationNumber = Label(FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W,
