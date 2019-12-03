@@ -48,9 +48,6 @@ class Application(Frame):
     # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje
     # GUI/settings.csv staat. Als je iets toevoegd aan InfoSet komt er ook een invul set van
     def SetSettings(self):
-        # self.locations_csv_file = "Data/locations.csv"
-        # currentDirectory = os.getcwd()
-        # os.chdir(os.path.abspath(os.path.join(currentDirectory, '..')))
         self.locations_csv_file = "Data/locations.csv"
         self.locationsDataFrame = pd.read_csv(self.locations_csv_file)
         self.locationYearSheet = {}
