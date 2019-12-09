@@ -2,8 +2,7 @@ from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-import GUI.GUIWidgetMaker as wm
-import GUI.GUIFileReader as fr
+from . import GUIWidgetMaker as wm
 import numpy as np
 import ast
 from scipy.signal import savgol_filter
@@ -11,6 +10,11 @@ from matplotlib import ticker
 from generators import Windturbine
 import babel.numbers as bb
 import pandas as pd
+from tkinter.filedialog import askopenfilename
+import csv
+
+# Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
+textPreSpace = "  "
 
 NUMBEROFGRAPHS = 7
 
@@ -85,6 +89,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     GUI.a.clear()
     GUI.a.axis('auto')
     GUI.a.axis('on')
+    titlePretext = GUI.locationTextVariable.get() + " - " + GUI.yearTextVariable.get() + "\n"
     if starting:  # Start bij de eeste
         GUI.graphNumber = 0
 
@@ -97,7 +102,7 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.minCost[Length - GrafiekLengte:Length],
                        color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Laagste Kosten")
         limit = x_limit(GUI.gens)
 
         if Length < GrafiekLengte:
@@ -117,7 +122,7 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.meanCost[Length - GrafiekLengte:Length],
                        color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Gemiddelde kosten")
         limit = x_limit(GUI.gens)
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
@@ -131,7 +136,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 2:
         GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Geproduceerd")
         GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
@@ -139,7 +144,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 3:
         GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Som Energie surplus")
         GUI.a.plot(GUI.zeros, color='red', label="0 lijn")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Som van Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Som van Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
@@ -162,7 +167,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)),
                                     axis=1) / 1000  # Zet gegevens om naar dag
         GUI.a.plot(batteryChargePlot, color='green', alpha=0.5, label="Niveau van de accu")
-        GUI.a.set(ylabel="MWh", xlabel="Uren", title="Accu gebruik over het jaar")
+        GUI.a.set(ylabel="MWh", xlabel="Uren", title=titlePretext + "Accu gebruik over het jaar")
         GUI.a.set_ylim(0, max(batteryChargePlot) * 1.1)
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
@@ -174,7 +179,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
-        GUI.a.set_title("Verdeling van energie bron")
+        GUI.a.set_title(titlePretext + "Verdeling van energie bron")
         GUI.a.legend(patches, Labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -183,7 +188,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 6:
         data, labels = calTotalCosts(GUI.cost_stats)
         patches, _ = GUI.a.pie([data], startangle=90, frame=True)
-        GUI.a.set_title("Kosten overzicht")
+        GUI.a.set_title(titlePretext + "Kosten overzicht")
         GUI.a.legend(patches, labels=labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -194,6 +199,7 @@ def loadChart(GUI, starting=True, fullChart=False):
 def RunSimulation(GUI):
     N_PANELS = 4
     N_SOLAR_FEATURES = N_PANELS * 3
+    print(GUI.csvData)
     n_Turbines = round(float(GUI.csvData[-2]))
     turbine_height = round(float(GUI.csvData[-1]))
     sp_efficiency = GUI.getValueFromSettingsByName("solar_efficiency")
@@ -259,10 +265,10 @@ def clearGraph(GUI):
 # Als er een nieuwe generatie is roept hij dit aan
 def ReadLogging(directory, gen, GUI):
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"  # Pak het goede CSV bestand
-    fr.loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
+    loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
-    fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
+    loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
 
 
 # Maak alle velden leeg
@@ -388,6 +394,8 @@ def SaveValues(GUI):
     chosenYear = GUI.yearStringVar.get()
     GUI.setLocationYear(chosenLocation, chosenYear)
     GUI.NewWindow.destroy()
+    GUI.locationTextVariable.set(chosenLocation)
+    GUI.yearTextVariable.set(chosenYear)
     GUI.settingsMenuOpen = False
 
 
@@ -441,3 +449,89 @@ def loadPreviousGen(GUI):
 
 def closeFinishedPopup(GUI):
     GUI.lowestFind.destroy()
+
+
+# Dit bestand laad het loggin bestand in
+def loadLoggingFile(GUI, first=None, filename=None):
+    try:
+        if filename is None:
+            filename = askopenfilename()  # Dit gebeurd als je de knop indrukt, laat hij hem pakken
+        if filename != '':  # Zolang het een normaal bestand is
+            f = open(filename, "r")
+            f1 = f.readlines()  # Lees het bestand
+            genArray = []
+            meanCostArray = []
+            minCostArray = []
+
+            for x in f1:  # Voor elke regel in het bestand, vul de arrays aan
+                info = x.split(" ")
+                info[5] = info[5].replace('\n', '')
+                gen = int(info[1]) + 1
+                genArray.append(str(gen))
+                mean = round(float(info[3]), 2)
+                minCost = round(float(info[5]), 2)
+                meanCostArray.append(mean)
+                minCostArray.append(minCost)
+
+            # Geef de arrays terug aan de UI
+            GUI.gens = genArray
+            GUI.meanCost = meanCostArray
+            GUI.minCost = minCostArray
+
+            # Geef total cost in euro
+            totalCostNumber = bb.format_currency(minCostArray[-1], 'EUR', locale='en_US')
+            GUI.TotalCost.config(text=textPreSpace + str(totalCostNumber))
+
+            # Zolang er meer dan twee waarden zijn, laat hij je naar de volgende grafiek gaan
+            if not first:
+                loadChart(GUI, False, GUI.fullGraph)
+                GUI.nextButton.config(state="normal")
+                GUI.previousButton.config(state="normal")
+                GUI.chartButton.config(state="normal")
+                GUI.RunButton.config(state="normal")
+
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                        "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
+# Deze functie leest een CSV file in
+def loadCsvFile(GUI, filename=None):
+    try:
+        if filename is None:
+            filename = askopenfilename()  # Als je direct op de knop drukt laat hij je kiezen
+        if filename != '':
+            with open(filename, newline='') as csvfile:  # Lees het bestand in, in een array
+                dataList = list(csv.reader(csvfile))
+                GUI.csvData = dataList[0]
+                counter = 0
+
+                # Voor de zonnenpanelen moet wil je er doorheen loopen om het in te vullen
+                iterSolar = iter(GUI.SolarTupleList)
+                next(iterSolar)
+                for tupleItem in iterSolar:
+                    iterTuple = iter(tupleItem)  # Sla de eerste over want dat is text
+                    next(iterTuple)
+                    for item in iterTuple:  # Vul de waarden en
+                        info = round(float(GUI.csvData[counter]), 2)
+                        item.config(text=textPreSpace + str(info))
+                        counter += 1
+
+                # Gegevens voor de windturbines
+                n_WindTurbines = round(float(GUI.csvData[-2]))
+                h_WindTurbines = round(float(GUI.csvData[-1]))
+                t_WindTurbines = round(float(GUI.getValueFromSettingsByName("windturbine_type")))
+
+                entry = GUI.WTHeightTuple[1]
+                entry.config(text=textPreSpace + str(n_WindTurbines))
+
+                cost = GUI.WTHeightTuple[2]
+                cost.config(text=textPreSpace + str(h_WindTurbines))
+
+                total = GUI.WTHeightTuple[3]
+                total.config(text=textPreSpace + str(t_WindTurbines))
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                        "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
