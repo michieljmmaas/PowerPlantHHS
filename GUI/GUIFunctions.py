@@ -199,6 +199,7 @@ def loadChart(GUI, starting=True, fullChart=False):
 def RunSimulation(GUI):
     N_PANELS = 4
     N_SOLAR_FEATURES = N_PANELS * 3
+    print(GUI.csvData)
     n_Turbines = round(float(GUI.csvData[-2]))
     turbine_height = round(float(GUI.csvData[-1]))
     sp_efficiency = GUI.getValueFromSettingsByName("solar_efficiency")

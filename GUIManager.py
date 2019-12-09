@@ -55,7 +55,6 @@ class Application(Frame):
         for index, row in self.locationsDataFrame.iterrows():
             name = row["NAME"]
             location = Location(name)
-            # print(location.get_years())
             self.locationYearSheet[name] = location.get_years()  # TODO Kijken of je jaren kloppen met Location get years
         self.locationsList = list(self.locationYearSheet.keys())
         self.savedLocation_csv_file_path = "GUI/savedlocation.csv"
@@ -327,7 +326,7 @@ class Application(Frame):
             self.generationTextVariable.set(self.setGenString(0))
             loc_data = Location(self.savedLocation)
             year = str(self.savedYear)
-            self.simulator = Simulator(loc_data, year, self.turbine, terrain_factor=loc_data.terrain)
+            self.simulator = Simulator(loc_data, year, self.turbine)
             self.p1 = Process(target=runTrain, args=(self.counter, self.Directory, infoArray, self.CostCalulator,
                                                      surface_min, surface_max, windTurbineType, windTurbineMax,
                                                      terrain_value, solar_eff))  # Maak een thread voor runTrain
