@@ -54,18 +54,17 @@ class Application(Frame):
         self.locationYearSheet = {}
         for index, row in self.locationsDataFrame.iterrows():
             name = row["NAME"]
-            minYear = row["BEGIN"]
-            maxYear = row["END"] + 1
-            yearList = list(range(minYear, maxYear))
-            self.locationYearSheet[name] = yearList  # TODO Kijken of je jaren kloppen met Location get years
+            location = Location(name)
+            # print(location.get_years())
+            self.locationYearSheet[name] = location.get_years()  # TODO Kijken of je jaren kloppen met Location get years
         self.locationsList = list(self.locationYearSheet.keys())
         self.savedLocation_csv_file_path = "GUI/savedlocation.csv"
         self.savedLocationYear = pd.read_csv(self.savedLocation_csv_file_path)
         self.savedLocation = self.savedLocationYear.iloc[0]["NAAM"]
         self.savedYear = self.savedLocationYear.iloc[0]["JAAR"]
         self.locationIndex = self.locationsList.index(self.savedLocation)
-        self.yearList = self.locationYearSheet[self.savedLocation]
-        self.yearIndex = self.yearList.index(self.savedYear)
+        self.yearList = self.locationYearSheet[self.savedLocation].tolist()
+        self.yearIndex = self.yearList.index(str(self.savedYear))
         self.fileName = "GUI/settings.csv"
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
@@ -96,8 +95,8 @@ class Application(Frame):
         self.savedLocation = newLocation
         self.savedYear = newYear
         self.locationIndex = self.locationsList.index(newLocation)
-        self.yearList = self.locationYearSheet[newLocation]
-        self.yearIndex = self.yearList.index(int(newYear))
+        self.yearList = self.locationYearSheet[newLocation].tolist()
+        self.yearIndex = self.yearList.index(newYear)
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -326,11 +325,9 @@ class Application(Frame):
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
             self.generationTextVariable.set(self.setGenString(0))
-            loc_data = Location(self.savedLocation, filePath="Data/locations.csv")
-            file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
-            sheet = str(self.savedYear)
-            self.simulator = Simulator(file_name, sheet, self.turbine, index_col=0, latitude=loc_data.latitude,
-                                       longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
+            loc_data = Location(self.savedLocation)
+            year = str(self.savedYear)
+            self.simulator = Simulator(loc_data, year, self.turbine, terrain_factor=loc_data.terrain)
             self.p1 = Process(target=runTrain, args=(self.counter, self.Directory, infoArray, self.CostCalulator,
                                                      surface_min, surface_max, windTurbineType, windTurbineMax,
                                                      terrain_value, solar_eff))  # Maak een thread voor runTrain
