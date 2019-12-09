@@ -19,3 +19,8 @@ class Windturbine():
             self.power_curve = np.array([0, 0, 47, 111, 217, 375, 595, 889, 1266, 1736, 2311, 3000, 3000, 0, 0])
             self.rotor_height = 135
             self.wind_curve = np.array([0, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25.01, 1000])
+        elif (self.model== 5):
+            self.power_curve = np.array([0, 0, 47, 111, 217, 375, 595, 889, 1266, 1736, 2311, 3000, 3000, 0, 0])
+            self.rotor_height = 100
+            self.wind_curve = np.array([0, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25.01, 1000])
+
