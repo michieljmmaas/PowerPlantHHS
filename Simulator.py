@@ -18,21 +18,29 @@ LSM = 15  # local standard time meridian
 class Simulator():
     """Class for calculating irradiation"""
 
-    def __init__(self, file_name, sheet_name, Windturbine, skiprows=None, index_col=0, latitude=51.95,
-                 longitude=4.45, lsm=15, terrain_factor=0.19):
+    def __init__(self, Location, year, Windturbine, terrain_factor=None, lsm=15):
         # variables from arguments
-        self.latitude = latitude
-        self.longitude = longitude
-        self.terrain_factor = terrain_factor
+        self.location = Location
+        self.latitude = self.location.latitude
+        self.longitude = self.location.longitude
+        if terrain_factor :
+            self.terrain_factor = terrain_factor
+        else:
+            self.terrain_factor = self.location.terrain
         self.Windturbine = Windturbine
 
         # variables from data file
-        self.import_data = pd.read_excel(file_name, sheet_name, skiprows=skiprows, index_col=index_col)
+        file_name = 'Data'+ os.sep + self.location.name + os.sep + year + '.csv'
+        self.import_data = pd.read_csv(file_name, index_col=0)
         self.ghi = self.import_data.iloc[:, 5].values
         self.dni = self.import_data.iloc[:, 7].values
         self.dates = self.import_data.iloc[:, 1].values
-        self.doy = np.array([datetime.utcfromtimestamp(self.dates[i].astype(int) * NANO).timetuple().tm_yday for i in
-                             range(0, len(self.dates))])
+
+        if type(self.dates[0]) == str:
+            self.doy = np.array([datetime.strptime(self.dates[i], '%Y-%m-%d').timetuple().tm_yday for i in range(0, len(self.dates))])
+        else:
+            self.doy = np.array([datetime.utcfromtimestamp(self.dates[i].astype(int) * NANO).timetuple().tm_yday for i in range(0, len(self.dates))])
+        
         self.time = self.import_data.iloc[:, 2].values.astype(int)
         self.wind_speed = (self.import_data.iloc[:, 3].values) / 10
         self.temperature = (self.import_data.iloc[:, 4].values) / 10
@@ -205,23 +213,25 @@ class Simulator():
 
 
 if __name__ == '__main__':
-    loc_name = 'nen'
 
-    loc_data = Location(loc_name)
-    file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
-    year = str(loc_data.end_year)
-
+    my_loc = Location('volkel')
     turbine = Windturbine(4)
 
-    sim = Simulator(file_name, year, turbine, index_col=0, latitude=loc_data.latitude, longitude=loc_data.longitude,
-                    terrain_factor=loc_data.terrain)
+    sim = Simulator(my_loc, '2018', turbine)
 
-    sim.calc_total_power([100, 15, 0, 100, 15, 0, 100, 15, 0, 100, 15, 0], [10, 135], 16)
+    p_wind, _ = sim.calc_wind([1, 100])
+    p_solar, _ = sim.calc_solar(Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100])
 
-    p_wind, e_wind = sim.calc_wind([7, 135])
+    df = pd.DataFrame(p_wind)
+
+    df.to_csv('wind_data.csv')
+
+    sim = Simulator(my_loc, '2018', turbine, terrain_factor=0.257 )
+
+    p_wind, e_wind = sim.calc_wind([1, 100])
     p_solar, e_solar = sim.calc_solar(Az=[0, 0, 0, 0], Inc=[15, 15, 15, 15], sp_area=[100, 100, 100, 100])
 
-    df = pd.DataFrame({'p_wind': p_wind, 'e_wind': e_wind, 'p_solar': p_solar, 'e_solar': e_solar})
-    df.index = df.index + 1
+    df = pd.DataFrame(p_wind)
 
-    df.to_excel('Simulator_out.xlsx')
+    df.to_csv('wind_data2.csv')
+
