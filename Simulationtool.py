@@ -382,8 +382,143 @@ class TabOne(wx.Panel):
         'name': 'Demand'
         })
 
-        graphsheet.insert_chart( 'B2', chart, { 'x_scale': 4, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B2', chart, { 'x_scale': 3, 'y_scale': 2,})
         data_file.close()
+
+        b34
+
+        graph1 = data_file.add_chart({'type': 'line'})
+        graph1.add_series({
+        'values': '=Output data!$B$3:$B$733',
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph1.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph2 = data_file.add_chart({'type': 'line'})
+        graph2.add_series({
+        'values': '=Output data!$B$733:$B$1463',
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph2.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph3 = data_file.add_chart({'type': 'line'})
+        graph3.add_series({
+        'values': '=Output data!$B$1463:$B$2193',
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph3.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph4 = data_file.add_chart({'type': 'line'})
+        graph4.add_series({
+        'values': '=Output data!$B$2193:$B$2923',
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph4.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph5 = data_file.add_chart({'type': 'line'})
+        graph5.add_series({
+        'values': '=Output data!$B$2923:$B$3653',
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph5.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph6 = data_file.add_chart({'type': 'line'})
+        graph6.add_series({
+        'values': '=Output data!$B$2923:$B$3653',
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph6.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph7 = data_file.add_chart({'type': 'line'})
+        graph7.add_series({
+        'values': '=Output data!$B$3653:$B$4383',
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph7.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph8 = data_file.add_chart({'type': 'line'})
+        graph8.add_series({
+        'values': ,
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph8.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph9 = data_file.add_chart({'type': 'line'})
+        graph9.add_series({
+        'values': ,
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph9.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph10 = data_file.add_chart({'type': 'line'})
+        graph10.add_series({
+        'values': ,
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph10.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph11 = data_file.add_chart({'type': 'line'})
+        graph11.add_series({
+        'values': ,
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph11.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
+        graph12 = data_file.add_chart({'type': 'line'})
+        graph12.add_series({
+        'values': ,
+        'line': {'color' : 'yellow'},
+        'name': 'Solar'
+            })
+        graph12.add_series({
+        'values': ,
+        'line': { 'color': 'blue'}
+        'name': 'Wind'
+            })
 
 class TabTwo(wx.Panel):
     def __init__(self, parent):
