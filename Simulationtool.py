@@ -274,7 +274,7 @@ class TabOne(wx.Panel):
         self.write_data(data)
     
     def write_data(self, data):
-        data_file = xlw.Workbook(self.filename_field.GetValue() + '.xlsx')
+        data_file = xlw.Workbook('Output_Data' + os.sep +self.filename_field.GetValue() + '.xlsx')
         bold = data_file.add_format({'bold': True})
 
         parametersheet = data_file.add_worksheet('Input parameters')
@@ -354,6 +354,9 @@ class TabOne(wx.Panel):
         graphsheet = data_file.add_worksheet('Graphs')
 
         chart = data_file.add_chart({'type': 'line'})
+        chart.set_title({'name':'Daily avg. output'})
+        chart.set_x_axis({'display units':'days'})
+        chart.set_y_axis({'display units':'Output'})
 
         if self.store_wt_out:
             chart.add_series({
@@ -383,142 +386,292 @@ class TabOne(wx.Panel):
         })
 
         graphsheet.insert_chart( 'B2', chart, { 'x_scale': 3, 'y_scale': 2,})
-        data_file.close()
-
-        b34
 
         graph1 = data_file.add_chart({'type': 'line'})
-        graph1.add_series({
-        'values': '=Output data!$B$3:$B$733',
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph1.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph1.set_title({'name': 'Hourly output graph 1 of 12'})
+        graph1.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph1.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph2 = data_file.add_chart({'type': 'line'})
-        graph2.add_series({
-        'values': '=Output data!$B$733:$B$1463',
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph2.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph2.set_title({'name': 'Hourly output graph 2 of 12'})
+        graph2.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph2.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph3 = data_file.add_chart({'type': 'line'})
-        graph3.add_series({
-        'values': '=Output data!$B$1463:$B$2193',
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph3.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph3.set_title({'name': 'Hourly output graph 3 of 12'})
+        graph3.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph3.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph4 = data_file.add_chart({'type': 'line'})
-        graph4.add_series({
-        'values': '=Output data!$B$2193:$B$2923',
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph4.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph4.set_title({'name': 'Hourly output graph 4 of 12'})
+        graph4.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph4.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph5 = data_file.add_chart({'type': 'line'})
-        graph5.add_series({
-        'values': '=Output data!$B$2923:$B$3653',
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph5.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph5.set_title({'name': 'Hourly output graph 5 of 12'})
+        graph5.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph5.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph6 = data_file.add_chart({'type': 'line'})
-        graph6.add_series({
-        'values': '=Output data!$B$2923:$B$3653',
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph6.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph6.set_title({'name': 'Hourly output graph 6 of 12'})
+        graph6.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph6.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph7 = data_file.add_chart({'type': 'line'})
-        graph7.add_series({
-        'values': '=Output data!$B$3653:$B$4383',
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph7.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph7.set_title({'name': 'Hourly output graph 7 of 12'})
+        graph7.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph7.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph8 = data_file.add_chart({'type': 'line'})
-        graph8.add_series({
-        'values': ,
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph8.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph8.set_title({'name': 'Hourly output graph 8 of 12'})
+        graph8.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph8.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph9 = data_file.add_chart({'type': 'line'})
-        graph9.add_series({
-        'values': ,
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph9.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph9.set_title({'name': 'Hourly output graph 9 of 12'})
+        graph9.set_x_axis({ 'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph9.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph10 = data_file.add_chart({'type': 'line'})
-        graph10.add_series({
-        'values': ,
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph10.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph10.set_title({'name': 'Hourly output graph 10 of 12'})
+        graph10.set_x_axis({'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph10.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+        
         graph11 = data_file.add_chart({'type': 'line'})
-        graph11.add_series({
-        'values': ,
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph11.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph11.set_title({'name': 'Hourly output graph 11 of 12'})
+        graph11.set_x_axis({'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph11.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+
         graph12 = data_file.add_chart({'type': 'line'})
-        graph12.add_series({
-        'values': ,
-        'line': {'color' : 'yellow'},
-        'name': 'Solar'
-            })
-        graph12.add_series({
-        'values': ,
-        'line': { 'color': 'blue'}
-        'name': 'Wind'
-            })
+        graph12.set_title({'name': 'Hourly output graph 12 of 12'})
+        graph12.set_x_axis({'display units':'hours',
+                            'name_font': {'size': 14, 'bold': True}})
+        graph12.set_y_axis({'display units': 'Output',
+                            'name_font': {'size': 14, 'bold': True}})
+
+
+        if self.store_wt_out:
+            graph1.add_series({
+            'values': '=Output data!$A$3:$A$733',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph2.add_series({
+            'values': '=Output data!$A$733:$A$1463',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph3.add_series({
+            'values': '=Output data!$A$1463:$A$2193',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph4.add_series({
+            'values': '=Output data!$A$2193:$A$2923',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph5.add_series({
+            'values': '=Output data!$A$2923:$A$3653',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph6.add_series({
+            'values': '=Output data!$A$3653:$A$4383',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph7.add_series({
+            'values': '=Output data!$A$4383:$A$5113',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph8.add_series({
+            'values': '=Output data!$A$5113:$A$5843',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph9.add_series({
+            'values': '=Output data!$A$5843:$A$6573',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph10.add_series({
+            'values': '=Output data!$A$6573:$A$7303',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph11.add_series({
+            'values': '=Output data!$A$7303:$A$8033',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+            graph12.add_series({
+            'values': '=Output data!$A$8033:$A$8763',
+            'line': { 'color': 'blue'},
+            'name': 'Wind'
+                })
+        if self.store_sp_out:
+            graph1.add_series({
+            'values': '=Output data!$B$3:$B$733',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph2.add_series({
+            'values': '=Output data!$B$733:$B$1463',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph3.add_series({
+            'values': '=Output data!$B$1463:$B$2193',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph4.add_series({
+            'values': '=Output data!$B$2193:$B$2923',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph5.add_series({
+            'values': '=Output data!$B$2923:$B$3653',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph6.add_series({
+            'values': '=Output data!$B$3653:$B$4383',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph7.add_series({
+            'values': '=Output data!$B$4383:$B$5113',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph8.add_series({
+            'values': '=Output data!$B$5113:$B$5843',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph9.add_series({
+            'values': '=Output data!$B$5843:$B$6573',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph10.add_series({
+            'values': '=Output data!$B$6573:$B$7303',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph11.add_series({
+            'values': '=Output data!$B$7303:$B$8033',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+            graph12.add_series({
+            'values': '=Output data!$B$8033:$B$8763',
+            'line': {'color' : 'yellow'},
+            'name': 'Solar'
+                })
+        if self.store_total_out:
+            graph1.add_series({
+            'values': '=Output data!$C$3:$C$733',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph2.add_series({
+            'values': '=Output data!$C$733:$C$1463',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph3.add_series({
+            'values': '=Output data!$C$1463:$C$2193',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph4.add_series({
+            'values': '=Output data!$C$2193:$C$2923',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph5.add_series({
+            'values': '=Output data!$C$2923:$C$3653',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph6.add_series({
+            'values': '=Output data!$C$3653:$C$4383',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph7.add_series({
+            'values': '=Output data!$C$4383:$C$5113',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph8.add_series({
+            'values': '=Output data!$C$5113:$C$5843',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph9.add_series({
+            'values': '=Output data!$C$5843:$C$6573',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph10.add_series({
+            'values': '=Output data!$C$6573:$C$7303',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph11.add_series({
+            'values': '=Output data!$C$7303:$C$8033',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+            graph12.add_series({
+            'values': '=Output data!$C$8033:$C$8763',
+            'line': { 'color': 'green'},
+            'name': 'Total'
+                })
+        
+
+        graphsheet.insert_chart( 'B34', graph1, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B68', graph2, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B102', graph3, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B136', graph4, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B170', graph5, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B204', graph6, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B238', graph7, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B272', graph8, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B306', graph9, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B340', graph10, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B374', graph11, { 'x_scale': 2, 'y_scale': 2,})
+        graphsheet.insert_chart( 'B408', graph12, { 'x_scale': 2, 'y_scale': 2,})
+
+
+        data_file.close()
 
 class TabTwo(wx.Panel):
     def __init__(self, parent):
