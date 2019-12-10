@@ -426,7 +426,7 @@ def main():
     screen_width = int(root.winfo_screenwidth() * percentage)
     aspect_ratio = 1600 / 720
     screen_height = int(screen_width / aspect_ratio)
-    root.geometry(str(screen_width) + "x" + str(screen_height))
+    root.geometry(str(screen_width) + "x" + str(screen_height)+"+50+50")
     root.mainloop()
 
 
