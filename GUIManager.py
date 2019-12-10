@@ -31,7 +31,7 @@ class Application(Frame):
         self.setUpLocationYear()
         self.makeFonts()
         self.initUI()  # Maak de UI
-        self.setColumnRowConfigure()
+        self.setColumnRowConfigure([self.parent, self.FrameGrafiek, self.ItemFrame, self.FrameGrafiekButtons])
         self.grid()  # Het is een grid field
         self.parent.title("Danone Powerplant")  # Titel van het scherm
         # Vul standaard waarden in
@@ -354,17 +354,20 @@ class Application(Frame):
             print("Klaar")
             self.endSimulation()
 
-    def setColumnRowConfigure(self):
+    def setColumnRowConfigure(self, array):
         for x in range(10):
             for y in range(10):
-                self.parent.columnconfigure(x, weight=1)
-                self.parent.rowconfigure(y, weight=1)
-                self.FrameGrafiek.columnconfigure(x, weight=1)
-                self.FrameGrafiek.rowconfigure(y, weight=1)
-                self.FrameGrafiekButtons.columnconfigure(x, weight=1)
-                self.FrameGrafiekButtons.rowconfigure(y, weight=1)
-                self.ItemFrame.columnconfigure(x, weight=1)
-                self.ItemFrame.rowconfigure(y, weight=1)
+                for frame in array:
+                    frame.columnconfigure(x, weight=1)
+                    frame.rowconfigure(y, weight=1)
+                # self.parent.columnconfigure(x, weight=1)
+                # self.parent.rowconfigure(y, weight=1)
+                # self.FrameGrafiek.columnconfigure(x, weight=1)
+                # self.FrameGrafiek.rowconfigure(y, weight=1)
+                # self.FrameGrafiekButtons.columnconfigure(x, weight=1)
+                # self.FrameGrafiekButtons.rowconfigure(y, weight=1)
+                # self.ItemFrame.columnconfigure(x, weight=1)
+                # self.ItemFrame.rowconfigure(y, weight=1)
 
     def updateGraph(self):
         self.counterCheck = self.counter.value
