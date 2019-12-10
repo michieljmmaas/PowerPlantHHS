@@ -12,18 +12,12 @@ from genetic_algorith import GeneticAlgorith
 from multiprocessing import Process, Value
 from location import Location
 
-locations=[ 'Valkenburg', 'Dekooy', 'Schiphol', 'Hoornterschelling', 'Debilt',
-            'Soesterberg', 'Stavoren', 'Lelystad', 'Leeuwarden', 'Marknesse',
-            'Deelen', 'Lauwersoog', 'Heino', 'Hoogeveen', 'Eelde', 'Hupsel',
-            'Nieuwbeerta', 'Twenthe', 'Vlissingen', 'Westdorpe',
-            'Wilhelminadorp', 'Hoekvanholland', 'Rotterdam', 'Cabauw',
-            'Gilzerijen', 'Herwijnen', 'Eindhoven', 'Volkel', 'Ell',
-            'Maastricht', 'Arcen', 'Nen']
-
 # Define the tab content as classes:
 class TabOne(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+
+        self.locations = [i.lower().capitalize() for i in pd.read_csv('Data/locations.csv',index_col=0,header=0).NAME.values]
 
         self.years = ['0000']
 
@@ -81,7 +75,7 @@ class TabOne(wx.Panel):
         self.lat_txt = wx.StaticText(self, wx.ID_ANY, 'Latitude ')
         self.lon_txt = wx.StaticText(self, wx.ID_ANY, 'Longitude ')
 
-        self.places = wx.ComboBox(self, wx.ID_ANY, value='Location', choices=locations)
+        self.places = wx.ComboBox(self, wx.ID_ANY, value='Location', choices=self.locations)
         self.year_choice = wx.ComboBox(self, wx.ID_ANY, value='Year', choices=self.years)
 
         self.sp_eff_text = wx.StaticText(self, wx.ID_ANY, 'Panel efficiency(%) ')
@@ -274,7 +268,8 @@ class TabOne(wx.Panel):
         self.write_data(data)
     
     def write_data(self, data):
-        data_file = xlw.Workbook('Output_Data' + os.sep +self.filename_field.GetValue() + '.xlsx')
+        filename = self.filename_field.GetValue()
+        data_file = xlw.Workbook('Output_Data' + os.sep + filename + '.xlsx')
         bold = data_file.add_format({'bold': True})
 
         parametersheet = data_file.add_worksheet('Input parameters')
@@ -673,10 +668,12 @@ class TabOne(wx.Panel):
 
         data_file.close()
 
+        file_info = 'Simulation stored in ' + filename + '.xlsx'
+        wx.MessageBox(file_info, 'Simulation done', wx.OK)
+
 class TabTwo(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-
 
 class MainFrame(wx.Frame):
     def __init__(self):
