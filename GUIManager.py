@@ -95,7 +95,7 @@ class Application(Frame):
         self.savedYear = newYear
         self.locationIndex = self.locationsList.index(newLocation)
         self.yearList = self.locationYearSheet[newLocation].tolist()
-        self.yearIndex = self.yearList.index(newYear)
+        self.yearIndex = self.yearList.index(str(newYear))
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken

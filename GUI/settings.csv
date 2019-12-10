@@ -2,11 +2,11 @@ name,text,value
 gens,Generaties,100.0
 pool,Pool,200.0
 mutate_percentage,Mutatie Percentage (%),50.0
-deficit_cost,Kosten voor tekort (kWh),1000000.0
 tickLimit,Maximum aantal ticks in de grafiek,20.0
-storage_costs,Kosten per Opslag (kWh),400.0
+deficit_cost,Kosten voor tekort (€/kWh),1000000.0
+storage_costs,Kosten per Opslag (€/kWh),400.0
 powerplant_power,Powerplant Vermogen vraag (kW),6000.0
-surface_area_costs,Kosten per m² Zonnepanneel,160.0
+surface_area_costs,Kosten per m² Zonnepanneel (€),160.0
 surface_min,Minimaal zonnenpaneel oppervlakte (m²),0.0
 surface_max,Maximaal zonnenpaneel oppervlakte (m²),10000000.0
 solar_efficiency,Efficienty van zonnenpanelen (%),16.0

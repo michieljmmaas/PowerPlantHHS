@@ -346,7 +346,7 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     preSaveEntries = []
     headerCounter = 8
     LabelWidth = 30
-    headerList = ["Instellingen voor het algortime", "Zonne- en windinstellingen", "Locatie, jaar en opslaan"]
+    headerList = ["Instellingen voor het algortime", "Zonne- en windinstellingen", "Kabel, locatie, jaar en opslaan"]
     headerIndex = 0
     for index, row in settings.iterrows():
         if headerCounter-RowCounter == 0:
