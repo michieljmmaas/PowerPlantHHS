@@ -55,7 +55,7 @@ class Application(Frame):
         for index, row in self.locationsDataFrame.iterrows():
             name = row["NAME"]
             location = Location(name)
-            self.locationYearSheet[name] = location.get_years()  # TODO Kijken of je jaren kloppen met Location get years
+            self.locationYearSheet[name] = location.get_years()
         self.locationsList = list(self.locationYearSheet.keys())
         self.savedLocation_csv_file_path = "GUI/savedlocation.csv"
         self.savedLocationYear = pd.read_csv(self.savedLocation_csv_file_path)
@@ -131,11 +131,11 @@ class Application(Frame):
         # Maakt de drie Frames aan van de GUI
         # Frame Grafiek Buttons, links boven met de knoppen
         self.FrameGrafiekButtons = Frame(self.parent)
-        self.FrameGrafiekButtons.grid(row=0, column=0, columnspan=4, sticky=W + E + N + S)
+        self.FrameGrafiekButtons.grid(row=0, column=0, columnspan=5, sticky=W + E + N + S)
 
         # Grafieken veld links
         self.FrameGrafiek = Frame(self.parent)
-        self.FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
+        self.FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=5, sticky=W + E + N + S)
 
         # Rechter paneel met waarden
         self.ItemFrame = Frame(self.parent)
@@ -149,15 +149,19 @@ class Application(Frame):
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
         # Grafiek Buttons
-        settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons, self.FrameGrafiekButtons,
+        settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons,
+                                         self.FrameGrafiekButtons,
                                          fn.openCostFunctionSettingWindow, True)
-        self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", self.FrameGrafiekButtons, self.FrameGrafiekButtons,
+        self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", self.FrameGrafiekButtons,
+                                               self.FrameGrafiekButtons,
                                                fn.previousChart, False)
         self.previousButton.config(state='disabled')
-        self.nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", self.FrameGrafiekButtons, self.FrameGrafiekButtons,
+        self.nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", self.FrameGrafiekButtons,
+                                           self.FrameGrafiekButtons,
                                            fn.nextChart, False)
         self.nextButton.config(state='disabled')
-        self.chartButton = wm.GrafiekButton(self, "GUI/icons/chart.png", self.FrameGrafiekButtons, self.FrameGrafiekButtons,
+        self.chartButton = wm.GrafiekButton(self, "GUI/icons/chart.png", self.FrameGrafiekButtons,
+                                            self.FrameGrafiekButtons,
                                             fn.fullChart, True)
         self.chartButton.config(state='disabled')
 
@@ -176,10 +180,10 @@ class Application(Frame):
         # Voeg de knoppen toe
         CurrentGenerationLabel.grid(row=0, column=0, pady=5)
         CurrentGenerationNumber.grid(row=0, column=1, pady=5)
-        settingButton.grid(row=0, column=5, sticky=N + S + E + W)
+        self.chartButton.grid(row=0, column=2, sticky=N + S + E + W)
         self.previousButton.grid(row=0, column=3, sticky=N + S + E + W)
-        self.nextButton.grid(row=0, column=4, pady=5, sticky=N + S + E + W)
-        self.chartButton.grid(row=0, column=2, pady=5, sticky=N + S + E + W)
+        self.nextButton.grid(row=0, column=4, sticky=N + S + E + W)
+        settingButton.grid(row=0, column=5, sticky=N + S + E + W)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -205,7 +209,8 @@ class Application(Frame):
                                       True)
         LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", self.FrameGrafiek, self.ItemFrame, " Laad TXT",
                                        fn.loadLoggingFile, True)
-        ExitButton = wm.makeButton(self, "GUI/icons/error.png", self.FrameGrafiek, self.ItemFrame, " Afsluiten", fn.exitProgram,
+        ExitButton = wm.makeButton(self, "GUI/icons/error.png", self.FrameGrafiek, self.ItemFrame, " Afsluiten",
+                                   fn.exitProgram,
                                    True)
         ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
 
@@ -233,7 +238,6 @@ class Application(Frame):
         self.WTHeightTuple = wm.LabelRow("Windmolens", self.ItemFrame, self.HFont, self.ColFont)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
-        # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
         LabelTupleList = [headerTuple, self.WTHeightTuple]
         RowCounter = 1
         for Tuple in LabelTupleList:
@@ -420,10 +424,11 @@ def main():
     root.wm_iconbitmap("GUI/icons/icon.ico")
     percentage = 0.8
     screen_width = int(root.winfo_screenwidth() * percentage)
-    aspect_ratio = 1600/720
-    screen_height = int(screen_width/aspect_ratio)
-    root.geometry(str(screen_width) + "x" + str(screen_height))
+    aspect_ratio = 1600 / 720
+    screen_height = int(screen_width / aspect_ratio)
+    root.geometry(str(screen_width) + "x" + str(screen_height)+"+50+50")
     root.mainloop()
+
 
 if __name__ == '__main__':
     main()
