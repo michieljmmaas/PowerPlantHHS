@@ -1,13 +1,10 @@
 from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
-from tkinter import ttk
 from . import GUIWidgetMaker as wm
 import numpy as np
-import ast
 from scipy.signal import savgol_filter
 from matplotlib import ticker
-from generators import Windturbine
 import babel.numbers as bb
 import pandas as pd
 from tkinter.filedialog import askopenfilename
@@ -331,6 +328,11 @@ def exitProgram(GUI):
 # Deze methode opent het popup scherm met de instellingen
 def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
+    percentage = 0.65
+    screen_width = int(GUI.winfo_screenwidth() * percentage)
+    aspect_ratio = 1600/500
+    screen_height = int(screen_width/aspect_ratio)
+    GUI.NewWindow.geometry(str(screen_width) + "x" + str(screen_height))
     font = GUI.InfoFont
     settings = GUI.settingsDataFrame
     GUI.NewWindow.grab_set()
