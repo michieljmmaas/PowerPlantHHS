@@ -176,10 +176,10 @@ class Application(Frame):
         # Voeg de knoppen toe
         CurrentGenerationLabel.grid(row=0, column=0, pady=5)
         CurrentGenerationNumber.grid(row=0, column=1, pady=5)
-        settingButton.grid(row=0, column=5)
-        self.previousButton.grid(row=0, column=3)
-        self.nextButton.grid(row=0, column=4, pady=5)
-        self.chartButton.grid(row=0, column=2, pady=5)
+        settingButton.grid(row=0, column=5, sticky=N + S + E + W)
+        self.previousButton.grid(row=0, column=3, sticky=N + S + E + W)
+        self.nextButton.grid(row=0, column=4, pady=5, sticky=N + S + E + W)
+        self.chartButton.grid(row=0, column=2, pady=5, sticky=N + S + E + W)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -189,12 +189,12 @@ class Application(Frame):
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
-        self.canvas = FigureCanvasTkAgg(self.f, self.FrameGrafiek)  # Plaats grafiek in UI
-        self.canvas.get_tk_widget().pack(fill=BOTH)  # Spreid het over de ruimte die het heeft
-
         # Dit is de laad balk en de knop volgende grafiek. De knop staat uit want hij wisselt naar niets
         self.pbar = Progressbar(self.FrameGrafiek, mode='indeterminate')
         self.pbar.pack(fill=BOTH)
+
+        self.canvas = FigureCanvasTkAgg(self.f, self.FrameGrafiek)  # Plaats grafiek in UI
+        self.canvas.get_tk_widget().pack(fill=BOTH)  # Spreid het over de ruimte die het heeft
 
         # Maak de buttons aan
         self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", self.FrameGrafiek, self.ItemFrame, "   Run",
@@ -426,11 +426,12 @@ def main():
     # root.resizable(height=None, width=None)
     app = Application(root)
     root.wm_iconbitmap("GUI/icons/icon.ico")
-    # root.aspect(minNumer=4, minDenom=8, maxNumer=4, maxDenom=8)
-    root.geometry("1550x720")
+    percentage = 0.8
+    screen_width = int(root.winfo_screenwidth() * percentage)
+    aspect_ratio = 1600/720
+    screen_height = int(screen_width/aspect_ratio)
+    root.geometry(str(screen_width) + "x" + str(screen_height))
     root.mainloop()
-
-
 
 if __name__ == '__main__':
     main()
