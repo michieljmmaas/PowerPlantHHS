@@ -49,9 +49,8 @@ def GrafiekButton(GUI, fileString, frameHolder, FramePlacer, function, arg):
     # Verschil in de functie parameters
     if not arg:
         RunButton = tk.Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=lambda: function(GUI, False),
-                              relief=ButtonRelief,
-                              image=icon, anchor=ButtonAnchor, font=GUI.ButtonFont, cursor=ButtonCursor,
-                              borderwidth=borderwidth)
+                              relief=ButtonRelief, image=icon, anchor=ButtonAnchor, font=GUI.ButtonFont,
+                              cursor=ButtonCursor, borderwidth=borderwidth)
         return RunButton
     else:
         RunButton = tk.Button(FramePlacer, width=LabelWidth, height=LabelHeight, command=lambda: function(GUI),

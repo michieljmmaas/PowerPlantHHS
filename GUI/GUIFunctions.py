@@ -199,7 +199,6 @@ def loadChart(GUI, starting=True, fullChart=False):
 def RunSimulation(GUI):
     N_PANELS = 4
     N_SOLAR_FEATURES = N_PANELS * 3
-    print(GUI.csvData)
     n_Turbines = round(float(GUI.csvData[-2]))
     turbine_height = round(float(GUI.csvData[-1]))
     sp_efficiency = GUI.getValueFromSettingsByName("solar_efficiency")
@@ -340,15 +339,24 @@ def openCostFunctionSettingWindow(GUI):
 
 # Deze methode voegt de widgets toe aan het popup scherm
 def displayCostFunction(NewWindow, font, settings, GUI):
-    RowCounter = 0
+    ColumnCounter = -2
+    RowCounter = 8
     padx = 10
     pady = 10
     preSaveEntries = []
+    headerCounter = 8
     LabelWidth = 30
+    headerList = ["Instellingen voor het algortime", "Zonne- en windinstellingen", "Kabel, locatie, jaar en opslaan"]
+    headerIndex = 0
     for index, row in settings.iterrows():
+        if headerCounter-RowCounter == 0:
+            ColumnCounter = ColumnCounter + 2
+            costFunctionHeader(NewWindow, headerList[headerIndex], ColumnCounter, GUI, padx, pady)
+            RowCounter = 1
+            headerIndex += 1
         Tuple = createCostFunctionPair(NewWindow, row[1], row[2], font, LabelWidth)
-        Tuple[0].grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
-        Tuple[1].grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
+        Tuple[0].grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+        Tuple[1].grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S)
         preSaveEntries.append(Tuple[1])
         RowCounter = RowCounter + 1
 
@@ -356,23 +364,32 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     GUI.locationOptionMenu = OptionMenu(NewWindow, GUI.locationStringVar, *GUI.locationYearSheet.keys())
 
     locationLabel = Label(NewWindow, text="Locatie", width=30, font=font, anchor=W)
-    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
+    locationLabel.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
     GUI.locationStringVar.set(GUI.savedLocation)
-    GUI.locationOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
+    GUI.locationOptionMenu.grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
     locationLabel = Label(NewWindow, text="Jaar", width=30, font=font, anchor=W)
-    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
-    GUI.yearOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
+    locationLabel.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+    GUI.yearOptionMenu.grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
-    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default", resetToDefaultSettings, True)
-    ResetButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
-    RowCounter = RowCounter + 1
+    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default",
+                                resetToDefaultSettings, True)
+    ResetButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
+                     sticky=N + S + E + W)
+    RowCounter = RowCounter + 2
 
     SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "   Opslaan", SaveValues, True)
-    SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
+    SaveButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
+                    sticky=N + S + E + W)
     GUI.preSave = preSaveEntries
+    GUI.setColumnRowConfigure([NewWindow])
+
+
+def costFunctionHeader(NewWindow, Tekst, column, GUI, padx, pady):
+    headerLabel = Label(NewWindow, text=Tekst, width=30, font=GUI.HFont, anchor=W)
+    headerLabel.grid(row=0, column=column, padx=padx, pady=pady, sticky=N + S)
 
 
 # Deze methode maakt een paar van de widgets voor item in de instellingen list
@@ -417,8 +434,9 @@ def displayLowestFindWindow(GUI):
 def fillLowestFindWindow(NewWindow, font, settings, GUI):
     lowestGen = GUI.minCost.index(min(GUI.minCost))
     if lowestGen != len(GUI.minCost) - 1:
-        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + str(lowestGen + 1) + "e generatie"
-        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien? (Dit werkt nog niet)"
+        GUI.lowestGeneration = str(lowestGen + 1)
+        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + GUI.lowestGeneration + "e generatie"
+        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien?"
         generationLabel = Label(NewWindow, text=generationText, anchor=W, font=font)
         generationLabel.pack(padx=10, pady=10)
         continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
@@ -427,24 +445,24 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
                                    True)
         JumpButton.pack(padx=10, pady=10)
     else:
-        textCorrect = "Het algoritme is klaar met berekenen. De gevenes op het scherm geven de de goedkoopste opstelling aan."
+        textCorrect = "Het algoritme is klaar met berekenen. De gegevens op het scherm geven de de goedkoopste opstelling aan."
         textCorrectLabel = Label(NewWindow, text=textCorrect, anchor=W, font=font)
         textCorrectLabel.pack(padx=10, pady=10)
         CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "   Akkoord", closeFinishedPopup,
                                     True)
         CloseButton.pack(padx=10, pady=10)
 
-    # JumpButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", loadPreviousGen, True)
-    # JumpButton.pack()
-    # SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
-
-
 def loadPreviousGen(GUI):
-    print("Previous loaded")
-    # Haal het goede bestand op
-    # Run de simulatie nog een keer om om de waarden terug te krijgen zodat ik ze kan invullen
-    # ToDo Functies
+    lg = GUI.lowestGeneration
+    ReadLogging(GUI.Directory.value, int(lg), GUI)
+    RunSimulation(GUI)
+    setUpPower(GUI)
     closeFinishedPopup(GUI)
+    GUI.minCost = GUI.minCost[0:int(lg)]
+    GUI.meanCost = GUI.meanCost[0:int(lg)]
+    GUI.gens = GUI.gens[0:int(lg)]
+    GUI.generationTextVariable.set(GUI.setGenString(lg))
+    loadChart(GUI)
 
 
 def closeFinishedPopup(GUI):
@@ -493,7 +511,7 @@ def loadLoggingFile(GUI, first=None, filename=None):
     except Exception as e:
         print(e)
         ShowErrorBox("Foutmelding verkeerd bestand",
-                        "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
 
 # Deze functie leest een CSV file in
@@ -534,4 +552,4 @@ def loadCsvFile(GUI, filename=None):
     except Exception as e:
         print(e)
         ShowErrorBox("Foutmelding verkeerd bestand",
-                        "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
