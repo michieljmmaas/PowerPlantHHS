@@ -360,14 +360,6 @@ class Application(Frame):
                 for frame in array:
                     frame.columnconfigure(x, weight=1)
                     frame.rowconfigure(y, weight=1)
-                # self.parent.columnconfigure(x, weight=1)
-                # self.parent.rowconfigure(y, weight=1)
-                # self.FrameGrafiek.columnconfigure(x, weight=1)
-                # self.FrameGrafiek.rowconfigure(y, weight=1)
-                # self.FrameGrafiekButtons.columnconfigure(x, weight=1)
-                # self.FrameGrafiekButtons.rowconfigure(y, weight=1)
-                # self.ItemFrame.columnconfigure(x, weight=1)
-                # self.ItemFrame.rowconfigure(y, weight=1)
 
     def updateGraph(self):
         self.counterCheck = self.counter.value

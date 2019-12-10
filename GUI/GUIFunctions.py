@@ -434,8 +434,9 @@ def displayLowestFindWindow(GUI):
 def fillLowestFindWindow(NewWindow, font, settings, GUI):
     lowestGen = GUI.minCost.index(min(GUI.minCost))
     if lowestGen != len(GUI.minCost) - 1:
-        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + str(lowestGen + 1) + "e generatie"
-        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien? (Dit werkt nog niet)"
+        GUI.lowestGeneration = str(lowestGen + 1)
+        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + GUI.lowestGeneration + "e generatie"
+        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien?"
         generationLabel = Label(NewWindow, text=generationText, anchor=W, font=font)
         generationLabel.pack(padx=10, pady=10)
         continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
@@ -444,24 +445,24 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
                                    True)
         JumpButton.pack(padx=10, pady=10)
     else:
-        textCorrect = "Het algoritme is klaar met berekenen. De gevenes op het scherm geven de de goedkoopste opstelling aan."
+        textCorrect = "Het algoritme is klaar met berekenen. De gegevens op het scherm geven de de goedkoopste opstelling aan."
         textCorrectLabel = Label(NewWindow, text=textCorrect, anchor=W, font=font)
         textCorrectLabel.pack(padx=10, pady=10)
         CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "   Akkoord", closeFinishedPopup,
                                     True)
         CloseButton.pack(padx=10, pady=10)
 
-    # JumpButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", loadPreviousGen, True)
-    # JumpButton.pack()
-    # SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
-
-
 def loadPreviousGen(GUI):
-    print("Previous loaded")
-    # Haal het goede bestand op
-    # Run de simulatie nog een keer om om de waarden terug te krijgen zodat ik ze kan invullen
-    # ToDo Functies
+    lg = GUI.lowestGeneration
+    ReadLogging(GUI.Directory.value, int(lg), GUI)
+    RunSimulation(GUI)
+    setUpPower(GUI)
     closeFinishedPopup(GUI)
+    GUI.minCost = GUI.minCost[0:int(lg)]
+    GUI.meanCost = GUI.meanCost[0:int(lg)]
+    GUI.gens = GUI.gens[0:int(lg)]
+    GUI.generationTextVariable.set(GUI.setGenString(lg))
+    loadChart(GUI)
 
 
 def closeFinishedPopup(GUI):
