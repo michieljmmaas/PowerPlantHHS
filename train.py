@@ -5,7 +5,6 @@ import pandas as pd
 from calculate_cost import CostCalculator
 from genetic_algorith import GeneticAlgorith
 from save_and_load import PopulationSaver
-from multiprocessing import Process, Value
 from generators import Windturbine
 from Simulator import Simulator
 from location import Location
