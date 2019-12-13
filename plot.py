@@ -5,10 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import math
-from save_and_load import PopulationSaver
-from generators import Windturbine
-from calculate_cost import CostCalculator
-from Simulator import Simulator
 import os
 
 def plot(simulator, calculatecost, configuration=None, model_name=None, generation_number=None, load2=True, sp_cost_per_sm=190,  sp_eff=16) :
@@ -151,6 +147,10 @@ def load(model_name, generation_number, takebest=True, load2=True):
     
 
 if __name__ == '__main__':
+    from generators import Windturbine
+    from calculate_cost import CostCalculator
+    from Simulator import Simulator
+
     # table of the diffrent cable cost
     turbine = Windturbine(4)
     simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0,1,2,3], terrain_factor=0.15)
