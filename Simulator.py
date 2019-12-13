@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from generators import Windturbine
-from location import Location
 import time
 import os
 import warnings
@@ -213,6 +211,7 @@ class Simulator():
 
 
 if __name__ == '__main__':
+    from generators import Windturbine
 
     my_loc = Location('volkel')
     turbine = Windturbine(4)
