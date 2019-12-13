@@ -5,9 +5,9 @@ import pandas as pd
 from calculate_cost import CostCalculator
 from genetic_algorith import GeneticAlgorith
 from save_and_load import PopulationSaver
-from multiprocessing import Process, Value
 from generators import Windturbine
 from Simulator import Simulator
+from location import Location
 
 N_PANELS = 4
 N_SOLAR_FEATURES = N_PANELS * 3
@@ -32,7 +32,8 @@ def train(n_generations, group_size, surface_min, surface_max, angle_min, angle_
     turbine = Windturbine(windturbineType)
 
     if simulator is None:
-        simulator = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+        location = Location("NEN")
+        simulator = Simulator(location, '2018', turbine)
 
     saver = PopulationSaver(model_name, load)
 

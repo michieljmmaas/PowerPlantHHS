@@ -7,7 +7,6 @@ from multiprocessing import Process, Value, Manager
 import multiprocessing as mp
 from ctypes import c_char_p
 import GUI.GUIFunctions as fn
-import GUI.GUIFileReader as fr
 from tkinter import font as fontMaker
 import GUI.GUIWidgetMaker as wm
 import calculate_cost as cc
@@ -32,6 +31,7 @@ class Application(Frame):
         self.setUpLocationYear()
         self.makeFonts()
         self.initUI()  # Maak de UI
+        self.setColumnRowConfigure([self.parent, self.FrameGrafiek, self.ItemFrame, self.FrameGrafiekButtons])
         self.grid()  # Het is een grid field
         self.parent.title("Danone Powerplant")  # Titel van het scherm
         # Vul standaard waarden in
@@ -49,26 +49,21 @@ class Application(Frame):
     # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje
     # GUI/settings.csv staat. Als je iets toevoegd aan InfoSet komt er ook een invul set van
     def SetSettings(self):
-        # self.locations_csv_file = "Data/locations.csv"
-        currentDirectory = os.getcwd()
-        os.chdir(os.path.abspath(os.path.join(currentDirectory, '..')))
         self.locations_csv_file = "Data/locations.csv"
         self.locationsDataFrame = pd.read_csv(self.locations_csv_file)
         self.locationYearSheet = {}
         for index, row in self.locationsDataFrame.iterrows():
             name = row["NAME"]
-            minYear = row["BEGIN"]
-            maxYear = row["END"] + 1
-            yearList = list(range(minYear, maxYear))
-            self.locationYearSheet[name] = yearList  # TODO Kijken of je jaren kloppen met Location get years
+            location = Location(name)
+            self.locationYearSheet[name] = location.get_years()
         self.locationsList = list(self.locationYearSheet.keys())
         self.savedLocation_csv_file_path = "GUI/savedlocation.csv"
         self.savedLocationYear = pd.read_csv(self.savedLocation_csv_file_path)
         self.savedLocation = self.savedLocationYear.iloc[0]["NAAM"]
         self.savedYear = self.savedLocationYear.iloc[0]["JAAR"]
         self.locationIndex = self.locationsList.index(self.savedLocation)
-        self.yearList = self.locationYearSheet[self.savedLocation]
-        self.yearIndex = self.yearList.index(self.savedYear)
+        self.yearList = self.locationYearSheet[self.savedLocation].tolist()
+        self.yearIndex = self.yearList.index(str(self.savedYear))
         self.fileName = "GUI/settings.csv"
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
@@ -99,8 +94,8 @@ class Application(Frame):
         self.savedLocation = newLocation
         self.savedYear = newYear
         self.locationIndex = self.locationsList.index(newLocation)
-        self.yearList = self.locationYearSheet[newLocation]
-        self.yearIndex = self.yearList.index(int(newYear))
+        self.yearList = self.locationYearSheet[newLocation].tolist()
+        self.yearIndex = self.yearList.index(str(newYear))
 
     def defineValues(self):
         # Onderstaande waardes zijn allemaal de voor de grafieken
@@ -135,16 +130,16 @@ class Application(Frame):
     def initUI(self):
         # Maakt de drie Frames aan van de GUI
         # Frame Grafiek Buttons, links boven met de knoppen
-        FrameGrafiekButtons = Frame(self.parent)
-        FrameGrafiekButtons.grid(row=0, column=0, columnspan=4, sticky=W + E + N + S)
+        self.FrameGrafiekButtons = Frame(self.parent)
+        self.FrameGrafiekButtons.grid(row=0, column=0, columnspan=5, sticky=W + E + N + S)
 
         # Grafieken veld links
-        FrameGrafiek = Frame(self.parent)
-        FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=4, sticky=W + E + N + S)
+        self.FrameGrafiek = Frame(self.parent)
+        self.FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=5, sticky=W + E + N + S)
 
         # Rechter paneel met waarden
-        ItemFrame = Frame(self.parent)
-        ItemFrame.grid(row=0, column=6, rowspan=6, columnspan=2, sticky=W + E + N + S)
+        self.ItemFrame = Frame(self.parent)
+        self.ItemFrame.grid(row=0, column=6, rowspan=6, columnspan=2, sticky=W + E + N + S)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -154,32 +149,41 @@ class Application(Frame):
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
         # Grafiek Buttons
-        settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", FrameGrafiekButtons, FrameGrafiekButtons,
+        settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons,
+                                         self.FrameGrafiekButtons,
                                          fn.openCostFunctionSettingWindow, True)
-        self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", FrameGrafiekButtons, FrameGrafiekButtons,
+        self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", self.FrameGrafiekButtons,
+                                               self.FrameGrafiekButtons,
                                                fn.previousChart, False)
         self.previousButton.config(state='disabled')
-        self.nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", FrameGrafiekButtons, FrameGrafiekButtons,
+        self.nextButton = wm.GrafiekButton(self, "GUI/icons/next.png", self.FrameGrafiekButtons,
+                                           self.FrameGrafiekButtons,
                                            fn.nextChart, False)
         self.nextButton.config(state='disabled')
-        self.chartButton = wm.GrafiekButton(self, "GUI/icons/chart.png", FrameGrafiekButtons, FrameGrafiekButtons,
+        self.chartButton = wm.GrafiekButton(self, "GUI/icons/chart.png", self.FrameGrafiekButtons,
+                                            self.FrameGrafiekButtons,
                                             fn.fullChart, True)
         self.chartButton.config(state='disabled')
 
         self.generationTextVariable = StringVar()
         self.generationTextVariable.set(self.setGenString(0))
-        CurrentGenerationLabel = Label(FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
+        self.locationTextVariable = StringVar()
+        self.locationTextVariable.set(self.savedLocation)
+        self.yearTextVariable = StringVar()
+        self.yearTextVariable.set(self.savedYear)
+
+        CurrentGenerationLabel = Label(self.FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
                                        font=self.GenerationFont)
-        CurrentGenerationNumber = Label(FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W,
+        CurrentGenerationNumber = Label(self.FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W,
                                         font=self.GenerationFont)
 
         # Voeg de knoppen toe
         CurrentGenerationLabel.grid(row=0, column=0, pady=5)
         CurrentGenerationNumber.grid(row=0, column=1, pady=5)
-        settingButton.grid(row=0, column=5)
-        self.previousButton.grid(row=0, column=3)
-        self.nextButton.grid(row=0, column=4, pady=5)
-        self.chartButton.grid(row=0, column=2, pady=5)
+        self.chartButton.grid(row=0, column=2, sticky=N + S + E + W)
+        self.previousButton.grid(row=0, column=3, sticky=N + S + E + W)
+        self.nextButton.grid(row=0, column=4, sticky=N + S + E + W)
+        settingButton.grid(row=0, column=5, sticky=N + S + E + W)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
@@ -189,30 +193,31 @@ class Application(Frame):
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
-        self.canvas = FigureCanvasTkAgg(self.f, FrameGrafiek)  # Plaats grafiek in UI
-        self.canvas.get_tk_widget().pack(fill=BOTH)  # Spreid het over de ruimte die het heeft
-
         # Dit is de laad balk en de knop volgende grafiek. De knop staat uit want hij wisselt naar niets
-        self.pbar = Progressbar(FrameGrafiek, mode='indeterminate')
+        self.pbar = Progressbar(self.FrameGrafiek, mode='indeterminate')
         self.pbar.pack(fill=BOTH)
 
+        self.canvas = FigureCanvasTkAgg(self.f, self.FrameGrafiek)  # Plaats grafiek in UI
+        self.canvas.get_tk_widget().pack(fill=BOTH)  # Spreid het over de ruimte die het heeft
+
         # Maak de buttons aan
-        self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", FrameGrafiek, ItemFrame, "   Run",
+        self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", self.FrameGrafiek, self.ItemFrame, "   Run",
                                        self.runSimulation,
                                        False)
-        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", FrameGrafiek, ItemFrame, " Laad CSV",
-                                      fr.loadCsvFile,
+        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", self.FrameGrafiek, self.ItemFrame, " Laad CSV",
+                                      fn.loadCsvFile,
                                       True)
-        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", FrameGrafiek, ItemFrame, " Laad TXT",
-                                       fr.loadLoggingFile, True)
-        ExitButton = wm.makeButton(self, "GUI/icons/error.png", FrameGrafiek, ItemFrame, " Afsluiten", fn.exitProgram,
+        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", self.FrameGrafiek, self.ItemFrame, " Laad TXT",
+                                       fn.loadLoggingFile, True)
+        ExitButton = wm.makeButton(self, "GUI/icons/error.png", self.FrameGrafiek, self.ItemFrame, " Afsluiten",
+                                   fn.exitProgram,
                                    True)
         ActionTuple = (self.RunButton, LoadCSVButton, LoadTXTBButton, ExitButton)
 
         self.RunIcon = wm.makeIcon("GUI/icons/run-arrow.png",
-                                   FrameGrafiek)  # Deze zijn nodig om te wissel van plaatje op de Run/Stop knop
+                                   self.FrameGrafiek)  # Deze zijn nodig om te wissel van plaatje op de Run/Stop knop
         self.StopIcon = wm.makeIcon("GUI/icons/stop-button.png",
-                                    FrameGrafiek)  # Deze zijn nodig om te wissel van plaatje op de Run/Stop knop
+                                    self.FrameGrafiek)  # Deze zijn nodig om te wissel van plaatje op de Run/Stop knop
 
         # Rechterpaneel
         # Dit zijn standaard waarden die er voor zorgen dat alles even lang en breed is
@@ -227,13 +232,12 @@ class Application(Frame):
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
         # Colom namen
-        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte", "Type", ItemFrame, self.HFont)
+        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte", "Type", self.ItemFrame, self.HFont)
 
         # Windturbine aantal
-        self.WTHeightTuple = wm.LabelRow("Windmolens", ItemFrame, self.HFont, self.ColFont)
+        self.WTHeightTuple = wm.LabelRow("Windmolens", self.ItemFrame, self.HFont, self.ColFont)
 
         # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
-        # LabelTupleList = [ActionTuple, headerTuple, PWDSurplusTuple, PWDeficitTuple, self.WTHeightTuple]
         LabelTupleList = [headerTuple, self.WTHeightTuple]
         RowCounter = 1
         for Tuple in LabelTupleList:
@@ -245,13 +249,13 @@ class Application(Frame):
 
         # Solar Panels info
         SPHeaderTuple = wm.HeaderRow("Zonnepaneel Nummer", "Oppervlakte (m\u00b2)", "Hoek in graden",
-                                     "Oriëntatie t.o.v. Zuiden", ItemFrame, self.HFont)
+                                     "Oriëntatie t.o.v. Zuiden", self.ItemFrame, self.HFont)
 
         # Solar Panel 1
-        SP1HeaderTuple = wm.LabelRow("Zonnepanelen veld 1", ItemFrame, self.HFont, self.ColFont)
-        SP2HeaderTuple = wm.LabelRow("Zonnepanelen veld 2", ItemFrame, self.HFont, self.ColFont)
-        SP3HeaderTuple = wm.LabelRow("Zonnepanelen veld 3", ItemFrame, self.HFont, self.ColFont)
-        SP4HeaderTuple = wm.LabelRow("Zonnepanelen veld 4", ItemFrame, self.HFont, self.ColFont)
+        SP1HeaderTuple = wm.LabelRow("Zonnepanelen veld 1", self.ItemFrame, self.HFont, self.ColFont)
+        SP2HeaderTuple = wm.LabelRow("Zonnepanelen veld 2", self.ItemFrame, self.HFont, self.ColFont)
+        SP3HeaderTuple = wm.LabelRow("Zonnepanelen veld 3", self.ItemFrame, self.HFont, self.ColFont)
+        SP4HeaderTuple = wm.LabelRow("Zonnepanelen veld 4", self.ItemFrame, self.HFont, self.ColFont)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -264,10 +268,10 @@ class Application(Frame):
             RowCounter = RowCounter + 1
 
         # Dit maakt het overzicht van de totale kosten
-        TotalLabel = Label(ItemFrame, text="Totale Kosten", height=2, relief=SOLID, font=("Helvetica", 20))
+        TotalLabel = Label(self.ItemFrame, text="Totale Kosten", height=2, relief=SOLID, font=("Helvetica", 20))
         TotalLabel.grid(row=RowCounter + 2, column=0, padx=padx, pady=pady, columnspan=2, sticky=W + E)
 
-        self.TotalCost = Label(ItemFrame, width=20, height=2, anchor=W, relief=SUNKEN, font=("Helvetica", 20))
+        self.TotalCost = Label(self.ItemFrame, width=20, height=2, anchor=W, relief=SUNKEN, font=("Helvetica", 20))
         self.TotalCost.grid(row=RowCounter + 2, column=2, columnspan=2, padx=padx, pady=pady, sticky=W + E)
 
     # Deze methode is er om het genetisch algoritme aan te roepen en de dingen in te stellen.
@@ -324,11 +328,9 @@ class Application(Frame):
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
             self.generationTextVariable.set(self.setGenString(0))
-            loc_data = Location(self.savedLocation, filePath="Data/locations.csv")
-            file_name = 'Data' + os.sep + 'location_' + str(loc_data.stn) + '.xlsx'
-            sheet = str(self.savedYear)
-            self.simulator = Simulator(file_name, sheet, self.turbine, index_col=0, latitude=loc_data.latitude,
-                                       longitude=loc_data.longitude, terrain_factor=loc_data.terrain)
+            loc_data = Location(self.savedLocation)
+            year = str(self.savedYear)
+            self.simulator = Simulator(loc_data, year, self.turbine)
             self.p1 = Process(target=runTrain, args=(self.counter, self.Directory, infoArray, self.CostCalulator,
                                                      surface_min, surface_max, windTurbineType, windTurbineMax,
                                                      terrain_value, solar_eff))  # Maak een thread voor runTrain
@@ -355,6 +357,13 @@ class Application(Frame):
                 self.updateGraph()
             print("Klaar")
             self.endSimulation()
+
+    def setColumnRowConfigure(self, array):
+        for x in range(10):
+            for y in range(10):
+                for frame in array:
+                    frame.columnconfigure(x, weight=1)
+                    frame.rowconfigure(y, weight=1)
 
     def updateGraph(self):
         self.counterCheck = self.counter.value
@@ -410,8 +419,14 @@ def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, 
 # Maak en open een interface window
 def main():
     root = Tk()
+    # root.resizable(height=None, width=None)
     app = Application(root)
     root.wm_iconbitmap("GUI/icons/icon.ico")
+    percentage = 0.8
+    screen_width = int(root.winfo_screenwidth() * percentage)
+    aspect_ratio = 1600 / 720
+    screen_height = int(screen_width / aspect_ratio)
+    root.geometry(str(screen_width) + "x" + str(screen_height)+"+50+50")
     root.mainloop()
 
 

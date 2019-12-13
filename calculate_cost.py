@@ -3,8 +3,6 @@
 import numpy as np
 import pandas as pd
 from copy import copy
-from Simulator import Simulator
-from generators import Windturbine
 
 # from numba import njit
 
@@ -178,7 +176,7 @@ class CostCalculator():
                 storage = max(storage, np.max(cumulative_array[:new_start]))
                 cumulative_array = cumulative_array[new_start:]
                 declining = declining[new_start:]
-        # windturbine shit
+        # windturbine cost
         if (wm_type == 2):
             wm_cost = 1605000
         elif (wm_type == 3):
@@ -227,6 +225,9 @@ class CostCalculator():
 
 # code example to test if storage and deficit calculations are working
 if __name__ == '__main__':
+    from Simulator import Simulator
+    from generators import Windturbine
+
     turbine = Windturbine(4)
     sim = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
 

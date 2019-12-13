@@ -1,16 +1,17 @@
 from math import ceil, log
 from tkinter import *
 from tkinter import messagebox
-from tkinter import ttk
-import GUI.GUIWidgetMaker as wm
-import GUI.GUIFileReader as fr
+from . import GUIWidgetMaker as wm
 import numpy as np
-import ast
 from scipy.signal import savgol_filter
 from matplotlib import ticker
-from generators import Windturbine
 import babel.numbers as bb
 import pandas as pd
+from tkinter.filedialog import askopenfilename
+import csv
+
+# Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
+textPreSpace = "  "
 
 NUMBEROFGRAPHS = 7
 
@@ -85,6 +86,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     GUI.a.clear()
     GUI.a.axis('auto')
     GUI.a.axis('on')
+    titlePretext = GUI.locationTextVariable.get() + " - " + GUI.yearTextVariable.get() + "\n"
     if starting:  # Start bij de eeste
         GUI.graphNumber = 0
 
@@ -97,7 +99,7 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.minCost[Length - GrafiekLengte:Length],
                        color='blue', label="Laagste Kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Laagste Kosten")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Laagste Kosten")
         limit = x_limit(GUI.gens)
 
         if Length < GrafiekLengte:
@@ -117,7 +119,7 @@ def loadChart(GUI, starting=True, fullChart=False):
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.meanCost[Length - GrafiekLengte:Length],
                        color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
-        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title="Gemiddelde kosten")
+        GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Gemiddelde kosten")
         limit = x_limit(GUI.gens)
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
@@ -131,7 +133,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 2:
         GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Geproduceerd")
         GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
@@ -139,7 +141,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 3:
         GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Som Energie surplus")
         GUI.a.plot(GUI.zeros, color='red', label="0 lijn")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title="Som van Energie geproduceerd")
+        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Som van Energie geproduceerd")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
@@ -162,7 +164,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         batteryChargePlot = np.mean(np.reshape(batteryCharge[:8760], (365, 24)),
                                     axis=1) / 1000  # Zet gegevens om naar dag
         GUI.a.plot(batteryChargePlot, color='green', alpha=0.5, label="Niveau van de accu")
-        GUI.a.set(ylabel="MWh", xlabel="Uren", title="Accu gebruik over het jaar")
+        GUI.a.set(ylabel="MWh", xlabel="Uren", title=titlePretext + "Accu gebruik over het jaar")
         GUI.a.set_ylim(0, max(batteryChargePlot) * 1.1)
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
@@ -174,7 +176,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
-        GUI.a.set_title("Verdeling van energie bron")
+        GUI.a.set_title(titlePretext + "Verdeling van energie bron")
         GUI.a.legend(patches, Labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -183,7 +185,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 6:
         data, labels = calTotalCosts(GUI.cost_stats)
         patches, _ = GUI.a.pie([data], startangle=90, frame=True)
-        GUI.a.set_title("Kosten overzicht")
+        GUI.a.set_title(titlePretext + "Kosten overzicht")
         GUI.a.legend(patches, labels=labels, loc="upper right")
         GUI.a.axis('equal')  # Zorg er voor dat de PieChart Rond is
         GUI.a.axis('off')  # Zet de assen uit voor een plaatje
@@ -259,10 +261,10 @@ def clearGraph(GUI):
 # Als er een nieuwe generatie is roept hij dit aan
 def ReadLogging(directory, gen, GUI):
     csvFileName = directory + "best_" + str(gen - 1) + ".csv"  # Pak het goede CSV bestand
-    fr.loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
+    loadCsvFile(GUI, csvFileName)  # Laad deze in de vleden
     first = not gen > 1  # Als het de eerste generatie is, wil je geen grafiek, want het is een punt
     loggingFileName = directory + "log.txt"  # Pak het goede logging bestand
-    fr.loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
+    loadLoggingFile(GUI, first, loggingFileName)  # Laat het logging bestand is
 
 
 # Maak alle velden leeg
@@ -326,6 +328,11 @@ def exitProgram(GUI):
 # Deze methode opent het popup scherm met de instellingen
 def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
+    percentage = 0.65
+    screen_width = int(GUI.winfo_screenwidth() * percentage)
+    aspect_ratio = 1600/500
+    screen_height = int(screen_width/aspect_ratio)
+    GUI.NewWindow.geometry(str(screen_width) + "x" + str(screen_height))
     font = GUI.InfoFont
     settings = GUI.settingsDataFrame
     GUI.NewWindow.grab_set()
@@ -334,15 +341,24 @@ def openCostFunctionSettingWindow(GUI):
 
 # Deze methode voegt de widgets toe aan het popup scherm
 def displayCostFunction(NewWindow, font, settings, GUI):
-    RowCounter = 0
+    ColumnCounter = -2
+    RowCounter = 8
     padx = 10
     pady = 10
     preSaveEntries = []
+    headerCounter = 8
     LabelWidth = 30
+    headerList = ["Instellingen voor het algortime", "Zonne- en windinstellingen", "Kabel, locatie, jaar en opslaan"]
+    headerIndex = 0
     for index, row in settings.iterrows():
+        if headerCounter-RowCounter == 0:
+            ColumnCounter = ColumnCounter + 2
+            costFunctionHeader(NewWindow, headerList[headerIndex], ColumnCounter, GUI, padx, pady)
+            RowCounter = 1
+            headerIndex += 1
         Tuple = createCostFunctionPair(NewWindow, row[1], row[2], font, LabelWidth)
-        Tuple[0].grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
-        Tuple[1].grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S)
+        Tuple[0].grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+        Tuple[1].grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S)
         preSaveEntries.append(Tuple[1])
         RowCounter = RowCounter + 1
 
@@ -350,23 +366,32 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     GUI.locationOptionMenu = OptionMenu(NewWindow, GUI.locationStringVar, *GUI.locationYearSheet.keys())
 
     locationLabel = Label(NewWindow, text="Locatie", width=30, font=font, anchor=W)
-    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
+    locationLabel.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
     GUI.locationStringVar.set(GUI.savedLocation)
-    GUI.locationOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
+    GUI.locationOptionMenu.grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
     locationLabel = Label(NewWindow, text="Jaar", width=30, font=font, anchor=W)
-    locationLabel.grid(row=RowCounter, column=0, padx=padx, pady=pady, sticky=N + S)
-    GUI.yearOptionMenu.grid(row=RowCounter, column=1, padx=padx, pady=pady, sticky=N + S + E + W)
+    locationLabel.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+    GUI.yearOptionMenu.grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
-    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default", resetToDefaultSettings, True)
-    ResetButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
-    RowCounter = RowCounter + 1
+    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default",
+                                resetToDefaultSettings, True)
+    ResetButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
+                     sticky=N + S + E + W)
+    RowCounter = RowCounter + 2
 
     SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "   Opslaan", SaveValues, True)
-    SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
+    SaveButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
+                    sticky=N + S + E + W)
     GUI.preSave = preSaveEntries
+    GUI.setColumnRowConfigure([NewWindow])
+
+
+def costFunctionHeader(NewWindow, Tekst, column, GUI, padx, pady):
+    headerLabel = Label(NewWindow, text=Tekst, width=30, font=GUI.HFont, anchor=W)
+    headerLabel.grid(row=0, column=column, padx=padx, pady=pady, sticky=N + S)
 
 
 # Deze methode maakt een paar van de widgets voor item in de instellingen list
@@ -388,6 +413,8 @@ def SaveValues(GUI):
     chosenYear = GUI.yearStringVar.get()
     GUI.setLocationYear(chosenLocation, chosenYear)
     GUI.NewWindow.destroy()
+    GUI.locationTextVariable.set(chosenLocation)
+    GUI.yearTextVariable.set(chosenYear)
     GUI.settingsMenuOpen = False
 
 
@@ -409,8 +436,9 @@ def displayLowestFindWindow(GUI):
 def fillLowestFindWindow(NewWindow, font, settings, GUI):
     lowestGen = GUI.minCost.index(min(GUI.minCost))
     if lowestGen != len(GUI.minCost) - 1:
-        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + str(lowestGen + 1) + "e generatie"
-        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien? (Dit werkt nog niet)"
+        GUI.lowestGeneration = str(lowestGen + 1)
+        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + GUI.lowestGeneration + "e generatie"
+        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien?"
         generationLabel = Label(NewWindow, text=generationText, anchor=W, font=font)
         generationLabel.pack(padx=10, pady=10)
         continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
@@ -419,25 +447,111 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
                                    True)
         JumpButton.pack(padx=10, pady=10)
     else:
-        textCorrect = "Het algoritme is klaar met berekenen. De gevenes op het scherm geven de de goedkoopste opstelling aan."
+        textCorrect = "Het algoritme is klaar met berekenen. De gegevens op het scherm geven de de goedkoopste opstelling aan."
         textCorrectLabel = Label(NewWindow, text=textCorrect, anchor=W, font=font)
         textCorrectLabel.pack(padx=10, pady=10)
         CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "   Akkoord", closeFinishedPopup,
                                     True)
         CloseButton.pack(padx=10, pady=10)
 
-    # JumpButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "Opslaan", loadPreviousGen, True)
-    # JumpButton.pack()
-    # SaveButton.grid(row=RowCounter, column=0, columnspan=2, pady=pady, padx=padx, sticky=N + S + E + W)
-
-
 def loadPreviousGen(GUI):
-    print("Previous loaded")
-    # Haal het goede bestand op
-    # Run de simulatie nog een keer om om de waarden terug te krijgen zodat ik ze kan invullen
-    # ToDo Functies
+    lg = GUI.lowestGeneration
+    ReadLogging(GUI.Directory.value, int(lg), GUI)
+    RunSimulation(GUI)
+    setUpPower(GUI)
     closeFinishedPopup(GUI)
+    GUI.minCost = GUI.minCost[0:int(lg)]
+    GUI.meanCost = GUI.meanCost[0:int(lg)]
+    GUI.gens = GUI.gens[0:int(lg)]
+    GUI.generationTextVariable.set(GUI.setGenString(lg))
+    loadChart(GUI)
 
 
 def closeFinishedPopup(GUI):
     GUI.lowestFind.destroy()
+
+
+# Dit bestand laad het loggin bestand in
+def loadLoggingFile(GUI, first=None, filename=None):
+    try:
+        if filename is None:
+            filename = askopenfilename()  # Dit gebeurd als je de knop indrukt, laat hij hem pakken
+        if filename != '':  # Zolang het een normaal bestand is
+            f = open(filename, "r")
+            f1 = f.readlines()  # Lees het bestand
+            genArray = []
+            meanCostArray = []
+            minCostArray = []
+
+            for x in f1:  # Voor elke regel in het bestand, vul de arrays aan
+                info = x.split(" ")
+                info[5] = info[5].replace('\n', '')
+                gen = int(info[1]) + 1
+                genArray.append(str(gen))
+                mean = round(float(info[3]), 2)
+                minCost = round(float(info[5]), 2)
+                meanCostArray.append(mean)
+                minCostArray.append(minCost)
+
+            # Geef de arrays terug aan de UI
+            GUI.gens = genArray
+            GUI.meanCost = meanCostArray
+            GUI.minCost = minCostArray
+
+            # Geef total cost in euro
+            totalCostNumber = bb.format_currency(minCostArray[-1], 'EUR', locale='en_US')
+            GUI.TotalCost.config(text=textPreSpace + str(totalCostNumber))
+
+            # Zolang er meer dan twee waarden zijn, laat hij je naar de volgende grafiek gaan
+            if not first:
+                loadChart(GUI, False, GUI.fullGraph)
+                GUI.nextButton.config(state="normal")
+                GUI.previousButton.config(state="normal")
+                GUI.chartButton.config(state="normal")
+                GUI.RunButton.config(state="normal")
+
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
+# Deze functie leest een CSV file in
+def loadCsvFile(GUI, filename=None):
+    try:
+        if filename is None:
+            filename = askopenfilename()  # Als je direct op de knop drukt laat hij je kiezen
+        if filename != '':
+            with open(filename, newline='') as csvfile:  # Lees het bestand in, in een array
+                dataList = list(csv.reader(csvfile))
+                GUI.csvData = dataList[0]
+                counter = 0
+
+                # Voor de zonnenpanelen moet wil je er doorheen loopen om het in te vullen
+                iterSolar = iter(GUI.SolarTupleList)
+                next(iterSolar)
+                for tupleItem in iterSolar:
+                    iterTuple = iter(tupleItem)  # Sla de eerste over want dat is text
+                    next(iterTuple)
+                    for item in iterTuple:  # Vul de waarden en
+                        info = round(float(GUI.csvData[counter]), 2)
+                        item.config(text=textPreSpace + str(info))
+                        counter += 1
+
+                # Gegevens voor de windturbines
+                n_WindTurbines = round(float(GUI.csvData[-2]))
+                h_WindTurbines = round(float(GUI.csvData[-1]))
+                t_WindTurbines = round(float(GUI.getValueFromSettingsByName("windturbine_type")))
+
+                entry = GUI.WTHeightTuple[1]
+                entry.config(text=textPreSpace + str(n_WindTurbines))
+
+                cost = GUI.WTHeightTuple[2]
+                cost.config(text=textPreSpace + str(h_WindTurbines))
+
+                total = GUI.WTHeightTuple[3]
+                total.config(text=textPreSpace + str(t_WindTurbines))
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding verkeerd bestand",
+                     "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")

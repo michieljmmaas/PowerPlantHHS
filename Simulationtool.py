@@ -2,7 +2,6 @@ import wx
 import sys
 from generators import Windturbine
 from Simulator import Simulator
-from train import train
 import numpy as np
 import pandas as pd
 import os
@@ -552,6 +551,9 @@ class TabOne(wx.Panel):
         self.wt_price_field = wx.TextCtrl(self, wx.ID_ANY, value=str(self.wt_price))
         self.st_price_txt = wx.StaticText(self, wx.ID_ANY, 'Storage cost')
         self.st_price_field = wx.TextCtrl(self, wx.ID_ANY, value=str(self.st_price))
+        self.places = wx.ComboBox(self, wx.ID_ANY, value='Location', choices=self.locations)
+        self.year_choice = wx.ComboBox(self, wx.ID_ANY, value='Year', choices=self.years)
+
 
         self.sp_eff_text = wx.StaticText(self, wx.ID_ANY, 'Panel efficiency(%) ')
         self.sp_eff_field = wx.TextCtrl(self, wx.ID_ANY, value = str(self.sp_eff))
