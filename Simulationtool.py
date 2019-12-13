@@ -2,15 +2,11 @@ import wx
 import sys
 from generators import Windturbine
 from Simulator import Simulator
-from train import train
 import numpy as np
 import pandas as pd
 import os
 import xlsxwriter as xlw
 import threading
-from calculate_cost import CostCalculator
-from genetic_algorith import GeneticAlgorith
-from multiprocessing import Process, Value
 from location import Location
 
 myEVT_SIMDONE = wx.NewEventType()
