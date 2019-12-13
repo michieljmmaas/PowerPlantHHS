@@ -7,6 +7,9 @@ import pandas as pd
 import os
 import xlsxwriter as xlw
 import threading
+from calculate_cost import CostCalculator
+from genetic_algorith import GeneticAlgorith
+from multiprocessing import Process, Value
 from location import Location
 
 myEVT_SIMDONE = wx.NewEventType()
@@ -474,6 +477,13 @@ class TabOne(wx.Panel):
 
         self.years = ['0000']
 
+        self.latitude = 0
+        self.longitude = 0
+
+        self.sp_price = 160
+        self.wt_price = 1070
+        self.st_price = 400
+
         self.store_wt_out = False
         self.store_sp_out = False
         self.store_total_out = False
@@ -495,8 +505,6 @@ class TabOne(wx.Panel):
         self.wt_height = 100
         self.n_wt = 7
 
-        self.latitude = 0
-        self.longitude = 0
         self.terrain_factor = 0
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -505,11 +513,15 @@ class TabOne(wx.Panel):
         solbox = wx.StaticBox(self, -1, 'Solar options')
         winbox = wx.StaticBox(self, -1, 'Windturbine options')
         storebox = wx.StaticBox(self, -1, 'Storage options')
+        pricebox = wx.StaticBox(self, -1, 'Cost options')
 
         locSizer = wx.StaticBoxSizer(locbox, wx.VERTICAL)
         solSizer = wx.StaticBoxSizer(solbox, wx.VERTICAL)
         winSizer = wx.StaticBoxSizer(winbox, wx.VERTICAL)
         storeSizer = wx.StaticBoxSizer(storebox, wx.VERTICAL)
+        priceSizer = wx.StaticBoxSizer(pricebox, wx.VERTICAL)
+
+        headSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         hlocSizer = wx.BoxSizer(wx.HORIZONTAL)
         hsolSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -517,10 +529,15 @@ class TabOne(wx.Panel):
         hstoreSizer = wx.BoxSizer(wx.HORIZONTAL)
         hnameSizer = wx.BoxSizer(wx.HORIZONTAL)
         hbuttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        hpriceSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        loc_grid = wx.FlexGridSizer(3, 2, 10, 10)
+        loc_grid = wx.FlexGridSizer(2, 2, 10, 10)
         sol_grid = wx.FlexGridSizer(4, 5, 10, 10)
         win_grid = wx.FlexGridSizer(3, 2, 10, 10)
+        price_grid = wx.FlexGridSizer(3, 2, 10, 10)
+
+        self.places = wx.ComboBox(self, wx.ID_ANY, value='Location', choices=self.locations)
+        self.year_choice = wx.ComboBox(self, wx.ID_ANY, value='Year', choices=self.years)
 
         self.lat_field = wx.TextCtrl(self, wx.ID_ANY, value=str(self.latitude))
         self.lon_field = wx.TextCtrl(self, wx.ID_ANY, value=str(self.longitude))
@@ -528,8 +545,15 @@ class TabOne(wx.Panel):
         self.lat_txt = wx.StaticText(self, wx.ID_ANY, 'Latitude ')
         self.lon_txt = wx.StaticText(self, wx.ID_ANY, 'Longitude ')
 
+        self.sp_price_txt = wx.StaticText(self, wx.ID_ANY, 'Solar panel cost')
+        self.sp_price_field = wx.TextCtrl(self, wx.ID_ANY, value=str(self.sp_price))
+        self.wt_price_txt = wx.StaticText(self, wx.ID_ANY, 'Wind turbine cost')
+        self.wt_price_field = wx.TextCtrl(self, wx.ID_ANY, value=str(self.wt_price))
+        self.st_price_txt = wx.StaticText(self, wx.ID_ANY, 'Storage cost')
+        self.st_price_field = wx.TextCtrl(self, wx.ID_ANY, value=str(self.st_price))
         self.places = wx.ComboBox(self, wx.ID_ANY, value='Location', choices=self.locations)
         self.year_choice = wx.ComboBox(self, wx.ID_ANY, value='Year', choices=self.years)
+
 
         self.sp_eff_text = wx.StaticText(self, wx.ID_ANY, 'Panel efficiency(%) ')
         self.sp_eff_field = wx.TextCtrl(self, wx.ID_ANY, value = str(self.sp_eff))
@@ -601,7 +625,15 @@ class TabOne(wx.Panel):
         loc_grid.Add(self.lon_txt, 0, wx.ALL, 2)
         loc_grid.Add(self.lon_field, 0, wx.ALL, 2)
 
-        hlocSizer.Add(loc_grid, 0, wx.ALL, 2)
+        # hlocSizer.Add(loc_grid, 0, wx.ALL, 2)
+
+        price_grid.Add(self.sp_price_txt, 0, wx.ALL, 2)
+        price_grid.Add(self.sp_price_field, 0, wx.ALL, 2)
+        price_grid.Add(self.wt_price_txt, 0, wx.ALL, 2)
+        price_grid.Add(self.wt_price_field, 0, wx.ALL, 2)
+        price_grid.Add(self.st_price_txt, 0, wx.ALL, 2)
+        price_grid.Add(self.st_price_field, 0, wx.ALL, 2)
+
 
         sol_grid.Add(self.area_txt, 0, wx.ALL, 2)
         sol_grid.Add(self.area_field1, 0, wx.ALL, 2)
@@ -642,12 +674,16 @@ class TabOne(wx.Panel):
         hbuttonSizer.Add(self.sim_button, 0, wx.ALL|wx.CENTER, 8)
 
         locSizer.Add(hlocSizer, 0 , wx.ALL, 2)
+        locSizer.Add(loc_grid, 0 , wx.ALL, 2)
+        priceSizer.Add(price_grid, 0, wx.ALL, 2)
+        headSizer.Add(locSizer, 0, wx.ALL, 10)
+        headSizer.Add(priceSizer, 0, wx.ALL, 10)
         solSizer.Add(hsolSizer, 0, wx.ALL, 2)
         winSizer.Add(hwinSizer, 0, wx.ALL, 2)
         storeSizer.Add(hstoreSizer, 0, wx.ALL, 2)
         storeSizer.Add(hnameSizer, 0, wx.ALL, 2)
 
-        vbox.Add(locSizer, 0, wx.ALL, 2)
+        vbox.Add(headSizer, 0, wx.ALL, 2)
         vbox.Add(solSizer, 0, wx.ALL, 2)
         vbox.Add(winSizer, 0, wx.ALL, 2)
         vbox.Add(storeSizer, 0, wx.ALL, 2)
@@ -692,6 +728,9 @@ class TabOne(wx.Panel):
         self.terrain_factor = float(self.ter_field.GetValue())
         self.wt_height = float(self.wth_field.GetValue())
         self.n_wt = float(self.nwt_field.GetValue())
+        self.sp_price = float(self.sp_price_field.GetValue())
+        self.wt_price = float(self.wt_price_field.GetValue())
+        self.st_price = float(self.st_price_field.GetValue())
 
     def on_simbutton_clicked(self, event):
         
@@ -701,9 +740,10 @@ class TabOne(wx.Panel):
                          float(self.sp_area_3), float(self.sp_ang_3), float(self.sp_or_3),
                          float(self.sp_area_4), float(self.sp_ang_4), float(self.sp_or_4)]
         store_params = [self.store_wt_out, self.store_sp_out, self.store_total_out]
+        price_params = [self.sp_price, self.wt_price, self.st_price]
         parameters = [self.location, self.year_choice.GetValue(), self.terrain_factor, 
                       self.latitude, self.longitude, windfeatures, solarfeatures, store_params, 
-                      self.filename_field.GetValue(), self.sp_eff]
+                      self.filename_field.GetValue(), self.sp_eff, price_params]
 
         worker = sim_worker(self, parameters)
         worker.start()
@@ -722,18 +762,14 @@ class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title="Simulator")
 
-        # Create a panel and notebook (tabs holder)
         nb = wx.Notebook(self)
 
-        # Create the tab windows
         tab1 = TabOne(nb)
         tab2 = TabTwo(nb)
 
-        # Add the windows to tabs and name them.
         nb.AddPage(tab1, "Simulation")
         nb.AddPage(tab2, "Training")
 
-        # Set noteboook in a sizer to create the layout
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(nb, 1, wx.ALL|wx.EXPAND, 2)
         self.SetSizer(sizer)
