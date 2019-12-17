@@ -300,6 +300,11 @@ def clearFields(GUI):
             item.config(text=empty)
             counter += 1
 
+    iterTuple = iter(GUI.SolarSommatie)
+    next(iterTuple)
+    for item in iterTuple:
+        item.config(text=empty)
+
     # Gegevens voor de windturbines
     entry = GUI.WTHeightTuple[1]
     entry.config(text=empty)
@@ -349,10 +354,6 @@ def exitProgram(GUI):
 
     except AttributeError as e:
         print("Nog niet gestart")
-
-
-def deleteSavedRunsFolder(filepath):
-    file = filepath + "log.txt"
 
 
 # Deze methode opent het popup scherm met de instellingen
@@ -573,6 +574,8 @@ def loadCsvFile(GUI, filename=None):
                         item.config(text=textPreSpace + str(info))
                         counter += 1
 
+                solarSommation(GUI)
+
                 # Gegevens voor de windturbines
                 n_WindTurbines = round(float(GUI.csvData[-2]))
                 h_WindTurbines = round(float(GUI.csvData[-1]))
@@ -590,3 +593,34 @@ def loadCsvFile(GUI, filename=None):
         print(e)
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
+def solarSommation(GUI):
+    iterTuple = iter(GUI.SolarSommatie)
+    next(iterTuple)
+    surfaceAreaSum = 0
+    angleSum = 0
+    orientationSum = 0
+    solarPanelsInfo = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    devisionSum = 0
+
+    for x in range(4):
+        group = 3 * x
+        area = float(GUI.csvData[group])
+        angle = float(GUI.csvData[group + 1])
+        orientation = float(GUI.csvData[group + 2])
+        solarPanelsInfo[x] = [area, angle, orientation]
+        surfaceAreaSum += area
+
+    for x in range(4):
+        devision = solarPanelsInfo[x][0] / surfaceAreaSum
+        devisionSum += devision
+        angleSum += (devision * solarPanelsInfo[x][1])
+        orientationSum += (devision * solarPanelsInfo[x][2])
+
+    SurfaceSumField = next(iterTuple)
+    SurfaceSumField.config(text=textPreSpace + str(round(float(surfaceAreaSum), 2)))
+    AngleSummation = next(iterTuple)
+    AngleSummation.config(text=textPreSpace + str(round(float(angleSum), 2)))
+    OrientationSummation = next(iterTuple)
+    OrientationSummation.config(text=textPreSpace + str(round(float(orientationSum), 2)))

@@ -137,7 +137,7 @@ class Application(Frame):
 
         # Grafieken veld links
         self.FrameGrafiek = Frame(self.parent)
-        self.FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=5, sticky=W + E + N + S)
+        self.FrameGrafiek.grid(row=1, column=0, columnspan=5, sticky=W + E + N + S)
 
         # Rechter paneel met waarden
         self.ItemFrame = Frame(self.parent)
@@ -145,7 +145,7 @@ class Application(Frame):
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
-        self.f = Figure(figsize=(8, 6), dpi=100)  # Maakt figuur waar de grafiek in komt
+        self.f = Figure(dpi=100)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
@@ -260,6 +260,7 @@ class Application(Frame):
         SP2HeaderTuple = wm.LabelRow("Zonnepanelen veld 2", self.ItemFrame, self.HFont, self.ColFont)
         SP3HeaderTuple = wm.LabelRow("Zonnepanelen veld 3", self.ItemFrame, self.HFont, self.ColFont)
         SP4HeaderTuple = wm.LabelRow("Zonnepanelen veld 4", self.ItemFrame, self.HFont, self.ColFont)
+        self.SolarSommatie = wm.LabelRow("Sommatie", self.ItemFrame, self.HFont, self.ColFont)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -270,6 +271,12 @@ class Application(Frame):
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
                 ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
+
+        ColumnCounter = 0
+        for Item in self.SolarSommatie:
+            Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+            ColumnCounter = ColumnCounter + 1
+        RowCounter = RowCounter + 1
 
         # Dit maakt het overzicht van de totale kosten
         TotalLabel = Label(self.ItemFrame, text="Totale Kosten", height=2, relief=SOLID, font=("Helvetica", 20))
