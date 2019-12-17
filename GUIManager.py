@@ -4,7 +4,6 @@ from tkinter import *
 from tkinter.ttk import Progressbar
 from train import train
 from multiprocessing import Process, Value, Manager
-import multiprocessing as mp
 from ctypes import c_char_p
 import GUI.GUIFunctions as fn
 from tkinter import font as fontMaker
@@ -14,7 +13,6 @@ import pandas as pd
 from Simulator import Simulator
 from generators import Windturbine
 from location import Location
-import os
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -23,13 +21,13 @@ DELAY2 = 1000
 # Dit is de module voor de UI. Zat alle veldjes neer en runt de thread voor de funcites
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class Application(Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, percentage):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
         self.SetSettings()
         self.defineValues()
         self.setUpLocationYear()
-        self.makeFonts()
+        self.makeFonts(percentage)
         self.initUI()  # Maak de UI
         self.setColumnRowConfigure([self.parent, self.FrameGrafiek, self.ItemFrame, self.FrameGrafiekButtons])
         self.grid()  # Het is een grid field
@@ -38,13 +36,17 @@ class Application(Frame):
         fn.clearFields(self)
 
     # Fonts die gebruikt woorden in de widgets
-    def makeFonts(self):
+    def makeFonts(self, percentage):
+        fontsize = (0.2 + percentage) * 10
+        fontOrder = [1.5, 1, 1, 2, 1.2]
+        fontSizeList = [int(x * fontsize) for x in fontOrder]
+
         fontFamily = 'Helvetica'
-        self.ButtonFont = fontMaker.Font(family=fontFamily, size=15, weight='bold')
-        self.InfoFont = fontMaker.Font(family=fontFamily, size=10)
-        self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
-        self.GenerationFont = fontMaker.Font(family=fontFamily, size=25, weight='bold')
-        self.ColFont = fontMaker.Font(family=fontFamily, size=10)
+        self.ButtonFont = fontMaker.Font(family=fontFamily, size=fontSizeList[0], weight='bold')
+        self.InfoFont = fontMaker.Font(family=fontFamily, size=fontSizeList[1])
+        self.HFont = fontMaker.Font(family=fontFamily, size=fontSizeList[2], weight='bold')
+        self.GenerationFont = fontMaker.Font(family=fontFamily, size=fontSizeList[3], weight='bold')
+        self.ColFont = fontMaker.Font(family=fontFamily, size=fontSizeList[4])
 
     # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje
     # GUI/settings.csv staat. Als je iets toevoegd aan InfoSet komt er ook een invul set van
@@ -148,8 +150,9 @@ class Application(Frame):
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
+
         # Grafiek Buttons
-        settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons,
+        self.settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons,
                                          self.FrameGrafiekButtons,
                                          fn.openCostFunctionSettingWindow, True)
         self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", self.FrameGrafiekButtons,
@@ -183,15 +186,16 @@ class Application(Frame):
         self.chartButton.grid(row=0, column=2, sticky=N + S + E + W)
         self.previousButton.grid(row=0, column=3, sticky=N + S + E + W)
         self.nextButton.grid(row=0, column=4, sticky=N + S + E + W)
-        settingButton.grid(row=0, column=5, sticky=N + S + E + W)
+        self.settingButton.grid(row=0, column=5, sticky=N + S + E + W)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
-        self.f = Figure(figsize=(8, 6), dpi=100)  # Maakt figuur waar de grafiek in komt
+        self.f = Figure(figsize=(8, 6), dpi=100, constrained_layout=True)  # Maakt figuur waar de grafiek in komt
+        # self.f = Figure(constrained_layout=True)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
-
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
+        # self.f.tight_layout()
 
         # Dit is de laad balk en de knop volgende grafiek. De knop staat uit want hij wisselt naar niets
         self.pbar = Progressbar(self.FrameGrafiek, mode='indeterminate')
@@ -283,6 +287,7 @@ class Application(Frame):
         else:  # Als de algoritme nog niet aan het trainen is. begin nu.
             try:
                 # Haal de waarden op uit de velden. Met passende meldingen
+                self.settingButton.config(state="disabled")
                 GenInfo = int(self.getValueFromSettingsByName("gens"))
                 PoolInfo = int(self.getValueFromSettingsByName("pool"))
                 MutationInfo = int(self.getValueFromSettingsByName("mutate_percentage"))
@@ -389,6 +394,7 @@ class Application(Frame):
         self.RunButton.config(text="    Run", image=self.RunIcon)  # Zet de text van de knop weer naar run
         self.counterCheck = 0  # Resest update check
         self.counter = 0  # Reset update check
+        self.settingButton.config(state="normal")
 
         # Als er meer dan twee generaties zijn geweest, dan moet je nog kunnen wissel tussen de grafieken
         if len(self.gens) > 1:
@@ -419,10 +425,10 @@ def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, 
 # Maak en open een interface window
 def main():
     root = Tk()
-    # root.resizable(height=None, width=None)
-    app = Application(root)
-    root.wm_iconbitmap("GUI/icons/icon.ico")
     percentage = 0.8
+    # percentage = 0.65
+    app = Application(root, percentage)
+    root.wm_iconbitmap("GUI/icons/icon.ico")
     screen_width = int(root.winfo_screenwidth() * percentage)
     aspect_ratio = 1600 / 720
     screen_height = int(screen_width / aspect_ratio)

@@ -1,4 +1,7 @@
+import shutil
 from math import ceil, log
+from os import listdir
+from os.path import join, isfile
 from tkinter import *
 from tkinter import messagebox
 from . import GUIWidgetMaker as wm
@@ -9,10 +12,12 @@ import babel.numbers as bb
 import pandas as pd
 from tkinter.filedialog import askopenfilename
 import csv
+import matplotlib.patches as mpatches
+from math import log10, floor
+import time
 
 # Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
 textPreSpace = "  "
-
 NUMBEROFGRAPHS = 7
 
 
@@ -77,6 +82,10 @@ def nextChart(GUI, starting=True):
     loadChart(GUI, starting, GUI.fullGraph)
 
 
+def round_sig(x, sig=2):
+    return round(x, sig - int(floor(log10(abs(x)))) - 1)
+
+
 # Laat de volgende grafiek zien
 def loadChart(GUI, starting=True, fullChart=False):
     if fullChart:
@@ -101,6 +110,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Laagste Kosten")
         limit = x_limit(GUI.gens)
+        # GUI.a.tight_layout()
 
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
@@ -114,13 +124,15 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 1:
         Length = len(GUI.gens)
         if (Length < GrafiekLengte):
-            GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
+            GUI.a.plot(GUI.gens, GUI.meanCost, color='red',
+                       label="Gemiddelde kosten van alle simulaties deze generatie")
         else:
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.meanCost[Length - GrafiekLengte:Length],
                        color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Gemiddelde kosten")
         limit = x_limit(GUI.gens)
+        # GUI.a.tight_layout()
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
@@ -133,17 +145,23 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 2:
         GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Geproduceerd")
         GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Energie geproduceerd")
+        GUI.a.set(ylabel="kW", xlabel="Dagen", title=titlePretext + "Jaarlijks vermogen")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
     # Instellingen voor de vierde grafiek: Som van overproductie
     elif GUI.graphNumber == 3:
-        GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Som Energie surplus")
+        GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Energie productie - vraag")
         GUI.a.plot(GUI.zeros, color='red', label="0 lijn")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Som van Energie geproduceerd")
+        GUI.a.set(ylabel="MWh", xlabel="Dagen", title=titlePretext + "\u03A3(Energie productie - vraag)")
         GUI.a.set_xlim(0, 365)
-        GUI.a.legend()
+        PowerPlantPower = GUI.getValueFromSettingsByName("powerplant_power") * 365 * 24 / 1000
+        maxValue = np.max(GUI.KW_sum) + PowerPlantPower
+        verdeling = "Vraag is " + str(round_sig((PowerPlantPower / maxValue) * 100)) + "% van totaal."
+        balans = mpatches.Patch(color='green', label='Energie productie - vraag', linewidth=1)
+        nul_line = mpatches.Patch(color='red', label='0 Lijn', linewidth=1)
+        percentage = mpatches.Patch(alpha=0, label=verdeling)
+        GUI.a.legend(handles=[balans, nul_line, percentage])
 
     # Instellingen voor de zesde grafiek: Gebruik van de accu's.
     elif GUI.graphNumber == 4:
@@ -321,8 +339,20 @@ def exitProgram(GUI):
     try:
         GUI.parent.destroy()
         GUI.p1.kill()
+        print(GUI.Directory.value)
+        shutil.rmtree(GUI.Directory.value)
+
+    except PermissionError as e:
+        time.sleep(5)
+        shutil.rmtree(GUI.Directory.value)
+        print("Nog niet gestart")
+
     except AttributeError as e:
         print("Nog niet gestart")
+
+
+def deleteSavedRunsFolder(filepath):
+    file = filepath + "log.txt"
 
 
 # Deze methode opent het popup scherm met de instellingen
@@ -330,8 +360,8 @@ def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
     percentage = 0.65
     screen_width = int(GUI.winfo_screenwidth() * percentage)
-    aspect_ratio = 1600/500
-    screen_height = int(screen_width/aspect_ratio)
+    aspect_ratio = 1600 / 500
+    screen_height = int(screen_width / aspect_ratio)
     GUI.NewWindow.geometry(str(screen_width) + "x" + str(screen_height))
     font = GUI.InfoFont
     settings = GUI.settingsDataFrame
@@ -351,7 +381,7 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     headerList = ["Instellingen voor het algortime", "Zonne- en windinstellingen", "Kabel, locatie, jaar en opslaan"]
     headerIndex = 0
     for index, row in settings.iterrows():
-        if headerCounter-RowCounter == 0:
+        if headerCounter - RowCounter == 0:
             ColumnCounter = ColumnCounter + 2
             costFunctionHeader(NewWindow, headerList[headerIndex], ColumnCounter, GUI, padx, pady)
             RowCounter = 1
@@ -454,6 +484,7 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
                                     True)
         CloseButton.pack(padx=10, pady=10)
 
+
 def loadPreviousGen(GUI):
     lg = GUI.lowestGeneration
     ReadLogging(GUI.Directory.value, int(lg), GUI)
@@ -473,6 +504,7 @@ def closeFinishedPopup(GUI):
 
 # Dit bestand laad het loggin bestand in
 def loadLoggingFile(GUI, first=None, filename=None):
+    f = ""
     try:
         if filename is None:
             filename = askopenfilename()  # Dit gebeurd als je de knop indrukt, laat hij hem pakken
@@ -514,6 +546,9 @@ def loadLoggingFile(GUI, first=None, filename=None):
         print(e)
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+    finally:
+        f.close()
 
 
 # Deze functie leest een CSV file in

@@ -1,15 +1,15 @@
 name,text,value
 gens,Generaties,100.0
 pool,Pool,200.0
-mutate_percentage,Mutatie Percentage (%),50.0
-tickLimit,Maximum aantal ticks in de grafiek,20.0
+mutate_percentage,Mutatie percentage (%),50.0
+tickLimit,Aantal ticks op de x-as,20.0
 deficit_cost,Kosten voor tekort (€/kWh),1000000.0
-storage_costs,Kosten per Opslag (€/kWh),400.0
-powerplant_power,Powerplant Vermogen vraag (kW),6000.0
-surface_area_costs,Kosten per m² Zonnepanneel (€),160.0
-surface_min,Minimaal zonnenpaneel oppervlakte (m²),0.0
-surface_max,Maximaal zonnenpaneel oppervlakte (m²),10000000.0
-solar_efficiency,Efficienty van zonnenpanelen (%),16.0
+storage_costs,Kosten per opslag (€/kWh),400.0
+powerplant_power,Powerplant vermogen vraag (kW),6000.0
+surface_area_costs,Kosten per m² zonnepanneel (€),160.0
+surface_min,Minimaal zonnepaneel oppervlakte (m²),0.0
+surface_max,Maximaal zonnepaneel oppervlakte (m²),10000000.0
+solar_efficiency,Efficienty van zonnepaneel (%),16.0
 windturbine_type,Windturbine Type,4.0
 terrain,Terreingesteldheid,0.12
 windturbine_max,Maximaal aantal windturbines,20.0
