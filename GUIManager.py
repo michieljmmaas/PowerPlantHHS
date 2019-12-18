@@ -13,6 +13,7 @@ import pandas as pd
 from Simulator import Simulator
 from generators import Windturbine
 from location import Location
+import os
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -34,6 +35,7 @@ class Application(Frame):
         self.parent.title("Danone Powerplant")  # Titel van het scherm
         # Vul standaard waarden in
         fn.clearFields(self)
+        print("Programma is geladen")
 
     # Fonts die gebruikt woorden in de widgets
     def makeFonts(self, percentage):
@@ -150,11 +152,10 @@ class Application(Frame):
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
-
         # Grafiek Buttons
         self.settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons,
-                                         self.FrameGrafiekButtons,
-                                         fn.openCostFunctionSettingWindow, True)
+                                              self.FrameGrafiekButtons,
+                                              fn.openCostFunctionSettingWindow, True)
         self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", self.FrameGrafiekButtons,
                                                self.FrameGrafiekButtons,
                                                fn.previousChart, False)
@@ -252,7 +253,8 @@ class Application(Frame):
             RowCounter = RowCounter + 1
 
         # Colom namen
-        opslagHeaderTuple = wm.HeaderRow("", "Totaal Opslag (kWh)", "Prijs per kWh (€)", "Totaal (€)", self.ItemFrame, self.HFont)
+        opslagHeaderTuple = wm.HeaderRow("", "Totaal Opslag (kWh)", "Prijs per kWh (€)", "Totaal (€)", self.ItemFrame,
+                                         self.HFont)
 
         # Windturbine aantal
         self.opslagTuple = wm.LabelRow("Opslag", self.ItemFrame, self.HFont, self.ColFont)
@@ -292,7 +294,6 @@ class Application(Frame):
             Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
             ColumnCounter = ColumnCounter + 1
         RowCounter = RowCounter + 1
-
 
         # Dit maakt het overzicht van de totale kosten
         TotalLabel = Label(self.ItemFrame, text="Totale Kosten", height=2, relief=SOLID, font=("Helvetica", 20))
@@ -399,6 +400,7 @@ class Application(Frame):
         fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
         fn.RunSimulation(self)
         fn.setUpPower(self)
+        fn.printInfo(self)
 
     # Deze methode maakt een Cost Calculator met de waarden die ingesteld zijn op het scherm
     def getCostCalculator(self):
@@ -441,6 +443,7 @@ class Application(Frame):
 # Run de trainfunctie met mijn eigen waarden
 def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, windturbineType,
              windturbineMax, tr_rating, sp_eff):
+    os.system('cls' if os.name == 'nt' else 'clear')
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
           directory=directory, mutationPercentage=array[2], target_kw=array[3],
           cost_calculator=CostCalculator, windturbineType=windturbineType,
@@ -457,7 +460,7 @@ def main():
     screen_width = int(root.winfo_screenwidth() * percentage)
     aspect_ratio = 1600 / 800
     screen_height = int(screen_width / aspect_ratio)
-    root.geometry(str(screen_width) + "x" + str(screen_height)+"+50+50")
+    root.geometry(str(screen_width) + "x" + str(screen_height) + "+50+50")
     root.mainloop()
 
 

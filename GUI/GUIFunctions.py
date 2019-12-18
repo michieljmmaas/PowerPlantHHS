@@ -337,7 +337,6 @@ def exitProgram(GUI):
     try:
         GUI.parent.destroy()
         GUI.p1.kill()
-        print(GUI.Directory.value)
         shutil.rmtree(GUI.Directory.value)
 
     except PermissionError as e:
@@ -425,6 +424,16 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     GUI.setColumnRowConfigure([NewWindow])
 
 
+def printInfo(GUI):
+    generation = "generation: " + str(len(GUI.gens))
+    mean_cost = " mean_cost: " + str(GUI.meanCost[-1])
+    min_cost = " min_cost: " + str(GUI.minCost[-1])
+    wind_tubrines = " nr_Windturbines: " + str(GUI.n_WindTurbines)
+    surfaceArea = " total_surfaceArea: " + GUI.surfaceAreaSum
+    totalStorage = " total_storage: " + str(GUI.cost_stats['total_storage'])
+    print(generation + mean_cost + min_cost + wind_tubrines + surfaceArea + totalStorage)
+
+
 def costFunctionHeader(NewWindow, Tekst, column, GUI, padx, pady):
     headerLabel = Label(NewWindow, text=Tekst, width=30, font=GUI.HFont, anchor=W)
     headerLabel.grid(row=0, column=column, padx=padx, pady=pady, sticky=N + S)
@@ -452,6 +461,7 @@ def SaveValues(GUI):
     GUI.locationTextVariable.set(chosenLocation)
     GUI.yearTextVariable.set(chosenYear)
     GUI.settingsMenuOpen = False
+    print("Gegevens zijn opgeslagen")
 
 
 def fullChart(GUI):
@@ -582,12 +592,12 @@ def loadCsvFile(GUI, filename=None):
                 solarSommation(GUI)
 
                 # Gegevens voor de windturbines
-                n_WindTurbines = round(float(GUI.csvData[-2]))
+                GUI.n_WindTurbines = round(float(GUI.csvData[-2]))
                 h_WindTurbines = round(float(GUI.csvData[-1]))
                 t_WindTurbines = round(float(GUI.getValueFromSettingsByName("windturbine_type")))
 
                 entry = GUI.WTHeightTuple[1]
-                entry.config(text=textPreSpace + str(n_WindTurbines))
+                entry.config(text=textPreSpace + str(GUI.n_WindTurbines))
 
                 cost = GUI.WTHeightTuple[2]
                 cost.config(text=textPreSpace + str(h_WindTurbines))
@@ -603,7 +613,7 @@ def loadCsvFile(GUI, filename=None):
 def solarSommation(GUI):
     iterTuple = iter(GUI.SolarSommatie)
     next(iterTuple)
-    surfaceAreaSum = 0
+    GUI.surfaceAreaSum = 0
     angleSum = 0
     orientationSum = 0
     solarPanelsInfo = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -617,16 +627,17 @@ def solarSommation(GUI):
         if orientation >= 180:
             orientation = 360 - orientation
         solarPanelsInfo[x] = [area, angle, orientation]
-        surfaceAreaSum += area
+        GUI.surfaceAreaSum += area
 
     for x in range(4):
-        devision = solarPanelsInfo[x][0] / surfaceAreaSum
+        devision = solarPanelsInfo[x][0] / GUI.surfaceAreaSum
         devisionSum += devision
         angleSum += (devision * solarPanelsInfo[x][1])
         orientationSum += (devision * solarPanelsInfo[x][2])
+    GUI.surfaceAreaSum = str(round(float(GUI.surfaceAreaSum), 2))
 
     SurfaceSumField = next(iterTuple)
-    SurfaceSumField.config(text=textPreSpace + str(round(float(surfaceAreaSum), 2)))
+    SurfaceSumField.config(text=textPreSpace + GUI.surfaceAreaSum)
     AngleSummation = next(iterTuple)
     AngleSummation.config(text=textPreSpace + str(round(float(angleSum), 2)))
     OrientationSummation = next(iterTuple)
