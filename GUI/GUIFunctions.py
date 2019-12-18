@@ -232,6 +232,7 @@ def RunSimulation(GUI):
     sp_sm = np.sum(GUI.csvData[0:N_SOLAR_FEATURES:3])
     wm_type = GUI.getValueFromSettingsByName("windturbine_type")
     GUI.cost_stats = GUI.CostCalulator.get_stats(energy_production, sp_sm, wm_type, n_Turbines)
+    fillStorageField(GUI)
 
 
 def resetToDefaultSettings(GUI):
@@ -300,20 +301,12 @@ def clearFields(GUI):
             item.config(text=empty)
             counter += 1
 
-    iterTuple = iter(GUI.SolarSommatie)
-    next(iterTuple)
-    for item in iterTuple:
-        item.config(text=empty)
-
-    # Gegevens voor de windturbines
-    entry = GUI.WTHeightTuple[1]
-    entry.config(text=empty)
-
-    cost = GUI.WTHeightTuple[2]
-    cost.config(text=empty)
-
-    total = GUI.WTHeightTuple[3]
-    total.config(text=empty)
+    overigList = [GUI.SolarSommatie, GUI.opslagTuple, GUI.WTHeightTuple]
+    for tupleSet in overigList:
+        iterTuple = iter(tupleSet)
+        next(iterTuple)
+        for item in iterTuple:
+            item.config(text=empty)
 
     GUI.TotalCost.config(text="  €0,00")
 
@@ -354,6 +347,18 @@ def exitProgram(GUI):
 
     except AttributeError as e:
         print("Nog niet gestart")
+
+
+def fillStorageField(GUI):
+    stats = GUI.cost_stats
+    total_storage = stats['total_storage']
+    price_opslag = GUI.getValueFromSettingsByName('storage_costs')
+    price_opslag_display = bb.format_currency(price_opslag, 'EUR', locale='en_US')
+    total_price = float(total_storage) * float(price_opslag)
+    total_price_display = bb.format_currency(total_price, 'EUR', locale='en_US')
+    GUI.opslagTuple[1].config(text=textPreSpace + str(round(float(total_storage), 2)))
+    GUI.opslagTuple[2].config(text=textPreSpace + str(price_opslag_display))
+    GUI.opslagTuple[3].config(text=textPreSpace + str(total_price_display))
 
 
 # Deze methode opent het popup scherm met de instellingen

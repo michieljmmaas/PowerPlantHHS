@@ -236,7 +236,7 @@ class Application(Frame):
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
         # Colom namen
-        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte", "Type", self.ItemFrame, self.HFont)
+        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte (m)", "Type", self.ItemFrame, self.HFont)
 
         # Windturbine aantal
         self.WTHeightTuple = wm.LabelRow("Windmolens", self.ItemFrame, self.HFont, self.ColFont)
@@ -245,6 +245,21 @@ class Application(Frame):
         LabelTupleList = [headerTuple, self.WTHeightTuple]
         RowCounter = 1
         for Tuple in LabelTupleList:
+            ColumnCounter = 0
+            for Item in Tuple:
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+                ColumnCounter = ColumnCounter + 1
+            RowCounter = RowCounter + 1
+
+        # Colom namen
+        opslagHeaderTuple = wm.HeaderRow("", "Totaal Opslag (kWh)", "Prijs per kWh (€)", "Totaal (€)", self.ItemFrame, self.HFont)
+
+        # Windturbine aantal
+        self.opslagTuple = wm.LabelRow("Opslag", self.ItemFrame, self.HFont, self.ColFont)
+
+        # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
+        opslagTupleList = [opslagHeaderTuple, self.opslagTuple]
+        for Tuple in opslagTupleList:
             ColumnCounter = 0
             for Item in Tuple:
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
@@ -277,6 +292,7 @@ class Application(Frame):
             Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
             ColumnCounter = ColumnCounter + 1
         RowCounter = RowCounter + 1
+
 
         # Dit maakt het overzicht van de totale kosten
         TotalLabel = Label(self.ItemFrame, text="Totale Kosten", height=2, relief=SOLID, font=("Helvetica", 20))
@@ -439,7 +455,7 @@ def main():
     app = Application(root, percentage)
     root.wm_iconbitmap("GUI/icons/icon.ico")
     screen_width = int(root.winfo_screenwidth() * percentage)
-    aspect_ratio = 1600 / 720
+    aspect_ratio = 1600 / 800
     screen_height = int(screen_width / aspect_ratio)
     root.geometry(str(screen_width) + "x" + str(screen_height)+"+50+50")
     root.mainloop()
