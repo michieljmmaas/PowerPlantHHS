@@ -407,15 +407,15 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     GUI.yearOptionMenu.grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
-    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default",
-                                resetToDefaultSettings, True)
-    ResetButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
-                     sticky=N + S + E + W)
-    RowCounter = RowCounter + 2
-
     SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "   Opslaan", SaveValues, True)
-    SaveButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
+    SaveButton.grid(row=RowCounter, column=ColumnCounter, rowspan=2, pady=pady, padx=padx,
                     sticky=N + S + E + W)
+
+    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Reset",
+                                resetToDefaultSettings, True)
+    ResetButton.grid(row=RowCounter, column=ColumnCounter + 1, rowspan=2, pady=pady, padx=padx,
+                     sticky=N + S + E + W)
+
     GUI.preSave = preSaveEntries
     GUI.setColumnRowConfigure([NewWindow])
 
@@ -468,8 +468,8 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
     lowestGen = GUI.minCost.index(min(GUI.minCost))
     if lowestGen != len(GUI.minCost) - 1:
         GUI.lowestGeneration = str(lowestGen + 1)
-        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + GUI.lowestGeneration + "e generatie"
-        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien?"
+        generationText = "De goedkoopste opstelling is niet gelijk aan de laatste. Dit was de " + GUI.lowestGeneration + "e generatie"
+        continueText = "Wilt u terug springen naar de laagste en de bijbehorende opstelling zien?"
         generationLabel = Label(NewWindow, text=generationText, anchor=W, font=font)
         generationLabel.pack(padx=10, pady=10)
         continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
@@ -609,6 +609,8 @@ def solarSommation(GUI):
         area = float(GUI.csvData[group])
         angle = float(GUI.csvData[group + 1])
         orientation = float(GUI.csvData[group + 2])
+        if orientation >= 180:
+            orientation = 360 - orientation
         solarPanelsInfo[x] = [area, angle, orientation]
         surfaceAreaSum += area
 

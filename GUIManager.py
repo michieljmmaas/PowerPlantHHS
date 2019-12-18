@@ -391,7 +391,9 @@ class Application(Frame):
                                            self.getValueFromSettingsByName("powerplant_power"),
                                            self.getValueFromSettingsByName("deficit_cost"),
                                            self.getValueFromSettingsByName("cable_length"),
-                                           self.getValueFromSettingsByName("cable_voltage"))
+                                           self.getValueFromSettingsByName("windturbine_price"),
+                                           self.getValueFromSettingsByName("cable_voltage")
+                                           )
         return CostCalculator
 
     def endSimulation(self):

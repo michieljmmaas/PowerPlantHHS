@@ -79,7 +79,7 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_m,
 # @njit
 def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
                          target_kw, sp_cost_per_sm, st_cost_per_kwh, deficit_cost,
-                         cb_cost_table, cb_length, cb_voltage):
+                         cb_cost_table, cb_length, cb_voltage, wm_price):
     surplus_array = kwh_array - target_kw
     cumulative_array = np.cumsum(surplus_array)
     storage = 0
@@ -99,17 +99,7 @@ def _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
             cumulative_array = cumulative_array[new_start:]
             declining = declining[new_start:]
 
-    # windturbine calculation
-    if (wm_type == 2):
-        wm_cost = 1605000
-    elif (wm_type == 3):
-        wm_cost = 5350000
-    elif (wm_type == 1):
-        wm_cost = 535000
-    elif (wm_type == 4):
-        wm_cost = 3210000
-    else:
-        wm_cost = 0
+    wm_cost = wm_price
 
     # Cable calculation
     kwh_max = kwh_array.max()
@@ -137,15 +127,20 @@ class CostCalculator():
         st_cost_per_kwh = Storage Cost per KWH
     """
 
-    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_length, cb_voltage=100000):
+    def __init__(self, sp_cost_per_sm, st_cost_per_kwh, target_kw, deficit_cost, cb_length, wm_price, cb_voltage=100000):
+        self.wm_price = wm_price
         self.sp_cost_per_sm = sp_cost_per_sm
         self.st_cost_per_kwh = st_cost_per_kwh
         self.target_kw = target_kw
         self.deficit_cost = deficit_cost
-        self.cb_cost_table = pd.DataFrame({'area':[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 600, 1000,1250, 1600, 2000, 3000, 5000, 
-                                    8000 , 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 200000],
-                                  'cost':[0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1, 0.15, 0.22, 0.3, 0.39, 0.49, 0.5, 
-                                  0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40, 50, 60, 72, 84, 96, 110, 124, 140, 280]})
+        self.cb_cost_table = pd.DataFrame({'area': [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300,
+                                                    400, 600, 1000, 1250, 1600, 2000, 3000, 5000,
+                                                    8000, 10000, 12000, 15000, 18000, 22000, 25000, 30000, 40000, 50000,
+                                                    60000, 70000, 80000, 90000, 100000, 200000],
+                                           'cost': [0.002, 0.003, 0.008, 0.013, 0.014, 0.016, 0.025, 0.035, 0.075, 0.1,
+                                                    0.15, 0.22, 0.3, 0.39, 0.49, 0.5,
+                                                    0.62, 0.8, 1.25, 1.6, 2, 2.5, 3.5, 6, 9, 11, 13, 17.5, 20, 30, 40,
+                                                    50, 60, 72, 84, 96, 110, 124, 140, 280]})
         self.cb_length = cb_length
         self.cb_voltage = cb_voltage
 
@@ -154,7 +149,7 @@ class CostCalculator():
         kwh_array = copy(kwh_array)
         return _calculate_cost_njit(kwh_array, sp_sm, wm_type, n_Turbines,
                                     self.target_kw, self.sp_cost_per_sm, self.st_cost_per_kwh, self.deficit_cost,
-                                    self.cb_cost_table, self.cb_length, self.cb_voltage)
+                                    self.cb_cost_table, self.cb_length, self.cb_voltage, self.wm_price)
 
     def get_stats(self, kwh_array, sp_sm, wm_type, n_Turbines):
         surplus_array = kwh_array - self.target_kw
@@ -177,20 +172,14 @@ class CostCalculator():
                 cumulative_array = cumulative_array[new_start:]
                 declining = declining[new_start:]
         # windturbine cost
-        if (wm_type == 2):
-            wm_cost = 1605000
-        elif (wm_type == 3):
-            wm_cost = 5350000
-        elif (wm_type == 1):
-            wm_cost = 535000
-        elif (wm_type == 4):
-            wm_cost = 3210000
-        else:
-            wm_cost = 0
+
+        # wm_cost = getWindTurbinePrice(wm_type, wm_price)
+        wm_cost = self.wm_price
 
         # Cable calculation
         kwh_max = kwh_array.max()
-        cable_area = (0.01989 * self.cb_length * (kwh_max * 1000 / self.cb_voltage))/0.3 # Formula for minimum cable area if the enviorment is 50℃
+        cable_area = (0.01989 * self.cb_length * (
+                kwh_max * 1000 / self.cb_voltage)) / 0.3  # Formula for minimum cable area if the enviorment is 50℃
         usable_cables = self.cb_cost_table[self.cb_cost_table['area'] > cable_area]
         if (len(usable_cables) > 0):
             cb_cost = usable_cables['cost'].iloc[0]
@@ -205,10 +194,10 @@ class CostCalculator():
         cable_cost = cb_cost * self.cb_length
 
         cost = solar_cost + \
-        wind_cost + \
-        storage_cost + \
-        cable_cost + \
-        deficit_cost
+               wind_cost + \
+               storage_cost + \
+               cable_cost + \
+               deficit_cost
         stat_dict = {
             'cost': cost,
             'solar_cost': solar_cost,
@@ -223,13 +212,28 @@ class CostCalculator():
         return stat_dict
 
 
+def getWindTurbinePrice(wm_type, wm_price):
+    if wm_price is None:
+        if (wm_type == 2):
+            wm_price = 1605000
+        elif (wm_type == 3):
+            wm_price = 5350000
+        elif (wm_type == 1):
+            wm_price = 535000
+        elif (wm_type == 4):
+            wm_price = 3210000
+        else:
+            wm_price = 0
+    return wm_price
+
+
 # code example to test if storage and deficit calculations are working
 if __name__ == '__main__':
     from Simulator import Simulator
     from generators import Windturbine
 
     turbine = Windturbine(4)
-    sim = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine, skiprows=[0, 1, 2, 3])
+    sim = Simulator('formatted_data.xls', '1%overschrijding-B.2', turbine)
 
     sp_price_1 = 450
     storage_price_1 = 1

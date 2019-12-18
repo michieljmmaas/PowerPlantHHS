@@ -13,5 +13,6 @@ solar_efficiency,Efficienty van zonnepaneel (%),16.0
 windturbine_type,Windturbine Type,4.0
 terrain,Terreingesteldheid,0.12
 windturbine_max,Maximaal aantal windturbines,20.0
+windturbine_price,Prijs per windturbine (€), 3210000
 cable_length,Lengte van de kabel (m),1000.0
 cable_voltage,Spanning over de kabel (V),100000.0
