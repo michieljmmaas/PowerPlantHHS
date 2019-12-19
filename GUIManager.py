@@ -4,7 +4,6 @@ from tkinter import *
 from tkinter.ttk import Progressbar
 from train import train
 from multiprocessing import Process, Value, Manager
-import multiprocessing as mp
 from ctypes import c_char_p
 import GUI.GUIFunctions as fn
 from tkinter import font as fontMaker
@@ -23,28 +22,33 @@ DELAY2 = 1000
 # Dit is de module voor de UI. Zat alle veldjes neer en runt de thread voor de funcites
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class Application(Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, percentage):
         Frame.__init__(self, parent, name="frame")
         self.parent = parent
         self.SetSettings()
         self.defineValues()
         self.setUpLocationYear()
-        self.makeFonts()
+        self.makeFonts(percentage)
         self.initUI()  # Maak de UI
         self.setColumnRowConfigure([self.parent, self.FrameGrafiek, self.ItemFrame, self.FrameGrafiekButtons])
         self.grid()  # Het is een grid field
         self.parent.title("Danone Powerplant")  # Titel van het scherm
         # Vul standaard waarden in
         fn.clearFields(self)
+        print("Programma is geladen")
 
     # Fonts die gebruikt woorden in de widgets
-    def makeFonts(self):
+    def makeFonts(self, percentage):
+        fontsize = (0.2 + percentage) * 10
+        fontOrder = [1.5, 1, 1, 2, 1.2]
+        fontSizeList = [int(x * fontsize) for x in fontOrder]
+
         fontFamily = 'Helvetica'
-        self.ButtonFont = fontMaker.Font(family=fontFamily, size=15, weight='bold')
-        self.InfoFont = fontMaker.Font(family=fontFamily, size=10)
-        self.HFont = fontMaker.Font(family=fontFamily, size=10, weight='bold')
-        self.GenerationFont = fontMaker.Font(family=fontFamily, size=25, weight='bold')
-        self.ColFont = fontMaker.Font(family=fontFamily, size=10)
+        self.ButtonFont = fontMaker.Font(family=fontFamily, size=fontSizeList[0], weight='bold')
+        self.InfoFont = fontMaker.Font(family=fontFamily, size=fontSizeList[1])
+        self.HFont = fontMaker.Font(family=fontFamily, size=fontSizeList[2], weight='bold')
+        self.GenerationFont = fontMaker.Font(family=fontFamily, size=fontSizeList[3], weight='bold')
+        self.ColFont = fontMaker.Font(family=fontFamily, size=fontSizeList[4])
 
     # Instellingen voor het aanroepen van Train. Dit gaat allemaal in een grote Dataframe die in het bestandje
     # GUI/settings.csv staat. Als je iets toevoegd aan InfoSet komt er ook een invul set van
@@ -135,7 +139,7 @@ class Application(Frame):
 
         # Grafieken veld links
         self.FrameGrafiek = Frame(self.parent)
-        self.FrameGrafiek.grid(row=1, column=0, rowspan=5, columnspan=5, sticky=W + E + N + S)
+        self.FrameGrafiek.grid(row=1, column=0, columnspan=5, sticky=W + E + N + S)
 
         # Rechter paneel met waarden
         self.ItemFrame = Frame(self.parent)
@@ -143,15 +147,15 @@ class Application(Frame):
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
-        self.f = Figure(figsize=(8, 6), dpi=100)  # Maakt figuur waar de grafiek in komt
+        self.f = Figure(dpi=100)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
 
         # Grafiek Buttons
-        settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons,
-                                         self.FrameGrafiekButtons,
-                                         fn.openCostFunctionSettingWindow, True)
+        self.settingButton = wm.GrafiekButton(self, "GUI/icons/settings.png", self.FrameGrafiekButtons,
+                                              self.FrameGrafiekButtons,
+                                              fn.openCostFunctionSettingWindow, True)
         self.previousButton = wm.GrafiekButton(self, "GUI/icons/previous.png", self.FrameGrafiekButtons,
                                                self.FrameGrafiekButtons,
                                                fn.previousChart, False)
@@ -183,15 +187,16 @@ class Application(Frame):
         self.chartButton.grid(row=0, column=2, sticky=N + S + E + W)
         self.previousButton.grid(row=0, column=3, sticky=N + S + E + W)
         self.nextButton.grid(row=0, column=4, sticky=N + S + E + W)
-        settingButton.grid(row=0, column=5, sticky=N + S + E + W)
+        self.settingButton.grid(row=0, column=5, sticky=N + S + E + W)
 
         # Hier onder worden de instellen van de grafiek gezet
         self.graphNumber = 0  # Wisselen tussen grafieken
-        self.f = Figure(figsize=(8, 6), dpi=100)  # Maakt figuur waar de grafiek in komt
+        self.f = Figure(figsize=(8, 6), dpi=100, constrained_layout=True)  # Maakt figuur waar de grafiek in komt
+        # self.f = Figure(constrained_layout=True)  # Maakt figuur waar de grafiek in komt
         self.a = self.f.add_subplot(111)  # Maakt grafiek
-
         self.a.plot([0], [0])  # Maak een standaard grafiek (dit geeft een leeg veld)
         self.a.axis('off')  # Laat assen niet zien voor een leeg scherm
+        # self.f.tight_layout()
 
         # Dit is de laad balk en de knop volgende grafiek. De knop staat uit want hij wisselt naar niets
         self.pbar = Progressbar(self.FrameGrafiek, mode='indeterminate')
@@ -232,7 +237,7 @@ class Application(Frame):
         # Hier onder zijn alle rijen beschreven. Eerst worden alle widgets aangemaakt, en daarna in een Tuple gestopt.
         # De tuple wordt gebruikt om makkelijk in te lezen
         # Colom namen
-        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte", "Type", self.ItemFrame, self.HFont)
+        headerTuple = wm.HeaderRow("", "Aantal", "Hoogte (m)", "Type", self.ItemFrame, self.HFont)
 
         # Windturbine aantal
         self.WTHeightTuple = wm.LabelRow("Windmolens", self.ItemFrame, self.HFont, self.ColFont)
@@ -241,6 +246,22 @@ class Application(Frame):
         LabelTupleList = [headerTuple, self.WTHeightTuple]
         RowCounter = 1
         for Tuple in LabelTupleList:
+            ColumnCounter = 0
+            for Item in Tuple:
+                Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+                ColumnCounter = ColumnCounter + 1
+            RowCounter = RowCounter + 1
+
+        # Colom namen
+        opslagHeaderTuple = wm.HeaderRow("", "Totaal Opslag (kWh)", "Prijs per kWh (€)", "Totaal (€)", self.ItemFrame,
+                                         self.HFont)
+
+        # Windturbine aantal
+        self.opslagTuple = wm.LabelRow("Opslag", self.ItemFrame, self.HFont, self.ColFont)
+
+        # Deze loop voegt alle boven aangemaakte Tuples toe aan het overzicht.
+        opslagTupleList = [opslagHeaderTuple, self.opslagTuple]
+        for Tuple in opslagTupleList:
             ColumnCounter = 0
             for Item in Tuple:
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
@@ -256,6 +277,7 @@ class Application(Frame):
         SP2HeaderTuple = wm.LabelRow("Zonnepanelen veld 2", self.ItemFrame, self.HFont, self.ColFont)
         SP3HeaderTuple = wm.LabelRow("Zonnepanelen veld 3", self.ItemFrame, self.HFont, self.ColFont)
         SP4HeaderTuple = wm.LabelRow("Zonnepanelen veld 4", self.ItemFrame, self.HFont, self.ColFont)
+        self.SolarSommatie = wm.LabelRow("Sommatie", self.ItemFrame, self.HFont, self.ColFont)
 
         self.SolarTupleList = [SPHeaderTuple, SP1HeaderTuple, SP2HeaderTuple, SP3HeaderTuple, SP4HeaderTuple]
 
@@ -266,6 +288,12 @@ class Application(Frame):
                 Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
                 ColumnCounter = ColumnCounter + 1
             RowCounter = RowCounter + 1
+
+        ColumnCounter = 0
+        for Item in self.SolarSommatie:
+            Item.grid(row=RowCounter, column=ColumnCounter, padx=padx, pady=pady, sticky=N + S)
+            ColumnCounter = ColumnCounter + 1
+        RowCounter = RowCounter + 1
 
         # Dit maakt het overzicht van de totale kosten
         TotalLabel = Label(self.ItemFrame, text="Totale Kosten", height=2, relief=SOLID, font=("Helvetica", 20))
@@ -283,6 +311,7 @@ class Application(Frame):
         else:  # Als de algoritme nog niet aan het trainen is. begin nu.
             try:
                 # Haal de waarden op uit de velden. Met passende meldingen
+                self.settingButton.config(state="disabled")
                 GenInfo = int(self.getValueFromSettingsByName("gens"))
                 PoolInfo = int(self.getValueFromSettingsByName("pool"))
                 MutationInfo = int(self.getValueFromSettingsByName("mutate_percentage"))
@@ -371,6 +400,7 @@ class Application(Frame):
         fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
         fn.RunSimulation(self)
         fn.setUpPower(self)
+        fn.printInfo(self)
 
     # Deze methode maakt een Cost Calculator met de waarden die ingesteld zijn op het scherm
     def getCostCalculator(self):
@@ -379,7 +409,9 @@ class Application(Frame):
                                            self.getValueFromSettingsByName("powerplant_power"),
                                            self.getValueFromSettingsByName("deficit_cost"),
                                            self.getValueFromSettingsByName("cable_length"),
-                                           self.getValueFromSettingsByName("cable_voltage"))
+                                           self.getValueFromSettingsByName("windturbine_price"),
+                                           self.getValueFromSettingsByName("cable_voltage")
+                                           )
         return CostCalculator
 
     def endSimulation(self):
@@ -389,6 +421,7 @@ class Application(Frame):
         self.RunButton.config(text="    Run", image=self.RunIcon)  # Zet de text van de knop weer naar run
         self.counterCheck = 0  # Resest update check
         self.counter = 0  # Reset update check
+        self.settingButton.config(state="normal")
 
         # Als er meer dan twee generaties zijn geweest, dan moet je nog kunnen wissel tussen de grafieken
         if len(self.gens) > 1:
@@ -410,6 +443,7 @@ class Application(Frame):
 # Run de trainfunctie met mijn eigen waarden
 def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, windturbineType,
              windturbineMax, tr_rating, sp_eff):
+    os.system('cls' if os.name == 'nt' else 'clear')
     train(array[0], array[1], minSurface, maxSurface, 0, 90, 0, 359, model_name=None, load=False, counter=counter,
           directory=directory, mutationPercentage=array[2], target_kw=array[3],
           cost_calculator=CostCalculator, windturbineType=windturbineType,
@@ -419,14 +453,14 @@ def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, 
 # Maak en open een interface window
 def main():
     root = Tk()
-    # root.resizable(height=None, width=None)
-    app = Application(root)
-    root.wm_iconbitmap("GUI/icons/icon.ico")
     percentage = 0.8
+    # percentage = 0.65
+    app = Application(root, percentage)
+    root.wm_iconbitmap("GUI/icons/icon.ico")
     screen_width = int(root.winfo_screenwidth() * percentage)
-    aspect_ratio = 1600 / 720
+    aspect_ratio = 1600 / 800
     screen_height = int(screen_width / aspect_ratio)
-    root.geometry(str(screen_width) + "x" + str(screen_height)+"+50+50")
+    root.geometry(str(screen_width) + "x" + str(screen_height) + "+50+50")
     root.mainloop()
 
 

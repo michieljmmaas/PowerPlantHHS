@@ -1,4 +1,7 @@
+import shutil
 from math import ceil, log
+from os import listdir
+from os.path import join, isfile
 from tkinter import *
 from tkinter import messagebox
 from . import GUIWidgetMaker as wm
@@ -9,10 +12,12 @@ import babel.numbers as bb
 import pandas as pd
 from tkinter.filedialog import askopenfilename
 import csv
+import matplotlib.patches as mpatches
+from math import log10, floor
+import time
 
 # Dit bestand geeft functies voor het inlezen van de bestanden en invullen van de velden
 textPreSpace = "  "
-
 NUMBEROFGRAPHS = 7
 
 
@@ -77,6 +82,10 @@ def nextChart(GUI, starting=True):
     loadChart(GUI, starting, GUI.fullGraph)
 
 
+def round_sig(x, sig=2):
+    return round(x, sig - int(floor(log10(abs(x)))) - 1)
+
+
 # Laat de volgende grafiek zien
 def loadChart(GUI, starting=True, fullChart=False):
     if fullChart:
@@ -101,6 +110,7 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Laagste Kosten")
         limit = x_limit(GUI.gens)
+        # GUI.a.tight_layout()
 
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
@@ -114,13 +124,15 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 1:
         Length = len(GUI.gens)
         if (Length < GrafiekLengte):
-            GUI.a.plot(GUI.gens, GUI.meanCost, color='red', label="Gemiddelde kosten")
+            GUI.a.plot(GUI.gens, GUI.meanCost, color='red',
+                       label="Gemiddelde kosten van alle simulaties deze generatie")
         else:
             GUI.a.plot(GUI.gens[Length - GrafiekLengte:Length], GUI.meanCost[Length - GrafiekLengte:Length],
                        color='red', label="Gemiddelde kosten")
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Gemiddelde kosten")
         limit = x_limit(GUI.gens)
+        # GUI.a.tight_layout()
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
@@ -133,17 +145,23 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 2:
         GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Geproduceerd")
         GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Energie geproduceerd")
+        GUI.a.set(ylabel="kW", xlabel="Dagen", title=titlePretext + "Jaarlijks vermogen")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
 
     # Instellingen voor de vierde grafiek: Som van overproductie
     elif GUI.graphNumber == 3:
-        GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Som Energie surplus")
+        GUI.a.plot(GUI.KW_sum, color='green', alpha=0.5, label="Energie productie - vraag")
         GUI.a.plot(GUI.zeros, color='red', label="0 lijn")
-        GUI.a.set(ylabel="KWH", xlabel="Dagen", title=titlePretext + "Som van Energie geproduceerd")
+        GUI.a.set(ylabel="MWh", xlabel="Dagen", title=titlePretext + "\u03A3(Energie productie - vraag)")
         GUI.a.set_xlim(0, 365)
-        GUI.a.legend()
+        PowerPlantPower = GUI.getValueFromSettingsByName("powerplant_power") * 365 * 24 / 1000
+        maxValue = np.max(GUI.KW_sum) + PowerPlantPower
+        verdeling = "Vraag is " + str(round_sig((PowerPlantPower / maxValue) * 100)) + "% van totaal."
+        balans = mpatches.Patch(color='green', label='Energie productie - vraag', linewidth=1)
+        nul_line = mpatches.Patch(color='red', label='0 Lijn', linewidth=1)
+        percentage = mpatches.Patch(alpha=0, label=verdeling)
+        GUI.a.legend(handles=[balans, nul_line, percentage])
 
     # Instellingen voor de zesde grafiek: Gebruik van de accu's.
     elif GUI.graphNumber == 4:
@@ -214,6 +232,7 @@ def RunSimulation(GUI):
     sp_sm = np.sum(GUI.csvData[0:N_SOLAR_FEATURES:3])
     wm_type = GUI.getValueFromSettingsByName("windturbine_type")
     GUI.cost_stats = GUI.CostCalulator.get_stats(energy_production, sp_sm, wm_type, n_Turbines)
+    fillStorageField(GUI)
 
 
 def resetToDefaultSettings(GUI):
@@ -282,15 +301,12 @@ def clearFields(GUI):
             item.config(text=empty)
             counter += 1
 
-    # Gegevens voor de windturbines
-    entry = GUI.WTHeightTuple[1]
-    entry.config(text=empty)
-
-    cost = GUI.WTHeightTuple[2]
-    cost.config(text=empty)
-
-    total = GUI.WTHeightTuple[3]
-    total.config(text=empty)
+    overigList = [GUI.SolarSommatie, GUI.opslagTuple, GUI.WTHeightTuple]
+    for tupleSet in overigList:
+        iterTuple = iter(tupleSet)
+        next(iterTuple)
+        for item in iterTuple:
+            item.config(text=empty)
 
     GUI.TotalCost.config(text="  €0,00")
 
@@ -321,8 +337,27 @@ def exitProgram(GUI):
     try:
         GUI.parent.destroy()
         GUI.p1.kill()
+        shutil.rmtree(GUI.Directory.value)
+
+    except PermissionError as e:
+        time.sleep(5)
+        shutil.rmtree(GUI.Directory.value)
+        print("Nog niet gestart")
+
     except AttributeError as e:
         print("Nog niet gestart")
+
+
+def fillStorageField(GUI):
+    stats = GUI.cost_stats
+    total_storage = stats['total_storage']
+    price_opslag = GUI.getValueFromSettingsByName('storage_costs')
+    price_opslag_display = bb.format_currency(price_opslag, 'EUR', locale='en_US')
+    total_price = float(total_storage) * float(price_opslag)
+    total_price_display = bb.format_currency(total_price, 'EUR', locale='en_US')
+    GUI.opslagTuple[1].config(text=textPreSpace + str(round(float(total_storage), 2)))
+    GUI.opslagTuple[2].config(text=textPreSpace + str(price_opslag_display))
+    GUI.opslagTuple[3].config(text=textPreSpace + str(total_price_display))
 
 
 # Deze methode opent het popup scherm met de instellingen
@@ -330,8 +365,8 @@ def openCostFunctionSettingWindow(GUI):
     GUI.NewWindow = Toplevel(GUI.parent)
     percentage = 0.65
     screen_width = int(GUI.winfo_screenwidth() * percentage)
-    aspect_ratio = 1600/500
-    screen_height = int(screen_width/aspect_ratio)
+    aspect_ratio = 1600 / 500
+    screen_height = int(screen_width / aspect_ratio)
     GUI.NewWindow.geometry(str(screen_width) + "x" + str(screen_height))
     font = GUI.InfoFont
     settings = GUI.settingsDataFrame
@@ -351,7 +386,7 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     headerList = ["Instellingen voor het algortime", "Zonne- en windinstellingen", "Kabel, locatie, jaar en opslaan"]
     headerIndex = 0
     for index, row in settings.iterrows():
-        if headerCounter-RowCounter == 0:
+        if headerCounter - RowCounter == 0:
             ColumnCounter = ColumnCounter + 2
             costFunctionHeader(NewWindow, headerList[headerIndex], ColumnCounter, GUI, padx, pady)
             RowCounter = 1
@@ -376,17 +411,27 @@ def displayCostFunction(NewWindow, font, settings, GUI):
     GUI.yearOptionMenu.grid(row=RowCounter, column=ColumnCounter + 1, padx=padx, pady=pady, sticky=N + S + E + W)
     RowCounter = RowCounter + 1
 
-    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Zet terug naar default",
-                                resetToDefaultSettings, True)
-    ResetButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
-                     sticky=N + S + E + W)
-    RowCounter = RowCounter + 2
-
     SaveButton = wm.makeButton(GUI, "GUI/icons/save.png", NewWindow, NewWindow, "   Opslaan", SaveValues, True)
-    SaveButton.grid(row=RowCounter, column=ColumnCounter, columnspan=2, rowspan=2, pady=pady, padx=padx,
+    SaveButton.grid(row=RowCounter, column=ColumnCounter, rowspan=2, pady=pady, padx=padx,
                     sticky=N + S + E + W)
+
+    ResetButton = wm.makeButton(GUI, "GUI/icons/reset.png", NewWindow, NewWindow, "   Reset",
+                                resetToDefaultSettings, True)
+    ResetButton.grid(row=RowCounter, column=ColumnCounter + 1, rowspan=2, pady=pady, padx=padx,
+                     sticky=N + S + E + W)
+
     GUI.preSave = preSaveEntries
     GUI.setColumnRowConfigure([NewWindow])
+
+
+def printInfo(GUI):
+    generation = "generation: " + str(len(GUI.gens))
+    mean_cost = " mean_cost: " + str(GUI.meanCost[-1])
+    min_cost = " min_cost: " + str(GUI.minCost[-1])
+    wind_tubrines = " nr_Windturbines: " + str(GUI.n_WindTurbines)
+    surfaceArea = " total_surfaceArea: " + GUI.surfaceAreaSum
+    totalStorage = " total_storage: " + str(GUI.cost_stats['total_storage'])
+    print(generation + mean_cost + min_cost + wind_tubrines + surfaceArea + totalStorage)
 
 
 def costFunctionHeader(NewWindow, Tekst, column, GUI, padx, pady):
@@ -416,6 +461,7 @@ def SaveValues(GUI):
     GUI.locationTextVariable.set(chosenLocation)
     GUI.yearTextVariable.set(chosenYear)
     GUI.settingsMenuOpen = False
+    print("Gegevens zijn opgeslagen")
 
 
 def fullChart(GUI):
@@ -437,8 +483,8 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
     lowestGen = GUI.minCost.index(min(GUI.minCost))
     if lowestGen != len(GUI.minCost) - 1:
         GUI.lowestGeneration = str(lowestGen + 1)
-        generationText = "De laagste is niet gelijk aan de laatste. Dit was de " + GUI.lowestGeneration + "e generatie"
-        continueText = "Wilt u overspringen naar de laagst en de bijbehorende waarden zien?"
+        generationText = "De goedkoopste opstelling is niet gelijk aan de laatste. Dit was de " + GUI.lowestGeneration + "e generatie"
+        continueText = "Wilt u terug springen naar de laagste en de bijbehorende opstelling zien?"
         generationLabel = Label(NewWindow, text=generationText, anchor=W, font=font)
         generationLabel.pack(padx=10, pady=10)
         continueLabel = Label(NewWindow, text=continueText, anchor=W, font=font)
@@ -453,6 +499,7 @@ def fillLowestFindWindow(NewWindow, font, settings, GUI):
         CloseButton = wm.makeButton(GUI, "GUI/icons/tick.png", NewWindow, NewWindow, "   Akkoord", closeFinishedPopup,
                                     True)
         CloseButton.pack(padx=10, pady=10)
+
 
 def loadPreviousGen(GUI):
     lg = GUI.lowestGeneration
@@ -473,6 +520,7 @@ def closeFinishedPopup(GUI):
 
 # Dit bestand laad het loggin bestand in
 def loadLoggingFile(GUI, first=None, filename=None):
+    f = ""
     try:
         if filename is None:
             filename = askopenfilename()  # Dit gebeurd als je de knop indrukt, laat hij hem pakken
@@ -515,6 +563,9 @@ def loadLoggingFile(GUI, first=None, filename=None):
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
 
+    finally:
+        f.close()
+
 
 # Deze functie leest een CSV file in
 def loadCsvFile(GUI, filename=None):
@@ -538,13 +589,15 @@ def loadCsvFile(GUI, filename=None):
                         item.config(text=textPreSpace + str(info))
                         counter += 1
 
+                solarSommation(GUI)
+
                 # Gegevens voor de windturbines
-                n_WindTurbines = round(float(GUI.csvData[-2]))
+                GUI.n_WindTurbines = round(float(GUI.csvData[-2]))
                 h_WindTurbines = round(float(GUI.csvData[-1]))
                 t_WindTurbines = round(float(GUI.getValueFromSettingsByName("windturbine_type")))
 
                 entry = GUI.WTHeightTuple[1]
-                entry.config(text=textPreSpace + str(n_WindTurbines))
+                entry.config(text=textPreSpace + str(GUI.n_WindTurbines))
 
                 cost = GUI.WTHeightTuple[2]
                 cost.config(text=textPreSpace + str(h_WindTurbines))
@@ -555,3 +608,37 @@ def loadCsvFile(GUI, filename=None):
         print(e)
         ShowErrorBox("Foutmelding verkeerd bestand",
                      "Dit bestand kan niet worden ingeladen. Kijk of een goed logging bestand is gekozen.")
+
+
+def solarSommation(GUI):
+    iterTuple = iter(GUI.SolarSommatie)
+    next(iterTuple)
+    GUI.surfaceAreaSum = 0
+    angleSum = 0
+    orientationSum = 0
+    solarPanelsInfo = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    devisionSum = 0
+
+    for x in range(4):
+        group = 3 * x
+        area = float(GUI.csvData[group])
+        angle = float(GUI.csvData[group + 1])
+        orientation = float(GUI.csvData[group + 2])
+        if orientation >= 180:
+            orientation = 360 - orientation
+        solarPanelsInfo[x] = [area, angle, orientation]
+        GUI.surfaceAreaSum += area
+
+    for x in range(4):
+        devision = solarPanelsInfo[x][0] / GUI.surfaceAreaSum
+        devisionSum += devision
+        angleSum += (devision * solarPanelsInfo[x][1])
+        orientationSum += (devision * solarPanelsInfo[x][2])
+    GUI.surfaceAreaSum = str(round(float(GUI.surfaceAreaSum), 2))
+
+    SurfaceSumField = next(iterTuple)
+    SurfaceSumField.config(text=textPreSpace + GUI.surfaceAreaSum)
+    AngleSummation = next(iterTuple)
+    AngleSummation.config(text=textPreSpace + str(round(float(angleSum), 2)))
+    OrientationSummation = next(iterTuple)
+    OrientationSummation.config(text=textPreSpace + str(round(float(orientationSum), 2)))
