@@ -14,9 +14,11 @@ from Simulator import Simulator
 from generators import Windturbine
 from location import Location
 import os
+import numpy as np
 
 DELAY1 = 20
 DELAY2 = 1000
+GENERATION_PRETEXT = "  Huidige generatie: "
 
 
 # Dit is de module voor de UI. Zat alle veldjes neer en runt de thread voor de funcites
@@ -71,6 +73,8 @@ class Application(Frame):
         self.fileName = "GUI/settings.csv"
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
+        self.directoryList = []
+        self.targetKWHArray = None
 
     def setUpLocationYear(self):
         self.locationStringVar = StringVar(self)
@@ -170,20 +174,20 @@ class Application(Frame):
         self.chartButton.config(state='disabled')
 
         self.generationTextVariable = StringVar()
-        self.generationTextVariable.set(self.setGenString(0))
+        self.generationTextVariable.set("  Huidige generatie: " + self.setGenString(0))
         self.locationTextVariable = StringVar()
         self.locationTextVariable.set(self.savedLocation)
         self.yearTextVariable = StringVar()
         self.yearTextVariable.set(self.savedYear)
 
-        CurrentGenerationLabel = Label(self.FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
-                                       font=self.GenerationFont)
+        # CurrentGenerationLabel = Label(self.FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
+        #                                font=self.GenerationFont)
         CurrentGenerationNumber = Label(self.FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W,
                                         font=self.GenerationFont)
 
         # Voeg de knoppen toe
-        CurrentGenerationLabel.grid(row=0, column=0, pady=5)
-        CurrentGenerationNumber.grid(row=0, column=1, pady=5)
+        # CurrentGenerationLabel.grid(row=0, column=0, pady=5)
+        CurrentGenerationNumber.grid(row=0, column=0, pady=5)
         self.chartButton.grid(row=0, column=2, sticky=N + S + E + W)
         self.previousButton.grid(row=0, column=3, sticky=N + S + E + W)
         self.nextButton.grid(row=0, column=4, sticky=N + S + E + W)
@@ -209,11 +213,12 @@ class Application(Frame):
         self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", self.FrameGrafiek, self.ItemFrame, "   Run",
                                        self.runSimulation,
                                        False)
-        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", self.FrameGrafiek, self.ItemFrame, " Laad CSV",
-                                      fn.loadCsvFile,
+        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", self.FrameGrafiek, self.ItemFrame, " Laad Array",
+                                      fn.loadTargetKWFile,
                                       True)
-        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", self.FrameGrafiek, self.ItemFrame, " Laad TXT",
-                                       fn.loadLoggingFile, True)
+        LoadTXTBButton = wm.makeButton(self, "GUI/icons/rubbish-bin.png", self.FrameGrafiek, self.ItemFrame,
+                                       " Verwijder",
+                                       fn.clearTargetKWFile, True)
         ExitButton = wm.makeButton(self, "GUI/icons/error.png", self.FrameGrafiek, self.ItemFrame, " Afsluiten",
                                    fn.exitProgram,
                                    True)
@@ -315,9 +320,15 @@ class Application(Frame):
                 GenInfo = int(self.getValueFromSettingsByName("gens"))
                 PoolInfo = int(self.getValueFromSettingsByName("pool"))
                 MutationInfo = int(self.getValueFromSettingsByName("mutate_percentage"))
-                PowerPlantInfo = int(self.getValueFromSettingsByName("powerplant_power"))
-                infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
-                self.consumptionGrade = PowerPlantInfo
+                self.PowerPlantInfo = []
+                if self.targetKWHArray is not None:
+                    self.PowerPlantInfo = self.targetKWHArray
+                else:
+                    targetKW = int(self.getValueFromSettingsByName("powerplant_power"))
+                    self.PowerPlantInfo = np.full(8760, targetKW)
+
+                infoArray = [GenInfo, PoolInfo, MutationInfo, self.PowerPlantInfo]
+                self.consumptionGrade = self.PowerPlantInfo
 
             except ValueError:
                 fn.ShowErrorBox("Invoerfout", "Controller of de getallen goed zijn ingevoerd")
@@ -356,7 +367,7 @@ class Application(Frame):
             solar_eff = int(self.getValueFromSettingsByName("solar_efficiency"))
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
-            self.generationTextVariable.set(self.setGenString(0))
+            self.generationTextVariable.set(GENERATION_PRETEXT + self.setGenString(0))
             loc_data = Location(self.savedLocation)
             year = str(self.savedYear)
             self.simulator = Simulator(loc_data, year, self.turbine)
@@ -384,8 +395,8 @@ class Application(Frame):
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             if self.running == 1:
                 self.updateGraph()
+                self.endSimulation()
             print("Klaar")
-            self.endSimulation()
 
     def setColumnRowConfigure(self, array):
         for x in range(10):
@@ -396,7 +407,7 @@ class Application(Frame):
 
     def updateGraph(self):
         self.counterCheck = self.counter.value
-        self.generationTextVariable.set(self.setGenString(self.counterCheck))
+        self.generationTextVariable.set(GENERATION_PRETEXT + self.setGenString(self.counterCheck))
         fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
         fn.RunSimulation(self)
         fn.setUpPower(self)
@@ -422,6 +433,7 @@ class Application(Frame):
         self.counterCheck = 0  # Resest update check
         self.counter = 0  # Reset update check
         self.settingButton.config(state="normal")
+        self.directoryList.append(self.Directory.value)
 
         # Als er meer dan twee generaties zijn geweest, dan moet je nog kunnen wissel tussen de grafieken
         if len(self.gens) > 1:
@@ -454,13 +466,9 @@ def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, 
 def main():
     root = Tk()
     percentage = 0.8
-    # percentage = 0.65
     app = Application(root, percentage)
+    root.state("zoomed")
     root.wm_iconbitmap("GUI/icons/icon.ico")
-    screen_width = int(root.winfo_screenwidth() * percentage)
-    aspect_ratio = 1600 / 800
-    screen_height = int(screen_width / aspect_ratio)
-    root.geometry(str(screen_width) + "x" + str(screen_height) + "+50+50")
     root.mainloop()
 
 
