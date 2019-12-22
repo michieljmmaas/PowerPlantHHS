@@ -71,6 +71,7 @@ class Application(Frame):
         self.fileName = "GUI/settings.csv"
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
+        self.directoryList = []
 
     def setUpLocationYear(self):
         self.locationStringVar = StringVar(self)
@@ -384,8 +385,9 @@ class Application(Frame):
         else:  # Als de thread dood is, houd dan op met checken en stop de laadbalk.
             if self.running == 1:
                 self.updateGraph()
+                self.endSimulation()
             print("Klaar")
-            self.endSimulation()
+
 
     def setColumnRowConfigure(self, array):
         for x in range(10):
@@ -422,6 +424,7 @@ class Application(Frame):
         self.counterCheck = 0  # Resest update check
         self.counter = 0  # Reset update check
         self.settingButton.config(state="normal")
+        self.directoryList.append(self.Directory.value)
 
         # Als er meer dan twee generaties zijn geweest, dan moet je nog kunnen wissel tussen de grafieken
         if len(self.gens) > 1:
@@ -454,13 +457,9 @@ def runTrain(counter, directory, array, CostCalculator, minSurface, maxSurface, 
 def main():
     root = Tk()
     percentage = 0.8
-    # percentage = 0.65
     app = Application(root, percentage)
+    root.state("zoomed")
     root.wm_iconbitmap("GUI/icons/icon.ico")
-    screen_width = int(root.winfo_screenwidth() * percentage)
-    aspect_ratio = 1600 / 800
-    screen_height = int(screen_width / aspect_ratio)
-    root.geometry(str(screen_width) + "x" + str(screen_height) + "+50+50")
     root.mainloop()
 
 

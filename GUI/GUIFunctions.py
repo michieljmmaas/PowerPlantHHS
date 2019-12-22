@@ -132,7 +132,6 @@ def loadChart(GUI, starting=True, fullChart=False):
         GUI.a.set_yscale("log")
         GUI.a.set(ylabel="Bedrag in euro's (€)", xlabel="Generatie", title=titlePretext + "Gemiddelde kosten")
         limit = x_limit(GUI.gens)
-        # GUI.a.tight_layout()
         if Length < GrafiekLengte:
             GUI.a.set_xlim(GUI.gens[0], GUI.gens[limit])
         else:
@@ -191,7 +190,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 5:
         WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        Labels = 'Wind Turbines - ' + WindPerc + '%', 'Zonnepanelen - ' + SolarPerc + '%'
+        Labels = 'Wind Turbines - ' + str(GUI.WindSum/1000) + " MW - " + WindPerc + '%', 'Zonnepanelen - ' + str(GUI.SolarSum/1000) + " MW - " + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
         GUI.a.set_title(titlePretext + "Verdeling van energie bron")
@@ -337,15 +336,21 @@ def exitProgram(GUI):
     try:
         GUI.parent.destroy()
         GUI.p1.kill()
-        shutil.rmtree(GUI.Directory.value)
 
-    except PermissionError as e:
-        time.sleep(5)
-        shutil.rmtree(GUI.Directory.value)
-        print("Nog niet gestart")
+        for dir in GUI.directoryList:
+            try:
+                print(dir)
+                shutil.rmtree(dir)
+
+            except PermissionError as e:
+                time.sleep(5)
+                shutil.rmtree(dir)
+                print(e)
+                print("Nog niet gestart")
 
     except AttributeError as e:
-        print("Nog niet gestart")
+        print("Attribute error")
+        print(e)
 
 
 def fillStorageField(GUI):
