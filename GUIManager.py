@@ -14,6 +14,7 @@ from Simulator import Simulator
 from generators import Windturbine
 from location import Location
 import os
+import numpy as np
 
 DELAY1 = 20
 DELAY2 = 1000
@@ -72,6 +73,7 @@ class Application(Frame):
         df = pd.read_csv(self.fileName)
         self.settingsDataFrame = df
         self.directoryList = []
+        self.targetKWHArray = None
 
     def setUpLocationYear(self):
         self.locationStringVar = StringVar(self)
@@ -210,11 +212,11 @@ class Application(Frame):
         self.RunButton = wm.makeButton(self, "GUI/icons/run-arrow.png", self.FrameGrafiek, self.ItemFrame, "   Run",
                                        self.runSimulation,
                                        False)
-        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", self.FrameGrafiek, self.ItemFrame, " Laad CSV",
-                                      fn.loadCsvFile,
+        LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", self.FrameGrafiek, self.ItemFrame, " Laad Array",
+                                      fn.loadTargetKWFile,
                                       True)
-        LoadTXTBButton = wm.makeButton(self, "GUI/icons/txt-file.png", self.FrameGrafiek, self.ItemFrame, " Laad TXT",
-                                       fn.loadLoggingFile, True)
+        LoadTXTBButton = wm.makeButton(self, "GUI/icons/rubbish-bin.png", self.FrameGrafiek, self.ItemFrame, " Verwijder",
+                                       fn.clearTargetKWFile, True)
         ExitButton = wm.makeButton(self, "GUI/icons/error.png", self.FrameGrafiek, self.ItemFrame, " Afsluiten",
                                    fn.exitProgram,
                                    True)
@@ -316,9 +318,15 @@ class Application(Frame):
                 GenInfo = int(self.getValueFromSettingsByName("gens"))
                 PoolInfo = int(self.getValueFromSettingsByName("pool"))
                 MutationInfo = int(self.getValueFromSettingsByName("mutate_percentage"))
-                PowerPlantInfo = int(self.getValueFromSettingsByName("powerplant_power"))
-                infoArray = [GenInfo, PoolInfo, MutationInfo, PowerPlantInfo]
-                self.consumptionGrade = PowerPlantInfo
+                self.PowerPlantInfo = []
+                if self.targetKWHArray is not None:
+                    self.PowerPlantInfo = self.targetKWHArray
+                else:
+                    targetKW = int(self.getValueFromSettingsByName("powerplant_power"))
+                    self.PowerPlantInfo = np.full(8760, targetKW)
+
+                infoArray = [GenInfo, PoolInfo, MutationInfo, self.PowerPlantInfo]
+                self.consumptionGrade = self.PowerPlantInfo
 
             except ValueError:
                 fn.ShowErrorBox("Invoerfout", "Controller of de getallen goed zijn ingevoerd")

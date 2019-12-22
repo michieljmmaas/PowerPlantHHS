@@ -143,7 +143,7 @@ def loadChart(GUI, starting=True, fullChart=False):
     # Instellingen voor de derde grafiek: Energie Productie
     elif GUI.graphNumber == 2:
         GUI.a.plot(GUI.kW_distribution, color='green', alpha=0.5, label="Geproduceerd")
-        GUI.a.plot(GUI.consumption, color='red', label="Consumptie")
+        GUI.a.plot(GUI.PowerPlantInfo, color='red', label="Consumptie")
         GUI.a.set(ylabel="kW", xlabel="Dagen", title=titlePretext + "Jaarlijks vermogen")
         GUI.a.set_xlim(0, 365)
         GUI.a.legend()
@@ -190,7 +190,8 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 5:
         WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        Labels = 'Wind Turbines - ' + str(GUI.WindSum/1000) + " MW - " + WindPerc + '%', 'Zonnepanelen - ' + str(GUI.SolarSum/1000) + " MW - " + SolarPerc + '%'
+        Labels = 'Wind Turbines - ' + str(GUI.WindSum / 1000) + " MW - " + WindPerc + '%', 'Zonnepanelen - ' + str(
+            GUI.SolarSum / 1000) + " MW - " + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
         GUI.a.set_title(titlePretext + "Verdeling van energie bron")
@@ -320,14 +321,17 @@ def setUpPower(GUI):
 
     # omzetten Array naar dag
     PowerArray = np.mean(np.reshape(PowerArrayPre[:8760], (365, 24)), axis=1)  # Zet gegevens om naar dag
+    consumptionGradeDay = np.mean(np.reshape(GUI.consumptionGrade[:8760], (365, 24)),
+                                  axis=1)  # Zet gegevens om naar dag
 
     # Geproducueerd vs gebrijkte lijn
     PowerArray = savgol_filter(PowerArray, 51, 3)  # Smooth out line
-    GUI.consumption = np.full(len(PowerArray), GUI.consumptionGrade)  # Maak de consumptie lijn
+
+    # GUI.consumption = np.full(len(PowerArray), GUI.consumptionGrade)  # Maak de consumptie lijn
     GUI.kW_distribution = PowerArray
 
     # Sum of Overproduced Power
-    GUI.KW_sum = np.cumsum(PowerArray - GUI.consumptionGrade)  # Maak de som van de energie
+    GUI.KW_sum = np.cumsum(PowerArray - consumptionGradeDay)  # Maak de som van de energie
     GUI.zeros = np.zeros(len(PowerArray))  # Maak nul lijn
 
 
@@ -467,6 +471,22 @@ def SaveValues(GUI):
     GUI.yearTextVariable.set(chosenYear)
     GUI.settingsMenuOpen = False
     print("Gegevens zijn opgeslagen")
+
+
+def loadTargetKWFile(GUI):
+    try:
+        filename = askopenfilename()
+        dataFrame = pd.read_csv(filename)
+        GUI.targetKWHArray = dataFrame.values[:, 1].tolist()
+
+    except Exception as e:
+        print(e)
+        ShowErrorBox("Foutmelding lijst inladen",
+                     "Er zit een fout in het bestand. Probeer het ngo een keer")
+
+
+def clearTargetKWFile(GUI):
+    GUI.targetKWHArray = None
 
 
 def fullChart(GUI):
