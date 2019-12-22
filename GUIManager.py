@@ -18,6 +18,7 @@ import numpy as np
 
 DELAY1 = 20
 DELAY2 = 1000
+GENERATION_PRETEXT = "  Huidige generatie: "
 
 
 # Dit is de module voor de UI. Zat alle veldjes neer en runt de thread voor de funcites
@@ -173,20 +174,20 @@ class Application(Frame):
         self.chartButton.config(state='disabled')
 
         self.generationTextVariable = StringVar()
-        self.generationTextVariable.set(self.setGenString(0))
+        self.generationTextVariable.set("  Huidige generatie: " + self.setGenString(0))
         self.locationTextVariable = StringVar()
         self.locationTextVariable.set(self.savedLocation)
         self.yearTextVariable = StringVar()
         self.yearTextVariable.set(self.savedYear)
 
-        CurrentGenerationLabel = Label(self.FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
-                                       font=self.GenerationFont)
+        # CurrentGenerationLabel = Label(self.FrameGrafiekButtons, text="  Huidige generatie: ", anchor=W,
+        #                                font=self.GenerationFont)
         CurrentGenerationNumber = Label(self.FrameGrafiekButtons, textvariable=self.generationTextVariable, anchor=W,
                                         font=self.GenerationFont)
 
         # Voeg de knoppen toe
-        CurrentGenerationLabel.grid(row=0, column=0, pady=5)
-        CurrentGenerationNumber.grid(row=0, column=1, pady=5)
+        # CurrentGenerationLabel.grid(row=0, column=0, pady=5)
+        CurrentGenerationNumber.grid(row=0, column=0, pady=5)
         self.chartButton.grid(row=0, column=2, sticky=N + S + E + W)
         self.previousButton.grid(row=0, column=3, sticky=N + S + E + W)
         self.nextButton.grid(row=0, column=4, sticky=N + S + E + W)
@@ -215,7 +216,8 @@ class Application(Frame):
         LoadCSVButton = wm.makeButton(self, "GUI/icons/csv-file.png", self.FrameGrafiek, self.ItemFrame, " Laad Array",
                                       fn.loadTargetKWFile,
                                       True)
-        LoadTXTBButton = wm.makeButton(self, "GUI/icons/rubbish-bin.png", self.FrameGrafiek, self.ItemFrame, " Verwijder",
+        LoadTXTBButton = wm.makeButton(self, "GUI/icons/rubbish-bin.png", self.FrameGrafiek, self.ItemFrame,
+                                       " Verwijder",
                                        fn.clearTargetKWFile, True)
         ExitButton = wm.makeButton(self, "GUI/icons/error.png", self.FrameGrafiek, self.ItemFrame, " Afsluiten",
                                    fn.exitProgram,
@@ -365,7 +367,7 @@ class Application(Frame):
             solar_eff = int(self.getValueFromSettingsByName("solar_efficiency"))
             terrain_value = float(self.getValueFromSettingsByName("terrain"))
             windTurbineMax = self.getValueFromSettingsByName("windturbine_max")
-            self.generationTextVariable.set(self.setGenString(0))
+            self.generationTextVariable.set(GENERATION_PRETEXT + self.setGenString(0))
             loc_data = Location(self.savedLocation)
             year = str(self.savedYear)
             self.simulator = Simulator(loc_data, year, self.turbine)
@@ -396,7 +398,6 @@ class Application(Frame):
                 self.endSimulation()
             print("Klaar")
 
-
     def setColumnRowConfigure(self, array):
         for x in range(10):
             for y in range(10):
@@ -406,7 +407,7 @@ class Application(Frame):
 
     def updateGraph(self):
         self.counterCheck = self.counter.value
-        self.generationTextVariable.set(self.setGenString(self.counterCheck))
+        self.generationTextVariable.set(GENERATION_PRETEXT + self.setGenString(self.counterCheck))
         fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
         fn.RunSimulation(self)
         fn.setUpPower(self)
