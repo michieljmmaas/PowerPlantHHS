@@ -163,12 +163,13 @@ def loadChart(GUI, starting=True, fullChart=False):
         percentage = mpatches.Patch(alpha=0, label=verdeling)
         GUI.a.legend(handles=[balans, nul_line, percentage])
 
-    # Instellingen voor de zesde grafiek: Gebruik van de accu's.
+    # Instellingen voor de 5de grafiek: Gebruik van de accu's.
     elif GUI.graphNumber == 4:
         batteryCharge = []
         for x in range(2):
             if x == 0:
                 batteryCharge = [int(GUI.cost_stats['total_storage'])]
+                print(batteryCharge)
             else:
                 batteryCharge = [batteryCharge[-1]]
             PowerShortage = []
@@ -191,8 +192,9 @@ def loadChart(GUI, starting=True, fullChart=False):
     elif GUI.graphNumber == 5:
         WindPerc = str(round(float((GUI.WindSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
         SolarPerc = str(round(float((GUI.SolarSum / (GUI.WindSum + GUI.SolarSum)) * 100), 2))
-        Labels = 'Wind Turbines - ' + str(int(GUI.WindSum / 1000)) + " MW - " + WindPerc + '%', 'Zonnepanelen - ' + str(
-            int(GUI.SolarSum / 1000)) + " MW - " + SolarPerc + '%'
+        Labels = 'Wind Turbines - ' + str(
+            int(GUI.WindSum / 1000)) + " MWh - " + WindPerc + '%', 'Zonnepanelen - ' + str(
+            int(GUI.SolarSum / 1000)) + " MWh - " + SolarPerc + '%'
         colors = ['dodgerblue', 'gold']
         patches, _ = GUI.a.pie([GUI.WindSum, GUI.SolarSum], colors=colors, startangle=90, frame=True)
         GUI.a.set_title(titlePretext + "Verdeling van energie bron")
@@ -356,18 +358,6 @@ def exitProgram(GUI):
     except AttributeError as e:
         print("Attribute error")
         print(e)
-
-
-def fillStorageField(GUI):
-    stats = GUI.cost_stats
-    total_storage = stats['total_storage']
-    price_opslag = GUI.getValueFromSettingsByName('storage_costs')
-    price_opslag_display = bb.format_currency(price_opslag, 'EUR', locale='en_US')
-    total_price = float(total_storage) * float(price_opslag)
-    total_price_display = bb.format_currency(total_price, 'EUR', locale='en_US')
-    GUI.opslagTuple[1].config(text=textPreSpace + str(round(float(total_storage), 2)))
-    GUI.opslagTuple[2].config(text=textPreSpace + str(price_opslag_display))
-    GUI.opslagTuple[3].config(text=textPreSpace + str(total_price_display))
 
 
 def fillStorageField(GUI):
