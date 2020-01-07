@@ -171,10 +171,6 @@ class CostCalculator():
                 storage = max(storage, np.max(cumulative_array[:new_start]))
                 cumulative_array = cumulative_array[new_start:]
                 declining = declining[new_start:]
-        # windturbine cost
-
-        # wm_cost = getWindTurbinePrice(wm_type, wm_price)
-        wm_cost = self.wm_price
 
         # Cable calculation
         kwh_max = kwh_array.max()
@@ -188,7 +184,7 @@ class CostCalculator():
 
         # calculate the final cost
         solar_cost = sp_sm * self.sp_cost_per_sm
-        wind_cost = wm_cost * n_Turbines
+        wind_cost = self.wm_price * n_Turbines * 3000
         storage_cost = storage * self.st_cost_per_kwh
         deficit_cost = deficit * self.deficit_cost
         cable_cost = cb_cost * self.cb_length
