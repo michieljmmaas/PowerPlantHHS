@@ -410,6 +410,8 @@ class Application(Frame):
         self.generationTextVariable.set(GENERATION_PRETEXT + self.setGenString(self.counterCheck))
         fn.ReadLogging(self.Directory.value, self.counterCheck, self)  # Update
         fn.RunSimulation(self)
+        if self.counterCheck > 1:
+            fn.loadChart(self, starting=False)
         fn.setUpPower(self)
         fn.printInfo(self)
 
