@@ -4,7 +4,7 @@ pool,Pool,200.0
 mutate_percentage,Mutatie percentage (%),50.0
 tickLimit,Aantal ticks op de x-as,20.0
 deficit_cost,Kosten voor tekort (€/kWh),1000000.0
-storage_costs,Kosten per opslag (€/kWh),1.0
+storage_costs,Kosten per opslag (€/kWh),400.0
 powerplant_power,Powerplant vermogen vraag (kW),6000.0
 surface_area_costs,Kosten per m² zonnepanneel (€),160.0
 surface_min,Minimaal zonnepaneel oppervlakte (m²),0.0

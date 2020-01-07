@@ -478,6 +478,7 @@ def SaveValues(GUI):
 
 def loadTargetKWFile(GUI):
     try:
+        print("Array geladen")
         filename = askopenfilename()
         dataFrame = pd.read_csv(filename)
         GUI.targetKWHArray = dataFrame.values[:, 1].tolist()
@@ -485,7 +486,7 @@ def loadTargetKWFile(GUI):
     except Exception as e:
         print(e)
         ShowErrorBox("Foutmelding lijst inladen",
-                     "Er zit een fout in het bestand. Probeer het ngo een keer")
+                     "Er zit een fout in het bestand. Probeer het nog een keer")
 
 
 def clearTargetKWFile(GUI):
